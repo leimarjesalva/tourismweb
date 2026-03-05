@@ -1,0 +1,11 @@
+{
+    "id": 7,
+    "timestamp": "2026-03-02 08:21:41",
+    "name": "Leimar",
+    "email": "ljesalva1@gmail.com",
+    "feedback_type": "bug",
+    "page": "index",
+    "message": "No!",
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+}

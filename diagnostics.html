@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Data Diagnostics</title>
+  <style>
+    body { font-family: Arial; margin: 20px; background: #f5f5f5; }
+    .section { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    h2 { color: #333; border-bottom: 2px solid #667eea; padding-bottom: 10px; }
+    .status-ok { color: green; font-weight: bold; }
+    .status-err { color: red; font-weight: bold; }
+    pre { background: #f0f0f0; padding: 10px; overflow-x: auto; }
+    button { padding: 10px 20px; margin: 5px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    button:hover { background: #764ba2; }
+  </style>
+</head>
+<body>
+
+<h1>📊 Admin Data Diagnostics</h1>
+
+<div class="section">
+  <h2>1. Database Direct Check</h2>
+  <p>Directly querying the database for data:</p>
+  <button onclick="checkDatabase()">Check Database</button>
+  <div id="dbStatus"></div>
+</div>
+
+<div class="section">
+  <h2>2. API Endpoint Tests</h2>
+  <button onclick="testAPI('api.php?action=list_festivals', 'Festivals')">Test Festivals API</button>
+  <button onclick="testAPI('api.php?action=list_experiences', 'Experiences')">Test Experiences API</button>
+  <button onclick="testAPI('api.php?action=list_destinations', 'Destinations')">Test Destinations API</button>
+  <button onclick="testAPI('api.php?action=list_events', 'Events')">Test Events API</button>
+  <div id="apiStatus"></div>
+</div>
+
+<div class="section">
+  <h2>3. Admin Form Test</h2>
+  <p>Test creating a sample festival with image:</p>
+  <button onclick="createTestFestival()">Create Test Festival</button>
+  <div id="formStatus"></div>
+</div>
+
+<div class="section">
+  <h2>4. Frontend Loading Test</h2>
+  <p>Test if frontend can load the data:</p>
+  <button onclick="testFrontendLoading()">Test Frontend Loading</button>
+  <div id="frontendStatus"></div>
+</div>
+
+<script>
+function apiUrl(endpoint) {
+  let base = '';
+  if (window.location.pathname.includes('/frontend/')) base = '../backend/';
+  else base = 'backend/';
+  return base + endpoint;
+}
+
+async function checkDatabase() {
+  const status = document.getElementById('dbStatus');
+  status.innerHTML = '<p>Checking database...</p>';
+  try {
+    const res = await fetch('db_test.php');
+    const data = await res.json();
+    let html = '<h3>Database Contents:</h3><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+    if (data.events_count > 0 || data.festivals_count > 0 || data.experiences_count > 0) {
+      html += '<p class="status-ok">✓ Data exists in database</p>';
+    } else {
+      html += '<p class="status-err">✗ No data in database - need to create records in admin</p>';
+    }
+    status.innerHTML = html;
+  } catch(e) {
+    status.innerHTML = '<p class="status-err">Error: ' + e.message + '</p>';
+  }
+}
+
+async function testAPI(endpoint, label) {
+  const status = document.getElementById('apiStatus');
+  status.innerHTML += '<h3>Testing ' + label + ' API...</h3><p>Endpoint: ' + apiUrl(endpoint) + '</p>';
+  try {
+    const res = await fetch(apiUrl(endpoint));
+    const data = await res.json();
+    const count = data.festivals ? data.festivals.length : data.experiences ? data.experiences.length : data.destinations ? data.destinations.length : data.events ? data.events.length : 0;
+    status.innerHTML += '<pre>' + JSON.stringify(data, null, 2).substring(0, 500) + '...</pre>';
+    if (count > 0) {
+      status.innerHTML += '<p class="status-ok">✓ ' + label + ' API returned ' + count + ' records</p>';
+    } else {
+      status.innerHTML += '<p class="status-err">✗ ' + label + ' API returned 0 records</p>';
+    }
+  } catch(e) {
+    status.innerHTML += '<p class="status-err">Error: ' + e.message + '</p>';
+  }
+}
+
+async function createTestFestival() {
+  const status = document.getElementById('formStatus');
+  status.innerHTML = '<p>Creating test festival...</p>';
+  const testData = {
+    name: 'Test Festival ' + Date.now(),
+    description: 'This is a test festival created at ' + new Date().toLocaleString(),
+    date_start: '2026-03-15',
+    date_end: '2026-03-16',
+    location: 'Legazpi City',
+    image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+  };
+  try {
+    const res = await fetch(apiUrl('api.php?action=create_festival'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(testData),
+      credentials: 'include'
+    });
+    const result = await res.json();
+    status.innerHTML = '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+    if (result.success) {
+      status.innerHTML += '<p class="status-ok">✓ Test festival created successfully!</p>';
+    } else {
+      status.innerHTML += '<p class="status-err">✗ Failed: ' + (result.error || 'Unknown error') + '</p>';
+    }
+  } catch(e) {
+    status.innerHTML = '<p class="status-err">Error: ' + e.message + '</p>';
+  }
+}
+
+async function testFrontendLoading() {
+  const status = document.getElementById('frontendStatus');
+  status.innerHTML = '<p>Testing frontend loading functions...</p>';
+  
+  // Test if containers exist
+  const festivalContainer = document.querySelector('#adminFestivalsContainer');
+  const experienceContainer = document.querySelector('#adminExperiencesContainer');
+  
+  status.innerHTML += '<h3>Container Check:</h3>';
+  
+  if (festivalContainer) {
+    status.innerHTML += '<p class="status-ok">✓ Festival container found</p>';
+  } else {
+    status.innerHTML += '<p class="status-err">✗ Festival container NOT found</p>';
+  }
+  
+  if (experienceContainer) {
+    status.innerHTML += '<p class="status-ok">✓ Experience container found</p>';
+  } else {
+    status.innerHTML += '<p class="status-err">✗ Experience container NOT found</p>';
+  }
+  
+  // Test if apiUrl function exists
+  if (typeof apiUrl === 'function') {
+    status.innerHTML += '<p class="status-ok">✓ apiUrl() function is available</p>';
+    status.innerHTML += '<p>apiUrl("api.php?action=list_festivals") = ' + apiUrl('api.php?action=list_festivals') + '</p>';
+  } else {
+    status.innerHTML += '<p class="status-err">✗ apiUrl() function NOT available</p>';
+  }
+  
+  // Check browser console for errors
+  status.innerHTML += '<p><strong>Check browser console (F12) for loading errors and the console logs from the page load.</strong></p>';
+}
+</script>
+
+</body>
+</html>

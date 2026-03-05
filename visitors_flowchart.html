@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Legazpi Explorer — Visitor System Flowchart</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #f0f4f8;
+  font-family: 'Inter', sans-serif;
+  padding: 30px 20px 60px;
+  color: #1a202c;
+}
+h1 { text-align:center; font-size:26px; font-weight:700; margin-bottom:4px; }
+.subtitle { text-align:center; font-size:13px; color:#718096; margin-bottom:36px; }
+.section-wrap { margin-bottom:48px; }
+.section-label {
+  font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:1px;
+  color:#4a5568; margin-bottom:14px; padding-left:10px;
+  border-left:3px solid #38a169;
+}
+svg { display:block; margin:0 auto; overflow:visible; }
+
+/* Shape fills */
+.oval-term  { fill:#2d3748; stroke:#1a202c; stroke-width:1.8; }
+.diamond    { fill:#fefcbf; stroke:#d69e2e; stroke-width:1.8; }
+.rect-proc  { fill:#ebf8ff; stroke:#4299e1; stroke-width:1.8; }
+.rect-succ  { fill:#f0fff4; stroke:#48bb78; stroke-width:1.8; }
+.rect-err   { fill:#fff5f5; stroke:#fc8181; stroke-width:1.8; }
+.rect-data  { fill:#e6fffa; stroke:#38b2ac; stroke-width:1.8; }
+.rect-ml    { fill:#faf5ff; stroke:#9f7aea; stroke-width:1.8; }
+.rect-alrt  { fill:#fffaf0; stroke:#ed8936; stroke-width:1.8; }
+.rect-act   { fill:#fff;    stroke:#a0aec0; stroke-width:1.5; }
+.rect-info  { fill:#ebf8ff; stroke:#63b3ed; stroke-width:1.5; }
+.rect-geo   { fill:#fef3c7; stroke:#f59e0b; stroke-width:1.8; }
+.rect-pdf   { fill:#fdf2f8; stroke:#d53f8c; stroke-width:1.8; }
+
+/* Text classes */
+.t-start { fill:#fff; font-size:11px; font-weight:600; font-family:'Inter',sans-serif; }
+.t-proc  { fill:#2b6cb0; font-size:11px; font-weight:600; font-family:'Inter',sans-serif; }
+.t-sub   { fill:#718096; font-size:9.5px; font-family:'Inter',sans-serif; }
+.t-succ  { fill:#276749; font-size:11px; font-weight:600; font-family:'Inter',sans-serif; }
+.t-err   { fill:#9b2c2c; font-size:11px; font-weight:600; font-family:'Inter',sans-serif; }
+.t-ml    { fill:#553c9a; font-size:11px; font-weight:600; font-family:'Inter',sans-serif; }
+.t-alrt  { fill:#7b341e; font-size:11px; font-weight:600; font-family:'Inter',sans-serif; }
+.t-data  { fill:#234e52; font-size:11px; font-weight:600; font-family:'Inter',sans-serif; }
+.t-geo   { fill:#92400e; font-size:11px; font-weight:600; font-family:'Inter',sans-serif; }
+.t-pdf   { fill:#702459; font-size:11px; font-weight:600; font-family:'Inter',sans-serif; }
+.t-dmd   { fill:#744210; font-size:11px; font-weight:700; font-family:'Inter',sans-serif; }
+.t-act   { fill:#2d3748; font-size:11px; font-weight:500; font-family:'Inter',sans-serif; }
+
+/* Lines */
+.ln  { stroke:#718096; stroke-width:1.5; fill:none; }
+.ln-y{ stroke:#48bb78; stroke-width:1.5; fill:none; }
+.ln-n{ stroke:#fc8181; stroke-width:1.5; fill:none; }
+.arr { fill:#718096; }
+
+.lbl-y { fill:#276749; font-size:10px; font-weight:700; font-family:'Inter',sans-serif; }
+.lbl-n { fill:#9b2c2c; font-size:10px; font-weight:700; font-family:'Inter',sans-serif; }
+</style>
+</head>
+<body>
+
+<h1>Legazpi Explorer — Visitor System Flowchart</h1>
+<p class="subtitle">Capstone Project · Tourist & Visitor Interaction Flow</p>
+
+<!-- Shared arrowhead markers -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <marker id="A"  markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#718096"/></marker>
+    <marker id="Ay" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#48bb78"/></marker>
+    <marker id="An" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#fc8181"/></marker>
+  </defs>
+</svg>
+
+<!-- ═══════════════════════ 1. SYSTEM OVERVIEW ═══════════════════════ -->
+<div class="section-wrap">
+<div class="section-label">1 · System Overview</div>
+<svg width="880" height="210" viewBox="0 0 880 210">
+
+  <!-- Visitor arrives -->
+  <ellipse cx="80" cy="44" rx="72" ry="24" class="oval-term"/>
+  <text x="80" y="48" text-anchor="middle" class="t-start">Visitor Arrives</text>
+
+  <line x1="152" y1="44" x2="180" y2="44" class="ln" marker-end="url(#A)"/>
+
+  <!-- Home page -->
+  <rect x="180" y="20" width="140" height="48" rx="6" class="rect-proc"/>
+  <text x="250" y="40" text-anchor="middle" class="t-proc">Home / Landing Page</text>
+  <text x="250" y="55" text-anchor="middle" class="t-sub">index.html</text>
+
+  <line x1="320" y1="44" x2="350" y2="44" class="ln" marker-end="url(#A)"/>
+
+  <!-- Content discovery -->
+  <rect x="350" y="20" width="150" height="48" rx="6" class="rect-data"/>
+  <text x="425" y="38" text-anchor="middle" class="t-data">Content Discovery</text>
+  <text x="425" y="53" text-anchor="middle" class="t-sub">Events · Destinations</text>
+
+  <line x1="500" y1="44" x2="530" y2="44" class="ln" marker-end="url(#A)"/>
+
+  <!-- Engagement -->
+  <rect x="530" y="20" width="150" height="48" rx="6" class="rect-succ"/>
+  <text x="605" y="38" text-anchor="middle" class="t-succ">Engagement Options</text>
+  <text x="605" y="53" text-anchor="middle" class="t-sub">4 paths available</text>
+
+  <line x1="680" y1="44" x2="710" y2="44" class="ln" marker-end="url(#A)"/>
+
+  <!-- Conversion -->
+  <rect x="710" y="20" width="150" height="48" rx="6" class="rect-ml"/>
+  <text x="785" y="38" text-anchor="middle" class="t-ml">Conversion Actions</text>
+  <text x="785" y="53" text-anchor="middle" class="t-sub">PDF · Feedback · Share</text>
+
+  <!-- Fan out engagement paths -->
+  <line x1="605" y1="68" x2="605" y2="96" class="ln"/>
+  <line x1="165" y1="96" x2="845" y2="96" class="ln"/>
+
+  <line x1="165" y1="96" x2="165" y2="114" class="ln" marker-end="url(#A)"/>
+  <rect x="90"  y="114" width="150" height="38" rx="5" class="rect-proc"/>
+  <text x="165" y="132" text-anchor="middle" class="t-proc" style="font-size:10px">🗓️ View Events</text>
+  <text x="165" y="146" text-anchor="middle" class="t-sub">Details + ML Pred</text>
+
+  <line x1="350" y1="96" x2="350" y2="114" class="ln" marker-end="url(#A)"/>
+  <rect x="275" y="114" width="150" height="38" rx="5" class="rect-data"/>
+  <text x="350" y="132" text-anchor="middle" class="t-data" style="font-size:10px">🗺️ Browse Destinations</text>
+  <text x="350" y="146" text-anchor="middle" class="t-sub">Gallery + Modal</text>
+
+  <line x1="535" y1="96" x2="535" y2="114" class="ln" marker-end="url(#A)"/>
+  <rect x="460" y="114" width="150" height="38" rx="5" class="rect-succ"/>
+  <text x="535" y="132" text-anchor="middle" class="t-succ" style="font-size:10px">📋 Plan Itinerary</text>
+  <text x="535" y="146" text-anchor="middle" class="t-sub">Generate + Save PDF</text>
+
+  <line x1="720" y1="96" x2="720" y2="114" class="ln" marker-end="url(#A)"/>
+  <rect x="645" y="114" width="150" height="38" rx="5" class="rect-alrt"/>
+  <text x="720" y="132" text-anchor="middle" class="t-alrt" style="font-size:10px">💬 Provide Feedback</text>
+  <text x="720" y="146" text-anchor="middle" class="t-sub">Submit + Track</text>
+
+  <!-- Done -->
+  <line x1="165" y1="152" x2="165" y2="182" class="ln"/>
+  <line x1="720" y1="152" x2="720" y2="182" class="ln"/>
+  <line x1="165" y1="182" x2="720" y2="182" class="ln"/>
+  <line x1="442" y1="182" x2="442" y2="198" class="ln" marker-end="url(#A)"/>
+  <ellipse cx="442" cy="202" rx="90" ry="16" class="oval-term"/>
+  <text x="442" y="206" text-anchor="middle" class="t-start" style="font-size:10px">Trip Goals Achieved</text>
+</svg>
+</div>
+
+<!-- ═══════════════════════ 2. HOME PAGE LOAD ═══════════════════════ -->
+<div class="section-wrap">
+<div class="section-label">2 · Home Page Load Flow</div>
+<svg width="740" height="480" viewBox="0 0 740 480">
+
+  <ellipse cx="370" cy="28" rx="150" ry="24" class="oval-term"/>
+  <text x="370" y="32" text-anchor="middle" class="t-start">Visitor Enters Website (index.html)</text>
+
+  <line x1="370" y1="52" x2="370" y2="78" class="ln" marker-end="url(#A)"/>
+
+  <rect x="220" y="78" width="300" height="60" rx="6" class="rect-proc"/>
+  <text x="370" y="98" text-anchor="middle" class="t-proc">DOMContentLoaded</text>
+  <text x="370" y="113" text-anchor="middle" class="t-sub">Init nav · Load CSS · Init JS modules</text>
+  <text x="370" y="127" text-anchor="middle" class="t-sub">Setup event listeners</text>
+
+  <line x1="370" y1="138" x2="370" y2="162" class="ln" marker-end="url(#A)"/>
+
+  <!-- Parallel loading label -->
+  <rect x="220" y="162" width="300" height="36" rx="6" class="rect-act"/>
+  <text x="370" y="183" text-anchor="middle" class="t-act" style="font-weight:600">Parallel Data Loading</text>
+
+  <!-- Fan to 3 loaders -->
+  <line x1="370" y1="198" x2="370" y2="216" class="ln"/>
+  <line x1="130" y1="216" x2="610" y2="216" class="ln"/>
+
+  <line x1="130" y1="216" x2="130" y2="234" class="ln" marker-end="url(#A)"/>
+  <rect x="50"  y="234" width="160" height="64" rx="5" class="rect-proc"/>
+  <text x="130" y="252" text-anchor="middle" class="t-proc" style="font-size:10px">loadCommunityEvents()</text>
+  <text x="130" y="266" text-anchor="middle" class="t-sub">Fetch events</text>
+  <text x="130" y="279" text-anchor="middle" class="t-sub">Render cards</text>
+  <text x="130" y="292" text-anchor="middle" class="t-sub">Init map</text>
+
+  <line x1="370" y1="216" x2="370" y2="234" class="ln" marker-end="url(#A)"/>
+  <rect x="290" y="234" width="160" height="64" rx="5" class="rect-data"/>
+  <text x="370" y="252" text-anchor="middle" class="t-data" style="font-size:10px">loadDestinations()</text>
+  <text x="370" y="266" text-anchor="middle" class="t-sub">Fetch destinations</text>
+  <text x="370" y="279" text-anchor="middle" class="t-sub">Render gallery</text>
+  <text x="370" y="292" text-anchor="middle" class="t-sub">Setup modals</text>
+
+  <line x1="610" y1="216" x2="610" y2="234" class="ln" marker-end="url(#A)"/>
+  <rect x="530" y="234" width="160" height="64" rx="5" class="rect-geo"/>
+  <text x="610" y="252" text-anchor="middle" class="t-geo" style="font-size:10px">Geolocation Init()</text>
+  <text x="610" y="266" text-anchor="middle" class="t-sub">Detect user location</text>
+  <text x="610" y="279" text-anchor="middle" class="t-sub">Default: Legazpi</text>
+  <text x="610" y="292" text-anchor="middle" class="t-sub">13.11°N 123.75°E</text>
+
+  <!-- Merge -->
+  <line x1="130" y1="298" x2="130" y2="336" class="ln"/>
+  <line x1="370" y1="298" x2="370" y2="336" class="ln"/>
+  <line x1="610" y1="298" x2="610" y2="336" class="ln"/>
+  <line x1="130" y1="336" x2="610" y2="336" class="ln"/>
+  <line x1="370" y1="336" x2="370" y2="356" class="ln" marker-end="url(#A)"/>
+
+  <rect x="200" y="356" width="340" height="80" rx="6" class="rect-succ"/>
+  <text x="370" y="376" text-anchor="middle" class="t-succ">UI Render Complete</text>
+  <text x="370" y="391" text-anchor="middle" class="t-sub">Hero section (parallax) · Events map with markers</text>
+  <text x="370" y="405" text-anchor="middle" class="t-sub">Events feed cards · Destination carousel</text>
+  <text x="370" y="419" text-anchor="middle" class="t-sub">Navigation menu</text>
+
+  <line x1="370" y1="436" x2="370" y2="454" class="ln" marker-end="url(#A)"/>
+  <ellipse cx="370" cy="464" rx="130" ry="20" class="oval-term"/>
+  <text x="370" y="468" text-anchor="middle" class="t-start">Page Ready for Visitor</text>
+</svg>
+</div>
+
+<!-- ═══════════════════════ 3. EVENT DISCOVERY ═══════════════════════ -->
+<div class="section-wrap">
+<div class="section-label">3 · Community Events Discovery Flow</div>
+<svg width="820" height="500" viewBox="0 0 820 500">
+
+  <ellipse cx="410" cy="28" rx="150" ry="24" class="oval-term"/>
+  <text x="410" y="32" text-anchor="middle" class="t-start">Visitor views Events Section</text>
+
+  <line x1="410" y1="52" x2="410" y2="78" class="ln" marker-end="url(#A)"/>
+
+  <!-- Load events -->
+  <rect x="255" y="78" width="310" height="48" rx="6" class="rect-proc"/>
+  <text x="410" y="98" text-anchor="middle" class="t-proc">GET api.php?action=list_events</text>
+  <text x="410" y="113" text-anchor="middle" class="t-sub">Fetch all events with predictions</text>
+
+  <line x1="410" y1="126" x2="410" y2="152" class="ln" marker-end="url(#A)"/>
+
+  <!-- ML Predictions -->
+  <rect x="255" y="152" width="310" height="70" rx="6" class="rect-ml"/>
+  <text x="410" y="172" text-anchor="middle" class="t-ml">ML Predictions Loading</text>
+  <text x="410" y="186" text-anchor="middle" class="t-sub">GET event_predictions_api.php</text>
+  <text x="410" y="200" text-anchor="middle" class="t-sub">ARIMA: visitors · waste_kg · overcrowding_prob</text>
+  <text x="410" y="214" text-anchor="middle" class="t-sub">✓ 92.75% Accuracy Badge</text>
+
+  <line x1="410" y1="222" x2="410" y2="248" class="ln" marker-end="url(#A)"/>
+
+  <!-- Render event cards -->
+  <rect x="255" y="248" width="310" height="56" rx="6" class="rect-act"/>
+  <text x="410" y="268" text-anchor="middle" class="t-act" style="font-weight:600">Render Events Feed</text>
+  <text x="410" y="283" text-anchor="middle" class="t-sub">Title · Date · Location · ML Predictions</text>
+  <text x="410" y="297" text-anchor="middle" class="t-sub">Risk badges: 🟢 Low  🟠 Medium  🔴 High</text>
+
+  <line x1="410" y1="304" x2="410" y2="328" class="ln" marker-end="url(#A)"/>
+
+  <!-- Decision: view type -->
+  <polygon points="410,328 540,358 410,388 280,358" class="diamond"/>
+  <text x="410" y="355" text-anchor="middle" class="t-dmd">View</text>
+  <text x="410" y="370" text-anchor="middle" class="t-dmd">Type?</text>
+
+  <!-- Map view -->
+  <line x1="280" y1="358" x2="140" y2="358" class="ln" marker-end="url(#A)"/>
+  <text x="207" y="351" text-anchor="middle" class="lbl-n" style="fill:#4a5568">MAP</text>
+  <rect x="40"  y="338" width="100" height="64" rx="5" class="rect-proc"/>
+  <text x="90"  y="356" text-anchor="middle" class="t-proc" style="font-size:10px">Map View</text>
+  <text x="90"  y="370" text-anchor="middle" class="t-sub">Leaflet map</text>
+  <text x="90"  y="383" text-anchor="middle" class="t-sub">Event markers</text>
+  <text x="90"  y="396" text-anchor="middle" class="t-sub">Popup details</text>
+
+  <!-- Chart view -->
+  <line x1="540" y1="358" x2="680" y2="358" class="ln" marker-end="url(#A)"/>
+  <text x="607" y="351" text-anchor="middle" class="lbl-y" style="fill:#4a5568">CHART</text>
+  <rect x="680" y="338" width="110" height="64" rx="5" class="rect-data"/>
+  <text x="735" y="356" text-anchor="middle" class="t-data" style="font-size:10px">Charts View</text>
+  <text x="735" y="370" text-anchor="middle" class="t-sub">Hourly chart</text>
+  <text x="735" y="383" text-anchor="middle" class="t-sub">Phase chart</text>
+  <text x="735" y="396" text-anchor="middle" class="t-sub">Waste chart</text>
+
+  <!-- Both lead to click -->
+  <line x1="90"  y1="402" x2="90"  y2="444" class="ln"/>
+  <line x1="735" y1="402" x2="735" y2="444" class="ln"/>
+  <line x1="90"  y1="444" x2="735" y2="444" class="ln"/>
+  <line x1="410" y1="444" x2="410" y2="462" class="ln" marker-end="url(#A)"/>
+
+  <ellipse cx="410" cy="476" rx="150" ry="20" class="oval-term"/>
+  <text x="410" y="480" text-anchor="middle" class="t-start">Click Event Card → Event Detail Modal</text>
+</svg>
+</div>
+
+<!-- ═══════════════════════ 4. EVENT DETAIL MODAL ═══════════════════════ -->
+<div class="section-wrap">
+<div class="section-label">4 · Event Detail Modal Flow</div>
+<svg width="780" height="560" viewBox="0 0 780 560">
+
+  <ellipse cx="390" cy="28" rx="140" ry="24" class="oval-term"/>
+  <text x="390" y="32" text-anchor="middle" class="t-start">Event Card Clicked</text>
+
+  <line x1="390" y1="52" x2="390" y2="78" class="ln" marker-end="url(#A)"/>
+
+  <rect x="240" y="78" width="300" height="56" rx="6" class="rect-proc"/>
+  <text x="390" y="98" text-anchor="middle" class="t-proc">Fetch Event Details</text>
+  <text x="390" y="113" text-anchor="middle" class="t-sub">GET api.php?action=list_events</text>
+  <text x="390" y="127" text-anchor="middle" class="t-sub">Find event by ID</text>
+
+  <line x1="390" y1="134" x2="390" y2="158" class="ln" marker-end="url(#A)"/>
+
+  <!-- Decision: has prediction? -->
+  <polygon points="390,158 520,188 390,218 260,188" class="diamond"/>
+  <text x="390" y="185" text-anchor="middle" class="t-dmd">Has</text>
+  <text x="390" y="200" text-anchor="middle" class="t-dmd">Prediction?</text>
+
+  <!-- NO: fetch prediction -->
+  <line x1="520" y1="188" x2="630" y2="188" class="ln-n" marker-end="url(#An)"/>
+  <text x="573" y="181" text-anchor="middle" class="lbl-n">NO</text>
+  <rect x="630" y="168" width="130" height="40" rx="5" class="rect-ml"/>
+  <text x="695" y="186" text-anchor="middle" class="t-ml" style="font-size:10px">GET get_event_</text>
+  <text x="695" y="200" text-anchor="middle" class="t-ml" style="font-size:10px">predictions&amp;event_id=X</text>
+
+  <!-- loop back -->
+  <line x1="695" y1="208" x2="695" y2="240" class="ln-n"/>
+  <line x1="695" y1="240" x2="520" y2="240" class="ln-n"/>
+  <line x1="520" y1="240" x2="520" y2="218" class="ln-n" marker-end="url(#An)"/>
+
+  <!-- YES: render modal -->
+  <line x1="390" y1="218" x2="390" y2="244" class="ln-y" marker-end="url(#Ay)"/>
+  <text x="405" y="235" class="lbl-y">YES</text>
+
+  <rect x="200" y="244" width="380" height="56" rx="6" class="rect-act"/>
+  <text x="390" y="264" text-anchor="middle" class="t-act" style="font-weight:600">Modal Rendered</text>
+  <text x="390" y="279" text-anchor="middle" class="t-sub">Title · Date/Time · Location · Capacity · Image</text>
+  <text x="390" y="293" text-anchor="middle" class="t-sub">Expected Visitors · Predicted Waste · Risk Level</text>
+
+  <line x1="390" y1="300" x2="390" y2="324" class="ln" marker-end="url(#A)"/>
+
+  <!-- Prediction Charts tabs -->
+  <rect x="200" y="324" width="380" height="54" rx="6" class="rect-ml"/>
+  <text x="390" y="344" text-anchor="middle" class="t-ml">Prediction Charts Tabs</text>
+  <text x="390" y="358" text-anchor="middle" class="t-sub">[Hourly]  [Phase]  [Waste]  [Routes]</text>
+  <text x="390" y="372" text-anchor="middle" class="t-sub">Chart.js rendered per selected tab</text>
+
+  <line x1="390" y1="378" x2="390" y2="402" class="ln" marker-end="url(#A)"/>
+
+  <!-- Route suggestions decision -->
+  <polygon points="390,402 510,430 390,458 270,430" class="diamond"/>
+  <text x="390" y="427" text-anchor="middle" class="t-dmd">Routes</text>
+  <text x="390" y="442" text-anchor="middle" class="t-dmd">Available?</text>
+
+  <!-- NO -->
+  <line x1="270" y1="430" x2="160" y2="430" class="ln-n" marker-end="url(#An)"/>
+  <text x="213" y="423" text-anchor="middle" class="lbl-n">NO</text>
+  <rect x="80" y="412" width="80" height="36" rx="5" class="rect-err"/>
+  <text x="120" y="432" text-anchor="middle" class="t-err" style="font-size:10px">No routes</text>
+  <text x="120" y="445" text-anchor="middle" class="t-sub">shown</text>
+
+  <!-- YES -->
+  <line x1="390" y1="458" x2="390" y2="480" class="ln-y" marker-end="url(#Ay)"/>
+  <text x="405" y="472" class="lbl-y">YES</text>
+
+  <!-- Route cards -->
+  <rect x="200" y="480" width="380" height="64" rx="6" class="rect-data"/>
+  <text x="390" y="500" text-anchor="middle" class="t-data">Route Suggestions</text>
+  <text x="390" y="515" text-anchor="middle" class="t-sub">GET get_event_parade_details&amp;event_id=X</text>
+  <text x="390" y="529" text-anchor="middle" class="t-sub">🎊 Official Route · 🌊 Alternate · 🛣️ Bypass</text>
+  <text x="390" y="543" text-anchor="middle" class="t-sub">Distance · Duration · [Open Maps]</text>
+</svg>
+</div>
+
+<!-- ═══════════════════════ 5. DESTINATION DISCOVERY ═══════════════════════ -->
+<div class="section-wrap">
+<div class="section-label">5 · Destination Discovery Flow</div>
+<svg width="720" height="380" viewBox="0 0 720 380">
+
+  <ellipse cx="360" cy="28" rx="150" ry="24" class="oval-term"/>
+  <text x="360" y="32" text-anchor="middle" class="t-start">Visitor views Destinations Section</text>
+
+  <line x1="360" y1="52" x2="360" y2="78" class="ln" marker-end="url(#A)"/>
+
+  <rect x="210" y="78" width="300" height="48" rx="6" class="rect-data"/>
+  <text x="360" y="98" text-anchor="middle" class="t-data">GET api.php?action=list_destinations</text>
+  <text x="360" y="113" text-anchor="middle" class="t-sub">Fetch destinations array with images</text>
+
+  <line x1="360" y1="126" x2="360" y2="152" class="ln" marker-end="url(#A)"/>
+
+  <rect x="210" y="152" width="300" height="56" rx="6" class="rect-act"/>
+  <text x="360" y="172" text-anchor="middle" class="t-act" style="font-weight:600">Arc Gallery (3D Effect)</text>
+  <text x="360" y="187" text-anchor="middle" class="t-sub">Auto-rotating carousel · Pauses on hover</text>
+  <text x="360" y="201" text-anchor="middle" class="t-sub">[Item 1] ← [Item 2 (focus)] → [Item 3]</text>
+
+  <line x1="360" y1="208" x2="360" y2="234" class="ln" marker-end="url(#A)"/>
+
+  <!-- Decision: click? -->
+  <polygon points="360,234 480,262 360,290 240,262" class="diamond"/>
+  <text x="360" y="259" text-anchor="middle" class="t-dmd">Gallery Item</text>
+  <text x="360" y="274" text-anchor="middle" class="t-dmd">Clicked?</text>
+
+  <!-- NO: just browse -->
+  <line x1="240" y1="262" x2="120" y2="262" class="ln-n" marker-end="url(#An)"/>
+  <text x="178" y="255" text-anchor="middle" class="lbl-n">NO</text>
+  <rect x="30" y="244" width="90" height="40" rx="5" class="rect-act"/>
+  <text x="75" y="262" text-anchor="middle" class="t-act" style="font-size:10px">Continue</text>
+  <text x="75" y="276" text-anchor="middle" class="t-sub">Browsing</text>
+
+  <!-- YES: open modal -->
+  <line x1="360" y1="290" x2="360" y2="314" class="ln-y" marker-end="url(#Ay)"/>
+  <text x="375" y="306" class="lbl-y">YES</text>
+
+  <rect x="210" y="314" width="300" height="56" rx="6" class="rect-data"/>
+  <text x="360" y="334" text-anchor="middle" class="t-data">Open cardModal</text>
+  <text x="360" y="349" text-anchor="middle" class="t-sub">Full destination image</text>
+  <text x="360" y="363" text-anchor="middle" class="t-sub">Name · Description · Highlights</text>
+</svg>
+</div>
+
+<!-- ═══════════════════════ 6. ITINERARY PLANNING ═══════════════════════ -->
+<div class="section-wrap">
+<div class="section-label">6 · Itinerary Planning Flow</div>
+<svg width="820" height="640" viewBox="0 0 820 640">
+
+  <ellipse cx="410" cy="28" rx="150" ry="24" class="oval-term"/>
+  <text x="410" y="32" text-anchor="middle" class="t-start">Visitor opens Itinerary Section</text>
+
+  <line x1="410" y1="52" x2="410" y2="78" class="ln" marker-end="url(#A)"/>
+
+  <!-- Step 1: Select destinations -->
+  <rect x="250" y="78" width="320" height="48" rx="6" class="rect-proc"/>
+  <text x="410" y="98" text-anchor="middle" class="t-proc">Step 1: Select Destinations</text>
+  <text x="410" y="113" text-anchor="middle" class="t-sub">Lignon Hill · Embarcadero · Albay Park · ...</text>
+
+  <line x1="410" y1="126" x2="410" y2="152" class="ln" marker-end="url(#A)"/>
+
+  <!-- Destination modal -->
+  <rect x="250" y="152" width="320" height="56" rx="6" class="rect-act"/>
+  <text x="410" y="172" text-anchor="middle" class="t-act" style="font-weight:600">Destination Modal Opens</text>
+  <text x="410" y="187" text-anchor="middle" class="t-sub">Hero image · Name · Description · Highlights</text>
+  <text x="410" y="201" text-anchor="middle" class="t-sub">Select number of days: [1][2][3][4][5+]</text>
+
+  <line x1="410" y1="208" x2="410" y2="234" class="ln" marker-end="url(#A)"/>
+
+  <!-- CREATE ITINERARY button -->
+  <rect x="290" y="234" width="240" height="36" rx="6" class="rect-succ"/>
+  <text x="410" y="256" text-anchor="middle" class="t-succ">Click [CREATE ITINERARY]</text>
+
+  <line x1="410" y1="270" x2="410" y2="294" class="ln" marker-end="url(#A)"/>
+
+  <!-- Trip details form -->
+  <rect x="250" y="294" width="320" height="70" rx="6" class="rect-proc"/>
+  <text x="410" y="314" text-anchor="middle" class="t-proc">Fill Trip Details Form</text>
+  <text x="410" y="329" text-anchor="middle" class="t-sub">📍 Trip Name (required)</text>
+  <text x="410" y="343" text-anchor="middle" class="t-sub">💰 Budget: Budget / Moderate / Premium / Luxury</text>
+  <text x="410" y="357" text-anchor="middle" class="t-sub">🎯 Style: Adventure / Relaxation / Culture / Food / Mixed</text>
+
+  <line x1="410" y1="364" x2="410" y2="390" class="ln" marker-end="url(#A)"/>
+
+  <!-- Validate -->
+  <polygon points="410,390 530,418 410,446 290,418" class="diamond"/>
+  <text x="410" y="415" text-anchor="middle" class="t-dmd">Form</text>
+  <text x="410" y="430" text-anchor="middle" class="t-dmd">Valid?</text>
+
+  <!-- NO -->
+  <line x1="530" y1="418" x2="640" y2="418" class="ln-n" marker-end="url(#An)"/>
+  <text x="583" y="411" text-anchor="middle" class="lbl-n">NO</text>
+  <rect x="640" y="400" width="140" height="36" rx="5" class="rect-err"/>
+  <text x="710" y="420" text-anchor="middle" class="t-err">Show validation</text>
+  <text x="710" y="434" text-anchor="middle" class="t-sub">error messages</text>
+
+  <!-- YES -->
+  <line x1="410" y1="446" x2="410" y2="470" class="ln-y" marker-end="url(#Ay)"/>
+  <text x="425" y="462" class="lbl-y">YES</text>
+
+  <!-- Generate -->
+  <rect x="250" y="470" width="320" height="56" rx="6" class="rect-data"/>
+  <text x="410" y="490" text-anchor="middle" class="t-data">Generate Personalized Itinerary</text>
+  <text x="410" y="505" text-anchor="middle" class="t-sub">Hotels · Day-by-day plan · Transport options</text>
+  <text x="410" y="519" text-anchor="middle" class="t-sub">Weather forecast · Fare estimates</text>
+
+  <line x1="410" y1="526" x2="410" y2="550" class="ln" marker-end="url(#A)"/>
+
+  <!-- Results split -->
+  <line x1="410" y1="550" x2="190" y2="550" class="ln"/>
+  <line x1="410" y1="550" x2="630" y2="550" class="ln"/>
+
+  <line x1="190" y1="550" x2="190" y2="568" class="ln" marker-end="url(#A)"/>
+  <rect x="80"  y="568" width="220" height="36" rx="5" class="rect-pdf"/>
+  <text x="190" y="583" text-anchor="middle" class="t-pdf">🖨️ Print Summary</text>
+  <text x="190" y="597" text-anchor="middle" class="t-sub">html2pdf.js · Fallback HTML</text>
+
+  <line x1="630" y1="550" x2="630" y2="568" class="ln" marker-end="url(#A)"/>
+  <rect x="520" y="568" width="220" height="36" rx="5" class="rect-succ"/>
+  <text x="630" y="583" text-anchor="middle" class="t-succ">📥 Save as PDF</text>
+  <text x="630" y="597" text-anchor="middle" class="t-sub">POST add_itinerary · log_event</text>
+
+  <!-- Both merge to done -->
+  <line x1="190" y1="604" x2="190" y2="628" class="ln"/>
+  <line x1="630" y1="604" x2="630" y2="628" class="ln"/>
+  <line x1="190" y1="628" x2="630" y2="628" class="ln"/>
+  <line x1="410" y1="628" x2="410" y2="638" class="ln" marker-end="url(#A)"/>
+</svg>
+</div>
+
+<!-- ═══════════════════════ 7. GEOLOCATION FLOW ═══════════════════════ -->
+<div class="section-wrap">
+<div class="section-label">7 · Geolocation Detection Flow</div>
+<svg width="700" height="400" viewBox="0 0 700 400">
+
+  <ellipse cx="350" cy="28" rx="150" ry="24" class="oval-term"/>
+  <text x="350" y="32" text-anchor="middle" class="t-start">Page Load — initializeGeolocation()</text>
+
+  <line x1="350" y1="52" x2="350" y2="78" class="ln" marker-end="url(#A)"/>
+
+  <!-- Check support -->
+  <polygon points="350,78 490,108 350,138 210,108" class="diamond"/>
+  <text x="350" y="105" text-anchor="middle" class="t-dmd">navigator.</text>
+  <text x="350" y="120" text-anchor="middle" class="t-dmd">geolocation?</text>
+
+  <!-- Supported -->
+  <line x1="350" y1="138" x2="350" y2="162" class="ln-y" marker-end="url(#Ay)"/>
+  <text x="365" y="153" class="lbl-y">YES</text>
+
+  <rect x="210" y="162" width="280" height="56" rx="6" class="rect-geo"/>
+  <text x="350" y="182" text-anchor="middle" class="t-geo">getCurrentPosition()</text>
+  <text x="350" y="197" text-anchor="middle" class="t-sub">enableHighAccuracy: false</text>
+  <text x="350" y="211" text-anchor="middle" class="t-sub">timeout: 30s  ·  maximumAge: 5min</text>
+
+  <line x1="350" y1="218" x2="350" y2="244" class="ln" marker-end="url(#A)"/>
+
+  <!-- Decision: success? -->
+  <polygon points="350,244 470,274 350,304 230,274" class="diamond"/>
+  <text x="350" y="271" text-anchor="middle" class="t-dmd">Location</text>
+  <text x="350" y="286" text-anchor="middle" class="t-dmd">Success?</text>
+
+  <!-- Success -->
+  <line x1="230" y1="274" x2="120" y2="274" class="ln-y" marker-end="url(#Ay)"/>
+  <text x="173" y="267" text-anchor="middle" class="lbl-y">YES</text>
+  <rect x="30"  y="254" width="90" height="56" rx="5" class="rect-succ"/>
+  <text x="75"  y="272" text-anchor="middle" class="t-succ" style="font-size:10px">Save to</text>
+  <text x="75"  y="285" text-anchor="middle" class="t-succ" style="font-size:10px">userLocation</text>
+  <text x="75"  y="298" text-anchor="middle" class="t-sub">lat · lon</text>
+  <text x="75"  y="311" text-anchor="middle" class="t-sub">accuracy</text>
+
+  <!-- Error -->
+  <line x1="470" y1="274" x2="580" y2="274" class="ln-n" marker-end="url(#An)"/>
+  <text x="523" y="267" text-anchor="middle" class="lbl-n">NO</text>
+  <rect x="580" y="250" width="110" height="64" rx="5" class="rect-err"/>
+  <text x="635" y="268" text-anchor="middle" class="t-err" style="font-size:10px">Error Types:</text>
+  <text x="635" y="282" text-anchor="middle" class="t-sub">PERMISSION_DENIED</text>
+  <text x="635" y="295" text-anchor="middle" class="t-sub">POSITION_UNAVAIL</text>
+  <text x="635" y="308" text-anchor="middle" class="t-sub">TIMEOUT</text>
+
+  <!-- Not supported branch -->
+  <line x1="490" y1="108" x2="640" y2="108" class="ln-n" marker-end="url(#An)"/>
+  <text x="563" y="101" text-anchor="middle" class="lbl-n">NO</text>
+  <rect x="580" y="88" width="110" height="40" rx="5" class="rect-err"/>
+  <text x="635" y="106" text-anchor="middle" class="t-err" style="font-size:10px">Not supported</text>
+  <text x="635" y="120" text-anchor="middle" class="t-sub">Use default</text>
+
+  <!-- Both error paths and not supported → default -->
+  <line x1="635" y1="128" x2="635" y2="162" class="ln"/>
+  <line x1="635" y1="314" x2="635" y2="340" class="ln"/>
+  <line x1="635" y1="162" x2="635" y2="340" class="ln"/>
+  <line x1="635" y1="340" x2="500" y2="340" class="ln"/>
+  <line x1="500" y1="340" x2="500" y2="356" class="ln" marker-end="url(#A)"/>
+
+  <rect x="380" y="356" width="240" height="40" rx="6" class="rect-geo"/>
+  <text x="500" y="374" text-anchor="middle" class="t-geo">Default: Legazpi City Centre</text>
+  <text x="500" y="388" text-anchor="middle" class="t-sub">13.1126°N, 123.7535°E</text>
+
+  <!-- Success also merges -->
+  <line x1="75" y1="310" x2="75" y2="380" class="ln"/>
+  <line x1="75" y1="380" x2="350" y2="380" class="ln" marker-end="url(#A)"/>
+
+  <!-- Fare calculation -->
+  <rect x="170" y="356" width="210" height="40" rx="6" class="rect-succ"/>
+  <text x="275" y="374" text-anchor="middle" class="t-succ">Calculate Fares</text>
+  <text x="275" y="388" text-anchor="middle" class="t-sub">Tricycle · Taxi · Jeepney · Ride-hailing</text>
+</svg>
+</div>
+
+<!-- ═══════════════════════ 8. FEEDBACK FLOW ═══════════════════════ -->
+<div class="section-wrap">
+<div class="section-label">8 · Feedback Submission Flow</div>
+<svg width="680" height="480" viewBox="0 0 680 480">
+
+  <ellipse cx="340" cy="28" rx="150" ry="24" class="oval-term"/>
+  <text x="340" y="32" text-anchor="middle" class="t-start">Visitor opens Feedback Section</text>
+
+  <line x1="340" y1="52" x2="340" y2="78" class="ln" marker-end="url(#A)"/>
+
+  <rect x="180" y="78" width="320" height="70" rx="6" class="rect-act"/>
+  <text x="340" y="98" text-anchor="middle" class="t-act" style="font-weight:600">Feedback Form</text>
+  <text x="340" y="113" text-anchor="middle" class="t-sub">Name (required) · Email (required)</text>
+  <text x="340" y="127" text-anchor="middle" class="t-sub">Type: 💡 Suggestion  🐛 Bug  ⭐ Praise  📌 Other</text>
+  <text x="340" y="141" text-anchor="middle" class="t-sub">Message (required textarea)</text>
+
+  <line x1="340" y1="148" x2="340" y2="174" class="ln" marker-end="url(#A)"/>
+
+  <!-- Validate -->
+  <polygon points="340,174 470,204 340,234 210,204" class="diamond"/>
+  <text x="340" y="201" text-anchor="middle" class="t-dmd">All Fields</text>
+  <text x="340" y="216" text-anchor="middle" class="t-dmd">Valid?</text>
+
+  <!-- NO -->
+  <line x1="470" y1="204" x2="580" y2="204" class="ln-n" marker-end="url(#An)"/>
+  <text x="523" y="197" text-anchor="middle" class="lbl-n">NO</text>
+  <rect x="580" y="184" width="80" height="40" rx="5" class="rect-err"/>
+  <text x="620" y="202" text-anchor="middle" class="t-err" style="font-size:10px">Show</text>
+  <text x="620" y="215" text-anchor="middle" class="t-sub">errors</text>
+
+  <!-- YES -->
+  <line x1="340" y1="234" x2="340" y2="258" class="ln-y" marker-end="url(#Ay)"/>
+  <text x="355" y="249" class="lbl-y">YES</text>
+
+  <!-- POST -->
+  <rect x="180" y="258" width="320" height="56" rx="6" class="rect-data"/>
+  <text x="340" y="278" text-anchor="middle" class="t-data">POST backend/submit_feedback.php</text>
+  <text x="340" y="293" text-anchor="middle" class="t-sub">{ name, email, feedback_type, message,</text>
+  <text x="340" y="307" text-anchor="middle" class="t-sub">timestamp: ISO date, page: 'index' }</text>
+
+  <line x1="340" y1="314" x2="340" y2="338" class="ln" marker-end="url(#A)"/>
+
+  <!-- Decision: success? -->
+  <polygon points="340,338 460,366 340,394 220,366" class="diamond"/>
+  <text x="340" y="363" text-anchor="middle" class="t-dmd">Server</text>
+  <text x="340" y="378" text-anchor="middle" class="t-dmd">Success?</text>
+
+  <!-- YES -->
+  <line x1="220" y1="366" x2="100" y2="366" class="ln-y" marker-end="url(#Ay)"/>
+  <text x="158" y="359" text-anchor="middle" class="lbl-y">YES</text>
+  <rect x="20"  y="346" width="80" height="56" rx="5" class="rect-succ"/>
+  <text x="60"  y="364" text-anchor="middle" class="t-succ" style="font-size:10px">"Thank</text>
+  <text x="60"  y="378" text-anchor="middle" class="t-succ" style="font-size:10px">you!"</text>
+  <text x="60"  y="392" text-anchor="middle" class="t-sub">Reset form</text>
+
+  <!-- NO -->
+  <line x1="460" y1="366" x2="560" y2="366" class="ln-n" marker-end="url(#An)"/>
+  <text x="508" y="359" text-anchor="middle" class="lbl-n">NO</text>
+  <rect x="560" y="346" width="100" height="56" rx="5" class="rect-err"/>
+  <text x="610" y="364" text-anchor="middle" class="t-err" style="font-size:10px">Show error</text>
+  <text x="610" y="378" text-anchor="middle" class="t-err" style="font-size:10px">message</text>
+  <text x="610" y="392" text-anchor="middle" class="t-sub">Keep data</text>
+
+  <line x1="60" y1="402" x2="60" y2="450" class="ln"/>
+  <line x1="60" y1="450" x2="340" y2="450" class="ln" marker-end="url(#A)"/>
+  <ellipse cx="340" cy="462" rx="140" ry="20" class="oval-term"/>
+  <text x="340" y="466" text-anchor="middle" class="t-start">Feedback Saved to Admin DB</text>
+</svg>
+</div>
+
+<!-- ═══════════════════════ 9. PDF GENERATION ═══════════════════════ -->
+<div class="section-wrap">
+<div class="section-label">9 · PDF / Print Generation Flow</div>
+<svg width="680" height="400" viewBox="0 0 680 400">
+
+  <ellipse cx="340" cy="28" rx="160" ry="24" class="oval-term"/>
+  <text x="340" y="32" text-anchor="middle" class="t-start">User clicks "Save as PDF" or "Print"</text>
+
+  <line x1="340" y1="52" x2="340" y2="78" class="ln" marker-end="url(#A)"/>
+
+  <rect x="180" y="78" width="320" height="64" rx="6" class="rect-pdf"/>
+  <text x="340" y="98" text-anchor="middle" class="t-pdf">Generate HTML Content</text>
+  <text x="340" y="113" text-anchor="middle" class="t-sub">Trip title · Destination · Duration · Budget</text>
+  <text x="340" y="127" text-anchor="middle" class="t-sub">Accommodation · Generated timestamp</text>
+  <text x="340" y="141" text-anchor="middle" class="t-sub">Legazpi Explorer branding + CSS styles</text>
+
+  <line x1="340" y1="142" x2="340" y2="168" class="ln" marker-end="url(#A)"/>
+
+  <rect x="180" y="168" width="320" height="48" rx="6" class="rect-act"/>
+  <text x="340" y="188" text-anchor="middle" class="t-act" style="font-weight:600">Attempt html2pdf.js Generation</text>
+  <text x="340" y="203" text-anchor="middle" class="t-sub">margin · filename · image · html2canvas · jsPDF</text>
+
+  <line x1="340" y1="216" x2="340" y2="242" class="ln" marker-end="url(#A)"/>
+
+  <!-- Decision: PDF success? -->
+  <polygon points="340,242 460,270 340,298 220,270" class="diamond"/>
+  <text x="340" y="267" text-anchor="middle" class="t-dmd">PDF</text>
+  <text x="340" y="282" text-anchor="middle" class="t-dmd">Success?</text>
+
+  <!-- YES: PDF download -->
+  <line x1="220" y1="270" x2="100" y2="270" class="ln-y" marker-end="url(#Ay)"/>
+  <text x="158" y="263" text-anchor="middle" class="lbl-y">YES</text>
+  <rect x="20" y="250" width="80" height="56" rx="5" class="rect-succ"/>
+  <text x="60" y="268" text-anchor="middle" class="t-succ" style="font-size:10px">Download</text>
+  <text x="60" y="282" text-anchor="middle" class="t-succ" style="font-size:10px">.pdf file</text>
+  <text x="60" y="296" text-anchor="middle" class="t-sub">tripname_</text>
+
+  <!-- NO: HTML fallback -->
+  <line x1="460" y1="270" x2="570" y2="270" class="ln-n" marker-end="url(#An)"/>
+  <text x="513" y="263" text-anchor="middle" class="lbl-n">NO</text>
+  <rect x="570" y="248" width="100" height="56" rx="5" class="rect-alrt"/>
+  <text x="620" y="266" text-anchor="middle" class="t-alrt" style="font-size:10px">HTML Fallback</text>
+  <text x="620" y="280" text-anchor="middle" class="t-sub">Create Blob</text>
+  <text x="620" y="293" text-anchor="middle" class="t-sub">Download .html</text>
+
+  <!-- Merge -->
+  <line x1="60"  y1="306" x2="60"  y2="344" class="ln"/>
+  <line x1="620" y1="304" x2="620" y2="344" class="ln"/>
+  <line x1="60"  y1="344" x2="620" y2="344" class="ln"/>
+  <line x1="340" y1="344" x2="340" y2="362" class="ln" marker-end="url(#A)"/>
+
+  <rect x="180" y="362" width="320" height="40" rx="6" class="rect-data"/>
+  <text x="340" y="380" text-anchor="middle" class="t-data">File Download Triggered</text>
+  <text x="340" y="395" text-anchor="middle" class="t-sub">{TripTitle}_summary_{YYYY-MM-DD}.{pdf/html}</text>
+</svg>
+</div>
+
+<!-- ═══════════════════════ 10. ANALYTICS TRACKING ═══════════════════════ -->
+<div class="section-wrap">
+<div class="section-label">10 · Analytics Tracking Flow</div>
+<svg width="820" height="380" viewBox="0 0 820 380">
+
+  <ellipse cx="410" cy="28" rx="160" ry="24" class="oval-term"/>
+  <text x="410" y="32" text-anchor="middle" class="t-start">Visitor performs a trackable action</text>
+
+  <line x1="410" y1="52" x2="410" y2="78" class="ln" marker-end="url(#A)"/>
+
+  <rect x="255" y="78" width="310" height="48" rx="6" class="rect-act"/>
+  <text x="410" y="98" text-anchor="middle" class="t-act" style="font-weight:600">sendGuestEvent(actionName, payload)</text>
+  <text x="410" y="113" text-anchor="middle" class="t-sub">POST api.php?action=log_event</text>
+
+  <line x1="410" y1="126" x2="410" y2="150" class="ln"/>
+  <line x1="100" y1="150" x2="720" y2="150" class="ln"/>
+
+  <!-- 5 event types -->
+  <line x1="100" y1="150" x2="100" y2="170" class="ln" marker-end="url(#A)"/>
+  <rect x="20"  y="170" width="160" height="52" rx="5" class="rect-proc"/>
+  <text x="100" y="189" text-anchor="middle" class="t-proc" style="font-size:10px">destination_viewed</text>
+  <text x="100" y="203" text-anchor="middle" class="t-sub">{ destination:</text>
+  <text x="100" y="216" text-anchor="middle" class="t-sub">"Lignon Hill" }</text>
+
+  <line x1="245" y1="150" x2="245" y2="170" class="ln" marker-end="url(#A)"/>
+  <rect x="165" y="170" width="160" height="52" rx="5" class="rect-data"/>
+  <text x="245" y="189" text-anchor="middle" class="t-data" style="font-size:10px">itinerary_generated</text>
+  <text x="245" y="203" text-anchor="middle" class="t-sub">{ tripTitle,</text>
+  <text x="245" y="216" text-anchor="middle" class="t-sub">destination, days }</text>
+
+  <line x1="410" y1="150" x2="410" y2="170" class="ln" marker-end="url(#A)"/>
+  <rect x="330" y="170" width="160" height="52" rx="5" class="rect-succ"/>
+  <text x="410" y="189" text-anchor="middle" class="t-succ" style="font-size:10px">accommodation_</text>
+  <text x="410" y="203" text-anchor="middle" class="t-succ" style="font-size:10px">selected</text>
+  <text x="410" y="216" text-anchor="middle" class="t-sub">{ hotel, location }</text>
+
+  <line x1="575" y1="150" x2="575" y2="170" class="ln" marker-end="url(#A)"/>
+  <rect x="495" y="170" width="160" height="52" rx="5" class="rect-pdf"/>
+  <text x="575" y="189" text-anchor="middle" class="t-pdf" style="font-size:10px">itinerary_summary_</text>
+  <text x="575" y="203" text-anchor="middle" class="t-pdf" style="font-size:10px">saved / pdf_saved</text>
+  <text x="575" y="216" text-anchor="middle" class="t-sub">{ tripTitle, dest... }</text>
+
+  <line x1="720" y1="150" x2="720" y2="170" class="ln" marker-end="url(#A)"/>
+  <rect x="660" y="170" width="140" height="52" rx="5" class="rect-alrt"/>
+  <text x="730" y="189" text-anchor="middle" class="t-alrt" style="font-size:10px">feedback_submitted</text>
+  <text x="730" y="203" text-anchor="middle" class="t-sub">{ type, message,</text>
+  <text x="730" y="216" text-anchor="middle" class="t-sub">timestamp }</text>
+
+  <!-- Merge -->
+  <line x1="100" y1="222" x2="100" y2="270" class="ln"/>
+  <line x1="245" y1="222" x2="245" y2="270" class="ln"/>
+  <line x1="410" y1="222" x2="410" y2="270" class="ln"/>
+  <line x1="575" y1="222" x2="575" y2="270" class="ln"/>
+  <line x1="720" y1="222" x2="720" y2="270" class="ln"/>
+  <line x1="100" y1="270" x2="720" y2="270" class="ln"/>
+  <line x1="410" y1="270" x2="410" y2="290" class="ln" marker-end="url(#A)"/>
+
+  <rect x="225" y="290" width="370" height="56" rx="6" class="rect-data"/>
+  <text x="410" y="310" text-anchor="middle" class="t-data">Admin Dashboard Visibility</text>
+  <text x="410" y="325" text-anchor="middle" class="t-sub">list_itineraries · list_feedback · analytics_summary</text>
+  <text x="410" y="340" text-anchor="middle" class="t-sub">most_viewed_places · most_clicked_shops</text>
+
+  <line x1="410" y1="346" x2="410" y2="364" class="ln" marker-end="url(#A)"/>
+  <ellipse cx="410" cy="372" rx="160" ry="18" class="oval-term"/>
+  <text x="410" y="376" text-anchor="middle" class="t-start">Visible in Admin Dashboard</text>
+</svg>
+</div>
+
+<!-- ═══════════════════════ 11. ERROR HANDLING ═══════════════════════ -->
+<div class="section-wrap">
+<div class="section-label">11 · Error Handling Flow</div>
+<svg width="780" height="360" viewBox="0 0 780 360">
+
+  <ellipse cx="390" cy="28" rx="120" ry="24" class="oval-term"/>
+  <text x="390" y="32" text-anchor="middle" class="t-start">API Call Fails</text>
+
+  <line x1="390" y1="52" x2="390" y2="78" class="ln" marker-end="url(#A)"/>
+
+  <rect x="245" y="78" width="290" height="48" rx="6" class="rect-proc"/>
+  <text x="390" y="98" text-anchor="middle" class="t-proc">try { await fetch(apiUrl) }</text>
+  <text x="390" y="113" text-anchor="middle" class="t-sub">catch(error) → evaluate type</text>
+
+  <line x1="390" y1="126" x2="390" y2="152" class="ln" marker-end="url(#A)"/>
+
+  <polygon points="390,152 520,182 390,212 260,182" class="diamond"/>
+  <text x="390" y="179" text-anchor="middle" class="t-dmd">Error</text>
+  <text x="390" y="194" text-anchor="middle" class="t-dmd">Type?</text>
+
+  <!-- 4 branches -->
+  <line x1="260" y1="182" x2="80"  y2="182" class="ln"/>
+  <line x1="80"  y1="182" x2="80"  y2="212" class="ln" marker-end="url(#A)"/>
+  <rect x="20"  y="212" width="120" height="56" rx="5" class="rect-alrt"/>
+  <text x="80"  y="230" text-anchor="middle" class="t-alrt" style="font-size:10px">Network Error</text>
+  <text x="80"  y="244" text-anchor="middle" class="t-sub">console.warn</text>
+  <text x="80"  y="257" text-anchor="middle" class="t-sub">Show fallback UI</text>
+  <text x="80"  y="270" text-anchor="middle" class="t-sub">Continue loading</text>
+
+  <line x1="310" y1="212" x2="310" y2="212" class="ln"/>
+  <line x1="310" y1="182" x2="250" y2="182" class="ln"/>
+  <line x1="250" y1="182" x2="250" y2="212" class="ln" marker-end="url(#A)"/>
+  <rect x="195" y="212" width="110" height="56" rx="5" class="rect-err"/>
+  <text x="250" y="230" text-anchor="middle" class="t-err">404</text>
+  <text x="250" y="244" text-anchor="middle" class="t-sub">Not Found</text>
+  <text x="250" y="257" text-anchor="middle" class="t-sub">Log error</text>
+  <text x="250" y="270" text-anchor="middle" class="t-sub">"Not found"</text>
+
+  <line x1="390" y1="212" x2="390" y2="212" class="ln" marker-end="url(#A)"/>
+  <rect x="335" y="212" width="110" height="56" rx="5" class="rect-err"/>
+  <text x="390" y="230" text-anchor="middle" class="t-err">500</text>
+  <text x="390" y="244" text-anchor="middle" class="t-sub">Server Error</text>
+  <text x="390" y="257" text-anchor="middle" class="t-sub">Log error</text>
+  <text x="390" y="270" text-anchor="middle" class="t-sub">"Try again"</text>
+
+  <line x1="520" y1="182" x2="590" y2="182" class="ln"/>
+  <line x1="590" y1="182" x2="590" y2="212" class="ln" marker-end="url(#A)"/>
+  <rect x="535" y="212" width="110" height="56" rx="5" class="rect-err"/>
+  <text x="590" y="230" text-anchor="middle" class="t-err">JSON Error</text>
+  <text x="590" y="244" text-anchor="middle" class="t-sub">Parse failed</text>
+  <text x="590" y="257" text-anchor="middle" class="t-sub">Log parse err</text>
+  <text x="590" y="270" text-anchor="middle" class="t-sub">"Failed load"</text>
+
+  <!-- Merge -->
+  <line x1="80"  y1="268" x2="80"  y2="306" class="ln"/>
+  <line x1="250" y1="268" x2="250" y2="306" class="ln"/>
+  <line x1="390" y1="268" x2="390" y2="306" class="ln"/>
+  <line x1="590" y1="268" x2="590" y2="306" class="ln"/>
+  <line x1="80"  y1="306" x2="590" y2="306" class="ln"/>
+  <line x1="390" y1="306" x2="390" y2="326" class="ln" marker-end="url(#A)"/>
+
+  <rect x="240" y="326" width="300" height="36" rx="6" class="rect-act"/>
+  <text x="390" y="344" text-anchor="middle" class="t-act" style="font-weight:600">Show Fallback / Placeholder UI</text>
+  <text x="390" y="358" text-anchor="middle" class="t-sub">Continue with other data that loaded successfully</text>
+</svg>
+</div>
+
+<!-- ═══════════════════════ 12. COMPLETE VISITOR JOURNEY ═══════════════════════ -->
+<div class="section-wrap">
+<div class="section-label">12 · Complete Visitor Journey</div>
+<svg width="720" height="540" viewBox="0 0 720 540">
+
+  <ellipse cx="360" cy="28" rx="100" ry="24" class="oval-term"/>
+  <text x="360" y="32" text-anchor="middle" class="t-start">Visitor Arrives</text>
+
+  <line x1="360" y1="52" x2="360" y2="78" class="ln" marker-end="url(#A)"/>
+
+  <!-- HOME -->
+  <rect x="240" y="78" width="240" height="44" rx="6" class="rect-proc"/>
+  <text x="360" y="98" text-anchor="middle" class="t-proc">🏠 HOME PAGE</text>
+  <text x="360" y="112" text-anchor="middle" class="t-sub">index.html loads + geolocation</text>
+
+  <line x1="360" y1="122" x2="360" y2="148" class="ln" marker-end="url(#A)"/>
+
+  <!-- EXPLORE stage -->
+  <rect x="180" y="148" width="360" height="80" rx="6" class="rect-data"/>
+  <text x="360" y="168" text-anchor="middle" class="t-data">🔍 EXPLORE</text>
+  <text x="360" y="183" text-anchor="middle" class="t-sub">Browse events on map and feed</text>
+  <text x="360" y="197" text-anchor="middle" class="t-sub">Check ML predictions (crowd · waste · risk)</text>
+  <text x="360" y="211" text-anchor="middle" class="t-sub">View destination gallery · Route options</text>
+
+  <line x1="360" y1="228" x2="360" y2="254" class="ln" marker-end="url(#A)"/>
+
+  <!-- PLAN stage -->
+  <rect x="180" y="254" width="360" height="96" rx="6" class="rect-ml"/>
+  <text x="360" y="274" text-anchor="middle" class="t-ml">📋 PLAN</text>
+  <text x="360" y="289" text-anchor="middle" class="t-sub">Select destination + number of days</text>
+  <text x="360" y="303" text-anchor="middle" class="t-sub">Fill trip details (budget, travel style)</text>
+  <text x="360" y="317" text-anchor="middle" class="t-sub">Generate personalized itinerary</text>
+  <text x="360" y="331" text-anchor="middle" class="t-sub">Select accommodation · Weather forecast</text>
+
+  <line x1="360" y1="350" x2="360" y2="376" class="ln" marker-end="url(#A)"/>
+
+  <!-- CONVERT stage -->
+  <rect x="180" y="376" width="360" height="80" rx="6" class="rect-succ"/>
+  <text x="360" y="396" text-anchor="middle" class="t-succ">✅ CONVERT</text>
+  <text x="360" y="411" text-anchor="middle" class="t-sub">Save as PDF · Print summary</text>
+  <text x="360" y="425" text-anchor="middle" class="t-sub">Submit feedback · Share via export</text>
+  <text x="360" y="439" text-anchor="middle" class="t-sub">Analytics logged for admin dashboard</text>
+
+  <line x1="360" y1="456" x2="360" y2="480" class="ln" marker-end="url(#A)"/>
+
+  <!-- Metrics box -->
+  <rect x="110" y="480" width="500" height="44" rx="6" class="rect-act"/>
+  <text x="360" y="499" text-anchor="middle" class="t-act" style="font-weight:600">Key Metrics Tracked</text>
+  <text x="360" y="514" text-anchor="middle" class="t-sub">Dest views · Itinerary gen · Hotel selects · PDF/Print · Feedback · Event clicks</text>
+
+  <line x1="360" y1="524" x2="360" y2="534" class="ln" marker-end="url(#A)"/>
+  <ellipse cx="360" cy="538" rx="90" ry="16" class="oval-term"/>
+  <text x="360" y="542" text-anchor="middle" class="t-start" style="font-size:10px">Trip Goals Achieved</text>
+</svg>
+</div>
+
+<!-- LEGEND -->
+<div style="max-width:860px;margin:20px auto 0;padding:20px 24px;background:#fff;border-radius:10px;border:1px solid #e2e8f0;">
+  <div style="font-size:12px;font-weight:700;color:#4a5568;margin-bottom:14px;text-transform:uppercase;letter-spacing:1px;">Legend</div>
+  <div style="display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;font-size:12px;color:#4a5568;">
+    <div style="display:flex;align-items:center;gap:6px;"><svg width="36" height="18"><ellipse cx="18" cy="9" rx="16" ry="8" fill="#2d3748"/></svg><span>Start / End</span></div>
+    <div style="display:flex;align-items:center;gap:6px;"><svg width="44" height="20"><rect x="1" y="1" width="42" height="18" rx="4" fill="#ebf8ff" stroke="#4299e1" stroke-width="1.5"/></svg><span>Process / Step</span></div>
+    <div style="display:flex;align-items:center;gap:6px;"><svg width="44" height="22"><polygon points="22,1 43,11 22,21 1,11" fill="#fefcbf" stroke="#d69e2e" stroke-width="1.5"/></svg><span>Decision</span></div>
+    <div style="display:flex;align-items:center;gap:6px;"><svg width="44" height="20"><rect x="1" y="1" width="42" height="18" rx="4" fill="#f0fff4" stroke="#48bb78" stroke-width="1.5"/></svg><span>Success</span></div>
+    <div style="display:flex;align-items:center;gap:6px;"><svg width="44" height="20"><rect x="1" y="1" width="42" height="18" rx="4" fill="#fff5f5" stroke="#fc8181" stroke-width="1.5"/></svg><span>Error</span></div>
+    <div style="display:flex;align-items:center;gap:6px;"><svg width="44" height="20"><rect x="1" y="1" width="42" height="18" rx="4" fill="#e6fffa" stroke="#38b2ac" stroke-width="1.5"/></svg><span>Data / API</span></div>
+    <div style="display:flex;align-items:center;gap:6px;"><svg width="44" height="20"><rect x="1" y="1" width="42" height="18" rx="4" fill="#faf5ff" stroke="#9f7aea" stroke-width="1.5"/></svg><span>ML / Prediction</span></div>
+    <div style="display:flex;align-items:center;gap:6px;"><svg width="44" height="20"><rect x="1" y="1" width="42" height="18" rx="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/></svg><span>Geolocation</span></div>
+    <div style="display:flex;align-items:center;gap:6px;"><svg width="44" height="20"><rect x="1" y="1" width="42" height="18" rx="4" fill="#fdf2f8" stroke="#d53f8c" stroke-width="1.5"/></svg><span>PDF / Print</span></div>
+    <div style="display:flex;align-items:center;gap:6px;"><svg width="36" height="12"><line x1="0" y1="6" x2="28" y2="6" stroke="#48bb78" stroke-width="1.8"/><polygon points="28,2 28,10 36,6" fill="#48bb78"/></svg><span>Yes / Success</span></div>
+    <div style="display:flex;align-items:center;gap:6px;"><svg width="36" height="12"><line x1="0" y1="6" x2="28" y2="6" stroke="#fc8181" stroke-width="1.8"/><polygon points="28,2 28,10 36,6" fill="#fc8181"/></svg><span>No / Failure</span></div>
+    <div style="display:flex;align-items:center;gap:6px;"><svg width="36" height="12"><line x1="0" y1="6" x2="28" y2="6" stroke="#718096" stroke-width="1.8"/><polygon points="28,2 28,10 36,6" fill="#718096"/></svg><span>Flow direction</span></div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,5 @@
+Options -Indexes
+<FilesMatch "\.(php|php5|phtml|pl|py|jsp|asp|sh)$">
+  Deny from all
+</FilesMatch>
+AddType application/octet-stream .php .php5 .phtml

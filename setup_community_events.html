@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Community Events Setup & Test</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #ddd;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1, h2 { color: #667eea; margin: 20px 0 10px 0; }
+        .step {
+            background: #16213e;
+            border-left: 4px solid #667eea;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px 5px 5px 0;
+        }
+        button:hover { background: #5568d3; }
+        .status {
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+            border-left: 4px solid;
+        }
+        .status.success {
+            background: rgba(0,255,0,0.1);
+            border-left-color: #00ff00;
+            color: #00ff00;
+        }
+        .status.error {
+            background: rgba(255,102,102,0.1);
+            border-left-color: #ff6666;
+            color: #ff6666;
+        }
+        .status.info {
+            background: rgba(102,126,234,0.1);
+            border-left-color: #667eea;
+            color: #667eea;
+        }
+        .code {
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎉 Community Events & Updates - Setup & Diagnostic</h1>
+        
+        <div class="step">
+            <h2>Step 1: Seed Database</h2>
+            <p>Create sample events in database if empty</p>
+            <button onclick="seedDatabase()">🌱 Seed Database with Test Events</button>
+            <div id="seedStatus"></div>
+        </div>
+        
+        <div class="step">
+            <h2>Step 2: Verify API</h2>
+            <p>Check if API returns events correctly</p>
+            <button onclick="checkAPI()">🔍 Test Events API</button>
+            <div id="apiStatus"></div>
+        </div>
+        
+        <div class="step">
+            <h2>Step 3: Check Community Events Section</h2>
+            <p>Verify Frontend can Load and Display</p>
+            <button onclick="testFrontend()">🎯 Test Frontend Function</button>
+            <div id="frontendStatus"></div>
+        </div>
+        
+        <div class="step">
+            <h2>Step 4: Open Community Events</h2>
+            <p>View the full Community Events & Updates section</p>
+            <button onclick="openMainPage()">🌐 Open Community Events Page</button>
+        </div>
+        
+        <div class="step">
+            <h2>System Status</h2>
+            <div id="systemStatus"></div>
+        </div>
+    </div>
+
+    <script>
+        function log(elemId, message, type = 'info') {
+            const elem = document.getElementById(elemId);
+            if (!elem) return;
+            
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            const icon = type === 'success' ? '✅' : (type === 'error' ? '❌' : 'ℹ️');
+            div.innerText = `${icon} ${message}`;
+            elem.appendChild(div);
+            elem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        async function seedDatabase() {
+            log('seedStatus', 'Seeding database...', 'info');
+            try {
+                const response = await fetch('../backend/seed_db.php');
+                const data = await response.json();
+                
+                if (data.success) {
+                    log('seedStatus', data.message, 'success');
+                    if (data.inserted && data.inserted > 0) {
+                        log('seedStatus', `Created ${data.inserted} test events with predictions`, 'success');
+                    }
+                } else {
+                    log('seedStatus', `Error: ${data.error}`, 'error');
+                }
+            } catch (err) {
+                log('seedStatus', `Failed: ${err.message}`, 'error');
+            }
+        }
+
+        async function checkAPI() {
+            log('apiStatus', 'Fetching events via API...', 'info');
+            try {
+                const response = await fetch('../backend/api.php?action=list_events');
+                const data = await response.json();
+                
+                if (data.events && data.events.length > 0) {
+                    log('apiStatus', `✓ API returned ${data.events.length} events`, 'success');
+                    
+                    const legazpiEvents = data.events.filter(e => e.location && e.location.includes('Legazpi'));
+                    log('apiStatus', `✓ ${legazpiEvents.length} Legazpi City events found`, 'success');
+                    
+                    const eventsWithPred = data.events.filter(e => e.prediction);
+                    log('apiStatus', `✓ ${eventsWithPred.length} events have ML predictions`, 'success');
+                    
+                    // Show first event details
+                    const evt = data.events[0];
+                    const details = `
+Event: ${evt.title}
+Location: ${evt.location}
+Capacity: ${evt.capacity}
+Has Prediction: ${evt.prediction ? 'YES' : 'NO'}`;
+                    log('apiStatus', `Sample event:\n${details}`, 'info');
+                    
+                } else {
+                    log('apiStatus', 'No events returned from API', 'error');
+                    log('apiStatus', 'Run Step 1 (Seed Database) first', 'info');
+                }
+            } catch (err) {
+                log('apiStatus', `API Error: ${err.message}`, 'error');
+            }
+        }
+
+        async function testFrontend() {
+            log('frontendStatus', 'Testing frontend...', 'info');
+            
+            try {
+                const response = await fetch('../backend/api.php?action=list_events');
+                const data = await response.json();
+                
+                if (!data.events || data.events.length === 0) {
+                    log('frontendStatus', 'No events in database', 'error');
+                    return;
+                }
+                
+                // Simulate renderCommunityCharts
+                const events = data.events;
+                const eventWithPred = events.find(e => e.prediction);
+                
+                if (!eventWithPred) {
+                    log('frontendStatus', 'No events have predictions', 'error');
+                    return;
+                }
+                
+                log('frontendStatus', `✓ Found event with prediction: ${eventWithPred.title}`, 'success');
+                
+                const prediction = eventWithPred.prediction;
+                const baseAttendance = Math.round(prediction.attendance);
+                
+                log('frontendStatus', `✓ Predicted attendance: ${baseAttendance.toLocaleString()} visitors`, 'success');
+                log('frontendStatus', `✓ Waste prediction: ${Math.round(prediction.waste_prediction)} kg`, 'success');
+                log('frontendStatus', `✓ Crowding probability: ${(prediction.overcrowding_probability * 100).toFixed(0)}%`, 'success');
+                
+                // Check location for routes
+                if (eventWithPred.location && eventWithPred.location.includes('Legazpi')) {
+                    log('frontendStatus', `✓ Event in Legazpi City - Routes will display`, 'success');
+                    
+                    // Test route API
+                    const routeRes = await fetch(`../backend/api.php?action=suggest_optimal_route&event_id=${eventWithPred.id}&crowd_level=${baseAttendance}`);
+                    const routeData = await routeRes.json();
+                    
+                    if (routeData.success && routeData.routes) {
+                        log('frontendStatus', `✓ Route API returned ${routeData.routes.length} routes`, 'success');
+                        routeData.routes.forEach((r, i) => {
+                            const icons = ['🟢', '🟠', '🔴'];
+                            log('frontendStatus', `  ${icons[i]} ${r.name}: ${r.distance}km, ${r.duration}min`, 'info');
+                        });
+                    } else {
+                        log('frontendStatus', `Route API error: ${routeData.error}`, 'error');
+                    }
+                } else {
+                    log('frontendStatus', `Event not in Legazpi City: ${eventWithPred.location}`, 'info');
+                }
+                
+                log('frontendStatus', '✓ Frontend should work correctly!', 'success');
+                
+            } catch (err) {
+                log('frontendStatus', `Error: ${err.message}`, 'error');
+            }
+        }
+
+        function openMainPage() {
+            window.location.href = '../index.html#community-events';
+        }
+
+        function checkSystemStatus() {
+            const status = document.getElementById('systemStatus');
+            
+            // Check if page is accessible
+            fetch('../')
+                .then(r => {
+                    if (r.ok) {
+                        const div = document.createElement('div');
+                        div.className = 'status success';
+                        div.innerHTML = '✅ Main page is accessible';
+                        status.appendChild(div);
+                    }
+                })
+                .catch(() => {
+                    const div = document.createElement('div');
+                    div.className = 'status error';
+                    div.innerHTML = '❌ Cannot reach main page';
+                    status.appendChild(div);
+                });
+                
+            // Check browser support
+            const div = document.createElement('div');
+            div.className = 'status info';
+            div.innerHTML = `ℹ️ Browser: ${navigator.userAgent.split('Chrome/')[1]?.split(' ')[0] || 'Unknown'}`;
+            status.appendChild(div);
+        }
+        
+        // Run checks on page load
+        window.addEventListener('load', checkSystemStatus);
+    </script>
+</body>
+</html>

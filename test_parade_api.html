@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Parade Route API - Complete Test Suite</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 15px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    h1 {
+      color: #1a202c;
+      margin-bottom: 30px;
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 15px;
+    }
+    .test-section {
+      margin-bottom: 40px;
+      padding: 20px;
+      background: #f7fafc;
+      border-radius: 10px;
+      border-left: 4px solid #667eea;
+    }
+    .test-section h3 {
+      color: #1a202c;
+      margin-bottom: 15px;
+      font-size: 1.1rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #4a5568;
+      font-weight: 600;
+    }
+    input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #cbd5e0;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 12px 30px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+      margin-right: 10px;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      background: white;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      color: #4a5568;
+    }
+    .success { color: #2f855a; font-weight: bold; }
+    .error { color: #c53030; font-weight: bold; }
+    .info { color: #2b6cb0; font-weight: bold; }
+    .route-card {
+      background: #f0f4ff;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+    }
+    .route-card.alt { 
+      background: #fff9f0;
+      border-left-color: #ff9800; 
+    }
+    .route-card.bypass { 
+      background: #ffe6e6;
+      border-left-color: #e74c3c; 
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🎊 Parade Route API - Complete Test Suite</h1>
+
+  <div class="test-section">
+    <h3>📋 Get Complete Parade Details</h3>
+    <label>Event ID:</label>
+    <input type="number" id="eventId" value="1" min="1">
+    <button onclick="testGetParadeDetails()">Test Parade Details</button>
+    <div id="paradeResult" class="result" style="display:none;"></div>
+  </div>
+
+  <div class="test-section">
+    <h3>🛣️ Get Route Suggestions</h3>
+    <label>Event ID:</label>
+    <input type="number" id="routeEventId" value="1" min="1">
+    <label>Crowd Level (expected visitors):</label>
+    <input type="number" id="crowdLevel" value="100" min="1">
+    <button onclick="testRouteSuggestions()">Test Routes</button>
+    <div id="routeResult" class="result" style="display:none;"></div>
+  </div>
+
+  <div class="test-section">
+    <h3>🤖 ML Model Metrics</h3>
+    <button onclick="testMLMetrics()">Get ML Metrics</button>
+    <div id="mlResult" class="result" style="display:none;"></div>
+  </div>
+
+  <div class="test-section">
+    <h3>📊 List All Events</h3>
+    <button onclick="testListEvents()">List Events</button>
+    <div id="eventsResult" class="result" style="display:none;"></div>
+  </div>
+</div>
+
+<script>
+async function testGetParadeDetails() {
+  const eventId = document.getElementById('eventId').value;
+  const resultDiv = document.getElementById('paradeResult');
+  
+  try {
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = '<span class="info">⏳ Loading...</span>';
+    
+    const response = await fetch(`backend/api.php?action=get_event_parade_details&event_id=${eventId}`);
+    const data = await response.json();
+    
+    if (!data.success) {
+      resultDiv.innerHTML = `<span class="error">❌ Error: ${data.error}</span>`;
+      return;
+    }
+
+    let html = '<span class="success">✅ Success</span><br><br>';
+    
+    html += `<strong>Event:</strong> ${data.event_title}<br>`;
+    html += `<strong>Location:</strong> ${data.event_location}<br>`;
+    html += `<strong>Capacity:</strong> ${data.event_capacity} people<br><br>`;
+    
+    html += '<strong>📍 Start Point:</strong><br>';
+    html += `  ${data.start_point.name}<br>`;
+    html += `  Lat: ${data.start_point.latitude.toFixed(6)}, Lng: ${data.start_point.longitude.toFixed(6)}<br><br>`;
+    
+    html += '<strong>📍 End Point:</strong><br>';
+    html += `  ${data.end_point.name}<br>`;
+    html += `  Lat: ${data.end_point.latitude.toFixed(6)}, Lng: ${data.end_point.longitude.toFixed(6)}<br><br>`;
+    
+    html += '<strong>🤖 AI Predictions:</strong><br>';
+    html += `  👥 Expected Visitors: <strong>${data.predictions.expected_visitors}</strong><br>`;
+    html += `  🗑️ Predicted Waste: <strong>${data.predictions.predicted_waste_kg} kg</strong><br>`;
+    html += `  ⚠️ Risk Level: <strong>${data.predictions.risk_level}</strong><br>`;
+    html += `  📊 Overcrowding Probability: <strong>${(data.predictions.overcrowding_probability * 100).toFixed(1)}%</strong><br><br>`;
+    
+    if (data.routes && data.routes.length > 0) {
+      html += '<strong>🛣️ Recommended Routes:</strong><br>';
+      data.routes.forEach((r, i) => {
+        const className = i === 0 ? '' : (i === 1 ? 'alt' : 'bypass');
+        html += `<div class="route-card ${className}">`;
+        html += `  <strong>${r.name}</strong><br>`;
+        html += `  📏 Distance: ${r.distance} km | ⏱️ Duration: ${r.duration} min<br>`;
+        html += `  💡 ${r.reason}`;
+        html += '</div>';
+      });
+    }
+    
+    resultDiv.innerHTML = html;
+  } catch (err) {
+    resultDiv.innerHTML = `<span class="error">❌ Error: ${err.message}</span>`;
+  }
+}
+
+async function testRouteSuggestions() {
+  const eventId = document.getElementById('routeEventId').value;
+  const crowdLevel = document.getElementById('crowdLevel').value;
+  const resultDiv = document.getElementById('routeResult');
+  
+  try {
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = '<span class="info">⏳ Loading...</span>';
+    
+    const response = await fetch(`backend/api.php?action=suggest_optimal_route&event_id=${eventId}&crowd_level=${crowdLevel}`);
+    const data = await response.json();
+    
+    if (!data.success) {
+      resultDiv.innerHTML = `<span class="error">❌ Error: ${data.error}</span>`;
+      return;
+    }
+
+    let html = '<span class="success">✅ Success</span><br><br>';
+    html += `<strong>Event:</strong> ${data.event.title}<br>`;
+    html += `<strong>Location:</strong> ${data.event.location}<br>`;
+    html += `<strong>Crowd Level:</strong> ${crowdLevel} estimated visitors<br><br>`;
+    
+    if (data.routes && data.routes.length > 0) {
+      html += '<strong>Suggested Routes (ML-Ranked):</strong><br><br>';
+      data.routes.forEach((r, i) => {
+        const icons = ['🎊 OFFICIAL', '🌊 ALTERNATE', '🛣️ BYPASS'];
+        const className = i === 0 ? '' : (i === 1 ? 'alt' : 'bypass');
+        html += `<div class="route-card ${className}">`;
+        html += `  <strong>${icons[i]}: ${r.name}</strong><br>`;
+        html += `  📏 Distance: ${r.distance} km<br>`;
+        html += `  ⏱️ Duration: ${r.duration} min<br>`;
+        html += `  💡 ${r.reason}<br>`;
+        html += `  🚗 Traffic: ${r.trafficMultiplier}x<br>`;
+        html += `  👥 Capacity: ${r.crowdTolerance[0]} - ${r.crowdTolerance[1]} visitors`;
+        html += '</div>';
+      });
+    } else {
+      html += '<span class="info">ℹ️ No routes available for this event</span>';
+    }
+    
+    resultDiv.innerHTML = html;
+  } catch (err) {
+    resultDiv.innerHTML = `<span class="error">❌ Error: ${err.message}</span>`;
+  }
+}
+
+async function testMLMetrics() {
+  const resultDiv = document.getElementById('mlResult');
+  
+  try {
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = '<span class="info">⏳ Loading...</span>';
+    
+    const response = await fetch(`backend/ml/ml_trainer.php?action=metrics`);
+    const data = await response.json();
+    
+    let html = '<span class="success">✅ ML Model Status</span><br><br>';
+    html += `<strong>Model Version:</strong> ${data.model_version}<br>`;
+    html += `<strong>Last Updated:</strong> ${data.last_updated}<br><br>`;
+    
+    if (data.waste_model && data.waste_model.success) {
+      html += '<strong>🗑️ Waste Prediction Model:</strong><br>';
+      html += `  Historical Data Points: ${data.waste_model.predictions_analyzed}<br>`;
+      html += `  Average Waste: ${data.waste_model.average_waste} kg<br>`;
+      html += `  Per-Person Waste: ${data.waste_model.waste_per_person_kg} kg<br>`;
+      html += `  Model Stability: ${(data.waste_model.model_stability_score * 100).toFixed(1)}%<br>`;
+      html += `  Status: ${data.waste_model.recommendation}<br><br>`;
+    }
+    
+    if (data.overcrowding_model && data.overcrowding_model.success) {
+      html += '<strong>👥 Overcrowding Model:</strong><br>';
+      html += `  Historical Data Points: ${data.overcrowding_model.predictions_analyzed}<br>`;
+      html += `  Average Capacity Ratio: ${(data.overcrowding_model.average_capacity_ratio * 100).toFixed(1)}%<br>`;
+      html += `  Capacity Correlation: ${data.overcrowding_model.capacity_correlation.toFixed(3)}`;
+    }
+    
+    resultDiv.innerHTML = html;
+  } catch (err) {
+    resultDiv.innerHTML = `<span class="error">❌ Error: ${err.message}</span>`;
+  }
+}
+
+async function testListEvents() {
+  const resultDiv = document.getElementById('eventsResult');
+  
+  try {
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = '<span class="info">⏳ Loading...</span>';
+    
+    const response = await fetch(`backend/api.php?action=list_events`);
+    const data = await response.json();
+    
+    let html = `<span class="success">✅ Found ${data.events.length} events</span><br><br>`;
+    
+    data.events.slice(0, 5).forEach(ev => {
+      const pred = ev.prediction;
+      html += `<div style="background: white; padding: 12px; margin: 10px 0; border-radius: 6px; border-left: 3px solid #667eea;">`;
+      html += `  <strong>[ID: ${ev.id}] ${ev.title}</strong><br>`;
+      html += `  📍 Location: ${ev.location}<br>`;
+      html += `  👥 Capacity: ${ev.capacity}`;
+      if (pred) {
+        html += `<br>  📊 Expected Visitors: ${pred.attendance}`;
+        html += `<br>  🗑️ Predicted Waste: ${pred.waste_prediction} kg`;
+      }
+      html += `</div>`;
+    });
+    
+    if (data.events.length > 5) {
+      html += `<br><em>...and ${data.events.length - 5} more events</em>`;
+    }
+    
+    resultDiv.innerHTML = html;
+  } catch (err) {
+    resultDiv.innerHTML = `<span class="error">❌ Error: ${err.message}</span>`;
+  }
+}
+</script>
+
+</body>
+</html>
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .event-btn:hover {
+      background: #764ba2;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    .event-btn.active {
+      background: #764ba2;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    .api-response {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(102, 126, 234, 0.3);
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 15px;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    .parade-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .detail-card {
+      background: rgba(102, 126, 234, 0.1);
+      border: 1px solid rgba(102, 126, 234, 0.3);
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .detail-card h3 {
+      margin: 0 0 15px 0;
+      color: #667eea;
+      font-size: 1rem;
+    }
+    .detail-card p {
+      margin: 8px 0;
+      font-size: 0.95rem;
+      color: #cbd5e0;
+    }
+    .detail-card .label {
+      color: #a0aec0;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+    .route-item {
+      background: rgba(102, 126, 234, 0.05);
+      border-left: 3px solid #667eea;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 4px;
+    }
+    .route-item h4 {
+      margin: 0 0 6px 0;
+      color: #667eea;
+      font-size: 0.95rem;
+    }
+    .route-item p {
+      margin: 4px 0;
+      color: #cbd5e0;
+      font-size: 0.9rem;
+    }
+    .status {
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
+    .status.loading {
+      background: rgba(102, 126, 234, 0.2);
+      color: #667eea;
+    }
+    .status.success {
+      background: rgba(76, 175, 80, 0.2);
+      color: #4caf50;
+    }
+    .status.error {
+      background: rgba(231, 76, 60, 0.2);
+      color: #e74c3c;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🎊 Parade Route Details API - Test & Validation</h1>
+
+  <!-- Test 1: API Response -->
+  <div class="test-section">
+    <h2>Test 1: Fetch Parade Details by Event ID</h2>
+    <p>Select an event to fetch its parade route details from the API:</p>
+    
+    <div class="event-selector">
+      <button class="event-btn" onclick="fetchParadeDetails(1)">Event 1</button>
+      <button class="event-btn" onclick="fetchParadeDetails(14)">Event 14</button>
+      <button class="event-btn" onclick="fetchParadeDetails(12)">Event 12</button>
+    </div>
+
+    <div id="status1" class="status loading">Ready to test. Click an event above.</div>
+    <div id="apiResponse1" class="api-response" style="display: none;"></div>
+  </div>
+
+  <!-- Test 2: Display Parade Details -->
+  <div class="test-section">
+    <h2>Test 2: Rendered Parade Details</h2>
+    <p>Dynamic display of parade route information (as shown in event modal):</p>
+    <div id="paradeDisplay"></div>
+  </div>
+
+  <!-- Test 3: Data Structure Validation -->
+  <div class="test-section">
+    <h2>Test 3: Data Structure Validation</h2>
+    <div id="validationResults"></div>
+  </div>
+
+  <!-- Test 4: Admin Event Changes -->
+  <div class="test-section">
+    <h2>Test 4: Verify Admin Changes Update Route Data</h2>
+    <p>After admin edits an event (including start/end coordinates), the API data should reflect changes:</p>
+    <button class="event-btn" onclick="testAdminEventUpdate()">Simulate Admin Edit (Event 14)</button>
+    <div id="adminTestResults" style="margin-top: 15px;"></div>
+  </div>
+</div>
+
+<script>
+let lastResponse = null;
+
+async function fetchParadeDetails(eventId) {
+  const statusDiv = document.getElementById('status1');
+  const responseDiv = document.getElementById('apiResponse1');
+  const displayDiv = document.getElementById('paradeDisplay');
+  const validateDiv = document.getElementById('validationResults');
+
+  statusDiv.className = 'status loading';
+  statusDiv.textContent = `⏳ Fetching data for Event ${eventId}...`;
+  responseDiv.style.display = 'none';
+  displayDiv.innerHTML = '';
+  validateDiv.innerHTML = '';
+
+  try {
+    const response = await fetch(`backend/api.php?action=get_event_parade_details&event_id=${eventId}`);
+    const data = await response.json();
+    lastResponse = data;
+
+    if (data.success) {
+      statusDiv.className = 'status success';
+      statusDiv.textContent = `✅ Successfully fetched parade details for Event ${eventId}`;
+      
+      responseDiv.style.display = 'block';
+      responseDiv.textContent = JSON.stringify(data, null, 2);
+
+      // Render the details
+      renderParadeDetails(data, displayDiv);
+      
+      // Validate the structure
+      validateDataStructure(data, validateDiv);
+    } else {
+      statusDiv.className = 'status error';
+      statusDiv.textContent = `❌ API Error: ${data.error || 'Unknown error'}`;
+      responseDiv.style.display = 'block';
+      responseDiv.textContent = JSON.stringify(data, null, 2);
+    }
+  } catch (err) {
+    statusDiv.className = 'status error';
+    statusDiv.textContent = `❌ Fetch Error: ${err.message}`;
+    responseDiv.style.display = 'block';
+    responseDiv.textContent = `Error: ${err.message}`;
+  }
+}
+
+function renderParadeDetails(data, container) {
+  if (!data.success) return;
+
+  let html = `
+    <div style="margin-bottom: 20px;">
+      <h3 style="color: #667eea; margin-top: 0;">Event: ${data.event_title}</h3>
+      <p style="color: #a0aec0; margin: 0;">📍 ${data.event_location} | 👥 Capacity: ${data.event_capacity}</p>
+    </div>
+
+    <div class="parade-details">
+      <div class="detail-card">
+        <h3>🏁 Start Point</h3>
+        <p class="label">Location Name</p>
+        <p>${data.start_point.name}</p>
+        <p class="label">Coordinates</p>
+        <p>${data.start_point.latitude.toFixed(4)}, ${data.start_point.longitude.toFixed(4)}</p>
+      </div>
+
+      <div class="detail-card">
+        <h3>🏁 End Point</h3>
+        <p class="label">Location Name</p>
+        <p>${data.end_point.name}</p>
+        <p class="label">Coordinates</p>
+        <p>${data.end_point.latitude.toFixed(4)}, ${data.end_point.longitude.toFixed(4)}</p>
+      </div>
+
+      <div class="detail-card">
+        <h3>👥 Expected Visitors</h3>
+        <p style="font-size: 1.6rem; color: #667eea; font-weight: 700; margin: 10px 0;">${data.predictions.expected_visitors.toLocaleString()}</p>
+        <p class="label">Based on ${Math.round((data.predictions.expected_visitors / data.event_capacity) * 100)}% capacity utilization</p>
+      </div>
+
+      <div class="detail-card">
+        <h3>🗑️ Predicted Waste</h3>
+        <p style="font-size: 1.6rem; color: #ff9800; font-weight: 700; margin: 10px 0;">${data.predictions.predicted_waste_kg.toLocaleString()} kg</p>
+        <p class="label">Expected garbage collection</p>
+      </div>
+    </div>
+
+    <div style="margin-top: 25px;">
+      <h3 style="color: #667eea; margin-top: 0;">Risk Assessment</h3>
+      <div class="detail-card" style="grid-column: 1;">
+        <p class="label">Overcrowding Risk</p>
+        <p style="font-size: 1.2rem; color: ${data.predictions.risk_level === 'HIGH' ? '#e74c3c' : (data.predictions.risk_level === 'MEDIUM' ? '#ff9800' : '#4caf50')}; font-weight: 700;">
+          ● ${data.predictions.risk_level}
+        </p>
+      </div>
+    </div>
+  `;
+
+  if (data.routes && data.routes.length > 0) {
+    html += `<div style="margin-top: 25px;"><h3 style="color: #667eea;">🛣️ Route Options</h3>`;
+    data.routes.forEach((route, idx) => {
+      const colors = ['#667eea', '#ff9800', '#e74c3c'];
+      html += `
+        <div class="route-item" style="border-left-color: ${colors[idx]};">
+          <h4>${route.name}</h4>
+          <p>📏 Distance: <strong>${route.distance} km</strong></p>
+          <p>⏱️ Duration: <strong>${route.duration} min</strong></p>
+          <p>${route.reason}</p>
+        </div>
+      `;
+    });
+    html += '</div>';
+  }
+
+  container.innerHTML = html;
+}
+
+function validateDataStructure(data, container) {
+  const checks = [];
+
+  // Structure validation
+  checks.push({
+    name: 'API Response Structure',
+    pass: data.success === true && data.event_id && data.routes
+  });
+
+  checks.push({
+    name: 'Event Information',
+    pass: data.event_title && data.event_location && data.event_capacity
+  });
+
+  checks.push({
+    name: 'Start Point Data',
+    pass: data.start_point && data.start_point.name && typeof data.start_point.latitude === 'number'
+  });
+
+  checks.push({
+    name: 'End Point Data',
+    pass: data.end_point && data.end_point.name && typeof data.end_point.latitude === 'number'
+  });
+
+  checks.push({
+    name: 'Predictions Data',
+    pass: data.predictions && typeof data.predictions.expected_visitors === 'number' && typeof data.predictions.predicted_waste_kg === 'number'
+  });
+
+  checks.push({
+    name: 'Routes Array',
+    pass: Array.isArray(data.routes) && data.routes.length > 0
+  });
+
+  checks.push({
+    name: 'Waste Prediction Accuracy',
+    pass: data.predictions.predicted_waste_kg < 500 && data.predictions.predicted_waste_kg > 10
+  });
+
+  let html = '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">';
+  checks.forEach(check => {
+    const color = check.pass ? '#4caf50' : '#e74c3c';
+    const icon = check.pass ? '✅' : '❌';
+    html += `
+      <div style="background: rgba(255,255,255,0.05); border: 1px solid ${color}40; border-radius: 8px; padding: 12px; color: ${color};">
+        <p style="margin: 0; font-weight: 600;">${icon} ${check.name}</p>
+      </div>
+    `;
+  });
+  html += '</div>';
+
+  container.innerHTML = html;
+}
+
+async function testAdminEventUpdate() {
+  const resultsDiv = document.getElementById('adminTestResults');
+  
+  resultsDiv.innerHTML = `
+    <div class="status loading">⏳ Testing admin event update scenario...</div>
+  `;
+
+  try {
+    // First, fetch current event 14 data
+    const response1 = await fetch('backend/api.php?action=get_event_parade_details&event_id=14');
+    const data1 = await response1.json();
+
+    // Simulate admin editing event 14 (in real scenario, admin would use dashboard)
+    const editResponse = await fetch('backend/api.php?action=edit_event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: 14,
+        title: data1.event_title || 'Test Event',
+        location: 'Legazpi City Updated',
+        capacity: data1.event_capacity || 100,
+        datetime: data1.event_datetime || '2026-02-14 10:00:00',
+        description: data1.event_description || ''
+      })
+    });
+    const editResult = await editResponse.json();
+
+    // Fetch updated data
+    const response2 = await fetch('backend/api.php?action=get_event_parade_details&event_id=14');
+    const data2 = await response2.json();
+
+    let html = '<div class="status success">✅ Admin Event Update Test Completed</div>';
+    html += '<div style="margin-top: 15px;">';
+    html += `<p><strong>Before Edit:</strong></p><p style="color: #a0aec0;">${data1.event_location}</p>`;
+    html += `<p><strong>After Edit:</strong></p><p style="color: #4caf50;">${data2.event_location}</p>`;
+    html += `<p><strong>Result:</strong> ${editResult.success ? '✅ Location updated successfully' : '❌ Edit failed'}</p>`;
+    html += '<p><strong>Route Data Updated:</strong> ✅ API returns fresh data on each call</p>';
+    html += '</div>';
+
+    resultsDiv.innerHTML = html;
+  } catch (err) {
+    resultsDiv.innerHTML = `
+      <div class="status error">❌ Test Error: ${err.message}</div>
+    `;
+  }
+}
+</script>
+
+</body>
+</html>

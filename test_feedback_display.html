@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Feedback API</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        .feedback-item { border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Test Feedback API</h1>
+    <button onclick="testAPI()">Test API Endpoint</button>
+    <button onclick="testLoadFunction()">Test Load Function</button>
+    <button onclick="testSaveItinerary()">Test Save Itinerary</button>
+    <div id="results"></div>
+    <div id="container" style="max-height: 500px; overflow: auto;"></div>
+    <h2>Dashboard containers</h2>
+    <div id="dashboardGuestFeedback" style="border:1px solid #ccc; padding:8px; max-height:300px; overflow:auto;"></div>
+    <div id="feedbackList" style="display:none;"></div>
+
+    <script>
+        async function getJSON(url) {
+            const response = await fetch(url);
+            return response.json();
+        }
+
+        async function testAPI() {
+            const resultsDiv = document.getElementById('results');
+            try {
+                resultsDiv.innerHTML = '<p>Loading...</p>';
+                const data = await getJSON('./backend/api.php?action=list_feedback');
+                resultsDiv.innerHTML = '<p class="success">✅ API Response:</p>';
+                resultsDiv.innerHTML += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (e) {
+                resultsDiv.innerHTML = '<p class="error">❌ Error: ' + e.message + '</p>';
+            }
+        }
+
+        async function testLoadFunction() {
+            const resultsDiv = document.getElementById('results');
+            const container = document.getElementById('container');
+            try {
+                resultsDiv.innerHTML = '<p>Loading feedbacks...</p>';
+                const r = await getJSON('./backend/api.php?action=list_feedback');
+                
+                if (!r.feedback || r.feedback.length === 0) {
+                    container.innerHTML = '<p>No feedback yet.</p>';
+                    resultsDiv.innerHTML = '<p class="success">✅ No feedback in database</p>';
+                    return;
+                }
+                
+                resultsDiv.innerHTML = '<p class="success">✅ Found ' + r.feedback.length + ' feedbacks</p>';
+                
+                const typeIcons = {
+                    'suggestion': { emoji: '💡', label: 'Suggestion', color: '#3b82f6' },
+                    'bug': { emoji: '🐛', label: 'Bug Report', color: '#ef4444' },
+                    'praise': { emoji: '⭐', label: 'Praise', color: '#f59e0b' },
+                    'other': { emoji: '📌', label: 'Other', color: '#8b5cf6' }
+                };
+                
+                container.innerHTML = '';
+                r.feedback.forEach(f => {
+                    const typeInfo = typeIcons[f.type] || { emoji: '📌', label: 'Other', color: '#999' };
+                    const card = document.createElement('div');
+                    card.className = 'feedback-item';
+                    card.innerHTML = `
+                        <strong>${f.name || 'Anonymous'}</strong> - ${typeInfo.emoji} ${typeInfo.label}<br>
+                        📧 ${f.email}<br>
+                        ⭐ Rating: ${f.rating}<br>
+                        📅 ${new Date(f.created_at).toLocaleString()}<br>
+                        <p>${f.feedback}</p>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (e) {
+                resultsDiv.innerHTML = '<p class="error">❌ Error: ' + e.message + '</p>';
+            }
+        }
+        
+        // itinerary test
+        async function testSaveItinerary(){
+            const data = { email:'', name:'', title:'TestRoute', days:2, destinations:['A'], anonymous:1 };
+            document.getElementById('results').innerHTML = '<p>Saving itinerary...</p>';
+            console.log('sending itinerary payload', data, JSON.stringify(data));
+            const r = await fetch('./backend/api.php?action=add_itinerary', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(res=>res.json());
+            document.getElementById('results').innerHTML = '<pre>'+JSON.stringify(r,null,2)+'</pre>';
+        }
+        
+        // Add dashboard load function copied from admin_dashboard
+        async function loadGuestFeedback(){
+            const r = await getJSON('./backend/api.php?action=list_feedback');
+            console.log('test page loadGuestFeedback', r);
+            const out = document.getElementById('feedbackList');
+            const dashboardOut = document.getElementById('dashboardGuestFeedback');
+            if(out) out.innerHTML = '';
+            if(dashboardOut) dashboardOut.innerHTML = '';
+            if(!r.feedback || r.feedback.length === 0){
+                if(out) out.innerHTML = '<p style="color:#999;">No feedback yet.</p>';
+                if(dashboardOut) dashboardOut.innerHTML = '<p style="color:#999;">No feedback yet.</p>';
+                return;
+            }
+            const typeIcons = {
+                'suggestion': { emoji: '💡', label: 'Suggestion', color: '#3b82f6' },
+                'bug': { emoji: '🐛', label: 'Bug Report', color: '#ef4444' },
+                'praise': { emoji: '⭐', label: 'Praise', color: '#f59e0b' },
+                'other': { emoji: '📌', label: 'Other', color: '#8b5cf6' }
+            };
+            r.feedback.forEach(f=>{
+                const card = document.createElement('div');
+                card.className = 'list-item';
+                card.style.flexDirection = 'column';
+                card.style.borderLeft = '4px solid ' + (typeIcons[f.type]?.color || '#999');
+                const rating = f.rating ? '⭐'.repeat(parseInt(f.rating)) : 'No rating';
+                const typeInfo = typeIcons[f.type] || { emoji: '📌', label: 'Other', color: '#999' };
+                const timestamp = f.created_at ? new Date(f.created_at).toLocaleDateString() + ' ' + new Date(f.created_at).toLocaleTimeString() : 'N/A';
+                card.innerHTML = `
+                  <div style="width:100%; margin-bottom:8px;">
+                    <div style="display:flex; gap:12px; align-items:center; margin-bottom:8px;">
+                      <h4 style="margin:0; color:#333; flex:1;">${f.name || 'Anonymous'}</h4>
+                      <span style="padding: 4px 12px; background: ${typeInfo.color}20; color: ${typeInfo.color}; border-radius: 20px; font-size: 0.8rem; font-weight: 600; white-space: nowrap;">
+                        ${typeInfo.emoji} ${typeInfo.label}
+                      </span>
+                    </div>
+                    <div style="display:flex; gap:10px; align-items:center; margin-bottom:8px; flex-wrap:wrap;">
+                      <span style="font-size:0.85rem; color:#666;">📧 ${f.email || 'N/A'}</span>
+                      <span style="font-size:0.9rem; color:#f59e0b;">${rating}</span>
+                      <span style="font-size:0.8rem; color:#999;">📅 ${timestamp}</span>
+                    </div>
+                    <p style="margin:0 0 8px 0; color:#555; font-size:0.95rem; line-height:1.6; background:#f9f9f9; padding:10px; border-radius:6px;">💬 ${f.feedback || 'No message'}</p>
+                  </div>
+                  <div class="list-item-actions" style="width:100%; gap:6px;">
+                    <button class="btn btn-danger" onclick="deleteFeedback(${f.id})" style="flex:1;">🗑️ Delete</button>
+                  </div>
+                `;
+                if(out) out.appendChild(card);
+                if(dashboardOut) dashboardOut.appendChild(card.cloneNode(true));
+            });
+        }
+        
+        // mimic dashboard deleteFeedback (simple version)
+        async function deleteFeedback(id){
+            await fetch('./backend/api.php?action=delete_feedback', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
+            loadGuestFeedback();
+        }
+        
+        // auto-run dashboard loader
+        window.addEventListener('DOMContentLoaded', loadGuestFeedback);
+    </script>
+</body>
+</html>

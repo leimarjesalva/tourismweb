@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Data Creation</title>
+  <style>
+    body { font-family: Arial; margin: 20px; background: #f5f5f5; }
+    .section { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; }
+    button { padding: 12px 20px; margin: 10px 5px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
+    button:hover { background: #764ba2; }
+    .result { background: #f0f0f0; padding: 15px; margin: 10px 0; border-radius: 4px; border-left: 4px solid #667eea; }
+    .success { border-left-color: #4caf50; }
+    .error { border-left-color: #e74c3c; }
+    pre { background: #ffffff; padding: 10px; overflow-x: auto; border: 1px solid #ddd; }
+    h2 { color: #333; }
+  </style>
+</head>
+<body>
+
+<h1>🧪 Create Test Data</h1>
+
+<div class="section">
+  <h2>Step 1: Create Test Data</h2>
+  <button onclick="insertTestFestival()">➕ Insert Test Festival</button>
+  <button onclick="insertTestExperience()">➕ Insert Test Experience</button>
+  <button onclick="clearTestData()">🗑️ Clear Test Data</button>
+  <div id="insertResult"></div>
+</div>
+
+<div class="section">
+  <h2>Step 2: View All Data in Database</h2>
+  <button onclick="showAllFestivals()">Show All Festivals</button>
+  <button onclick="showAllExperiences()">Show All Experiences</button>
+  <div id="dataResult"></div>
+</div>
+
+<div class="section">
+  <h2>Step 3: Test API Endpoints</h2>
+  <button onclick="testAPIEndpoint('api.php?action=list_festivals', 'Festivals API')">Test Festivals API</button>
+  <button onclick="testAPIEndpoint('api.php?action=list_experiences', 'Experiences API')">Test Experiences API</button>
+  <div id="apiResult"></div>
+</div>
+
+<div class="section">
+  <h2>Step 4: Check Frontend</h2>
+  <p>After creating test data, check if it appears in the frontend:</p>
+  <button onclick="window.open('http://localhost/capstone/frontend/index.html#experiences', '_blank')">
+    Open Experiences Section
+  </button>
+  <button onclick="window.open('http://localhost/capstone/frontend/index.html#festivals', '_blank')">
+    Open Festivals Section
+  </button>
+  <p><strong>Check the browser console (F12) for console logs that show the data loading process.</strong></p>
+</div>
+
+<script>
+function apiUrl(endpoint) {
+  return 'backend/' + endpoint;
+}
+
+async function insertTestFestival() {
+  const result = document.getElementById('insertResult');
+  result.innerHTML = '<div class="result">Creating test festival...</div>';
+  try {
+    const res = await fetch('test_insert.php?action=insert_test_festival');
+    const data = await res.json();
+    let html = '<div class="result ' + (data.success ? 'success' : 'error') + '">';
+    html += '<strong>' + (data.success ? '✓ SUCCESS' : '✗ ERROR') + '</strong><br>';
+    html += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+    html += '</div>';
+    result.innerHTML = html;
+  } catch(e) {
+    result.innerHTML = '<div class="result error"><strong>✗ ERROR</strong><br>' + e.message + '</div>';
+  }
+}
+
+async function insertTestExperience() {
+  const result = document.getElementById('insertResult');
+  result.innerHTML = '<div class="result">Creating test experience...</div>';
+  try {
+    const res = await fetch('test_insert.php?action=insert_test_experience');
+    const data = await res.json();
+    let html = '<div class="result ' + (data.success ? 'success' : 'error') + '">';
+    html += '<strong>' + (data.success ? '✓ SUCCESS' : '✗ ERROR') + '</strong><br>';
+    html += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+    html += '</div>';
+    result.innerHTML = html;
+  } catch(e) {
+    result.innerHTML = '<div class="result error"><strong>✗ ERROR</strong><br>' + e.message + '</div>';
+  }
+}
+
+async function clearTestData() {
+  const result = document.getElementById('insertResult');
+  if (!confirm('Clear all test data?')) return;
+  result.innerHTML = '<div class="result">Clearing test data...</div>';
+  try {
+    const res = await fetch('test_insert.php?action=clear_test_data');
+    const data = await res.json();
+    let html = '<div class="result success">';
+    html += '<strong>✓ SUCCESS</strong><br>';
+    html += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+    html += '</div>';
+    result.innerHTML = html;
+  } catch(e) {
+    result.innerHTML = '<div class="result error"><strong>✗ ERROR</strong><br>' + e.message + '</div>';
+  }
+}
+
+async function showAllFestivals() {
+  const result = document.getElementById('dataResult');
+  result.innerHTML = '<div class="result">Loading festivals...</div>';
+  try {
+    const res = await fetch('test_insert.php?action=show_all_festivals');
+    const data = await res.json();
+    let html = '<div class="result success">';
+    html += '<strong>Festivals in Database: ' + (data.festivals ? data.festivals.length : 0) + '</strong><br>';
+    html += '<pre>' + JSON.stringify(data.festivals || [], null, 2) + '</pre>';
+    html += '</div>';
+    result.innerHTML = html;
+  } catch(e) {
+    result.innerHTML = '<div class="result error"><strong>✗ ERROR</strong><br>' + e.message + '</div>';
+  }
+}
+
+async function showAllExperiences() {
+  const result = document.getElementById('dataResult');
+  result.innerHTML = '<div class="result">Loading experiences...</div>';
+  try {
+    const res = await fetch('test_insert.php?action=show_all_experiences');
+    const data = await res.json();
+    let html = '<div class="result success">';
+    html += '<strong>Experiences in Database: ' + (data.experiences ? data.experiences.length : 0) + '</strong><br>';
+    html += '<pre>' + JSON.stringify(data.experiences || [], null, 2).substring(0, 1000) + '...</pre>';
+    html += '</div>';
+    result.innerHTML = html;
+  } catch(e) {
+    result.innerHTML = '<div class="result error"><strong>✗ ERROR</strong><br>' + e.message + '</div>';
+  }
+}
+
+async function testAPIEndpoint(endpoint, label) {
+  const result = document.getElementById('apiResult');
+  result.innerHTML += '<div class="result">Testing ' + label + '...</div>';
+  try {
+    const url = apiUrl(endpoint);
+    console.log('Testing endpoint:', url);
+    const res = await fetch(url);
+    const data = await res.json();
+    const count = data.festivals ? data.festivals.length : data.experiences ? data.experiences.length : 0;
+    let html = '<div class="result success">';
+    html += '<strong>' + label + ': ' + count + ' records returned</strong><br>';
+    html += '<pre>' + JSON.stringify(data, null, 2).substring(0, 1000) + '...</pre>';
+    html += '</div>';
+    result.innerHTML = html;
+  } catch(e) {
+    result.innerHTML += '<div class="result error"><strong>✗ ERROR</strong><br>' + e.message + '</div>';
+  }
+}
+</script>
+
+</body>
+</html>
