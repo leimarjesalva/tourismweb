@@ -1,180 +1,23 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Legazpi Explorer</title>
   <link rel="stylesheet" href="style.css" />
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <!-- Leaflet JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
-  <!-- Google Maps API will be loaded lazily when required -->
-  <script>
-    // helper to load Google Maps only when needed
-    function ensureGoogleMaps(callback) {
-      if (window.google && window.google.maps) {
-        if (callback) callback();
-        return;
-      }
-      window._gmapsCallbacks = window._gmapsCallbacks || [];
-      if (callback) window._gmapsCallbacks.push(callback);
-      if (window._gmapsLoading) return; // already injected
-      window._gmapsLoading = true;
-      const s = document.createElement('script');
-      s.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyD2wFzfW2LAFExynq5ZksNael7CXCYoIco&libraries=places,visualization,marker,geometry&v=beta&callback=_gmapsInit';
-      s.async = true;
-      document.head.appendChild(s);
-      window._gmapsInit = function() {
-        window._gmapsLoading = false;
-        (window._gmapsCallbacks || []).forEach(fn => fn());
-        window._gmapsCallbacks = [];
-      };
-    }
-  </script>
+  <!-- Leaflet Routing Machine (OSRM routing) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+  <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+
   <style>
-    .suggestions-panel {
-      background: white;
-      padding: 25px;
-      border-radius: 12px;
-      border: 1px solid #e0e0e0;
-      margin-top: 0;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    }
-    .chart-tab-btn {
-      background: transparent;
-      color: #a0aec0;
-      border: none;
-      padding: 6px 12px;
-      font-size: 0.9rem;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: all 0.2s ease;
-    }
-    .chart-tab-btn:hover {
-      color: #fff;
-    }
-    .suggestions-panel h3 {
-      margin-top: 0;
-      margin-bottom: 20px;
-      color: #333;
-      border-bottom: 3px solid #667eea;
-      padding-bottom: 12px;
-      font-size: 1.1rem;
-    }
-    .suggestion-item {
-      background: #f8f9fa;
-      padding: 18px;
-      border-radius: 8px;
-      margin-bottom: 15px;
-      border-left: 5px solid #667eea;
-      transition: all 0.2s ease;
-    }
-    .suggestion-item:hover {
-      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
-      transform: translateX(2px);
-    }
-    .suggestion-item h4 {
-      margin: 0 0 10px 0;
-      color: #333;
-      font-size: 16px;
-    }
-    .suggestion-item p {
-      margin: 8px 0;
-      font-size: 13px;
-      color: #666;
-      line-height: 1.4;
-    }
-    .rating {
-      color: #ffc107;
-      font-weight: bold;
-      font-size: 14px;
-    }
-    .price {
-      color: #27ae60;
-      font-weight: bold;
-      font-size: 15px;
-    }
-    .weather-item {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 18px;
-      border-radius: 8px;
-      margin-bottom: 15px;
-      box-shadow: 0 2px 6px rgba(102, 126, 234, 0.2);
-    }
-    .weather-item h4 {
-      margin: 0 0 10px 0;
-      font-size: 16px;
-    }
-    .weather-item p {
-      margin: 6px 0;
-      font-size: 13px;
-      line-height: 1.4;
-    }
-    #actionButtons {
-      display: flex;
-      gap: 12px;
-      margin-top: 20px;
-    }
-    #actionButtons button {
-      flex: 1;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 14px;
-      transition: all 0.2s ease;
-    }
-    #actionButtons button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-    /* Destination Dropdown Styling */
-    .dest-dropdown {
-      appearance: none;
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23667eea' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-      background-repeat: no-repeat;
-      background-position: right 10px center;
-      background-size: 1.5em;
-      padding-right: 35px;
-      font-family: inherit;
-      transition: all 0.3s ease;
-    }
-    .dest-dropdown:hover {
-      border-color: #764ba2;
-      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
-    }
-    .dest-dropdown:focus {
-      outline: none;
-      border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-    .dest-dropdown option {
-      padding: 10px;
-      background: white;
-      color: #333;
-    }
-    .dest-dropdown option:checked {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      font-weight: 600;
-    }
-    #selectedDestinationsDisplay {
-      animation: slideIn 0.3s ease;
-    }
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(-10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    /* Admin events marquee - REMOVED */
-    @keyframes modalSlideIn {
+    @keyframes fadeInScale {
       from {
         opacity: 0;
         transform: scale(0.95) translateY(20px);
@@ -356,8 +199,8 @@
         <!-- Map + legend section -->
         <div>
           <p style="color: white; font-size: 1.1rem; font-weight: 600; margin: 0 0 16px 0;">Live Event Map</p>
-          <div style="width: 100%; height: 500px; border-radius: 16px; overflow: hidden; background: linear-gradient(135deg, rgba(102,126,234,0.12), rgba(118,75,162,0.08)); border: 1px solid rgba(102,126,234,0.25); box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
-            <div id="eventsMapContainer" style="width: 100%; height: 100%; position: relative;"></div>
+        <div style="width: 100%; height: 500px; border-radius: 16px; background: linear-gradient(135deg, rgba(102,126,234,0.12), rgba(118,75,162,0.08)); border: 1px solid rgba(102,126,234,0.25); box-shadow: 0 20px 60px rgba(0,0,0,0.3); position: relative;">
+            <div id="eventsMapContainer" style="width: 100%; height: 100%; position: relative; border-radius: 16px; overflow: hidden;"></div>
           </div>
           <!-- Risk legend sits underneath map on narrow layouts -->
           <div style="margin-top:24px; background: linear-gradient(135deg, rgba(102,126,234,0.12), rgba(118,75,162,0.08)); border: 1px solid rgba(102,126,234,0.25); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 14px;">
@@ -404,70 +247,7 @@
 // Debug panel removed - code working correctly
 console.log('Page initialized');
 
-// detect Google Maps quota or auth errors
-window.gmQuotaExceeded = false;
-window.addEventListener('error', function(e) {
-  if (e.message && e.message.indexOf('OverQuotaMapError') !== -1) {
-    window.gmQuotaExceeded = true;
-    console.warn('⚠️ Google Maps quota exceeded or auth failure detected');
-  }
-});
-
-// rendering fallback path when Google Maps isn't available
-function renderFallbackRoute(container, event, routes, crowdLevel) {
-  container.innerHTML = '';
-  const info = document.createElement('div');
-  info.style.cssText = 'padding:20px;color:#fff;text-align:center;';
-  info.innerHTML = '<p><strong>Route map unavailable.</strong></p>' +
-                   '<p>The API key may have exceeded its quota.</p>';
-  container.appendChild(info);
-
-  if (routes && routes.length) {
-    const canvas = document.createElement('canvas');
-    canvas.width = container.clientWidth;
-    canvas.height = container.clientHeight - 60;
-    canvas.style.display = 'block';
-    container.appendChild(canvas);
-    const ctx = canvas.getContext('2d');
-
-    let lats = [], lngs = [];
-    routes.forEach(r => r.coordinates && r.coordinates.forEach(c => { lats.push(c[0]); lngs.push(c[1]); }));
-    if (lats.length) {
-      const minLat = Math.min(...lats), maxLat = Math.max(...lats);
-      const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
-      const latRange = maxLat - minLat || 0.0001;
-      const lngRange = maxLng - minLng || 0.0001;
-
-      routes.forEach((r, idx) => {
-        const baseLevel = typeof r.traffic_level !== 'undefined' ? Number(r.traffic_level) : 0;
-        const colors = ['#4caf50','#ff9800','#e74c3c'];
-        ctx.strokeStyle = colors[baseLevel] || colors[0];
-        ctx.lineWidth = idx===0?4:2;
-        ctx.beginPath();
-        r.coordinates.forEach((c,i) => {
-          const x = ((c[1]-minLng) / lngRange) * canvas.width;
-          const y = canvas.height - ((c[0]-minLat) / latRange) * canvas.height;
-          if (i===0) ctx.moveTo(x,y);
-          else ctx.lineTo(x,y);
-        });
-        ctx.stroke();
-      });
-
-      const legend = document.createElement('div');
-      legend.style.cssText = 'margin-top:8px;color:#ddd;font-size:0.85rem;';
-      routes.forEach((r,idx)=>{
-        const traffic = r.traffic_level===2? 'Heavy Traffic 🔴' : r.traffic_level===1? 'Moderate Traffic 🟠' : 'No Traffic 🟢';
-        legend.innerHTML += `<p style="margin:4px 0;">Option ${idx+1}: ${r.name||'Route'} – ${r.distance||'N/A'} km, ${r.duration||'N/A'} min (${traffic})</p>`;
-      });
-      container.appendChild(legend);
-
-      info.innerHTML += '<p><a href="#" style="color:#aad;" onclick="window.open(\'https://www.google.com/maps/dir/?api=1&origin=' +
-        encodeURIComponent(event.start_lat + ',' + event.start_lng) +
-        '&destination=' + encodeURIComponent(event.end_lat + ',' + event.end_lng) +
-        '&travelmode=driving\');return false;">Open in Google Maps</a></p>';
-    }
-  }
-}
+// ...existing code...
 
 </script>
 
@@ -476,12 +256,10 @@ function toggleEventTab(tab) {
   // Hide all tabs
   document.getElementById('eventMapTab').style.display = 'none';
   document.getElementById('chartsTab').style.display = 'none';
-  
   // Remove active state from tab buttons
   document.querySelectorAll('#mapTabBtn,#chartsTabBtn').forEach(b=>{
     b.style.background = '#444'; b.style.color = '#ccc';
   });
-  
   // Show selected tab
   if (tab === 'map') {
     document.getElementById('eventMapTab').style.display = 'block';
@@ -498,12 +276,28 @@ function toggleEventTab(tab) {
     document.getElementById('mapTabBtn').style.background = '#444';
     document.getElementById('mapTabBtn').style.color = '#ccc';
     showChartTab('overview');
+    // Fix: Invalidate all event card maps after charts tab is shown
+    setTimeout(() => {
+      document.querySelectorAll('[id^="eventRouteMap-"]').forEach(container => {
+        const mapInstance = container._leaflet_map;
+        if (mapInstance) {
+          // Ensure map redraws correctly after being hidden
+          requestAnimationFrame(() => {
+            mapInstance.invalidateSize(true);
+            // Force a view reset to trigger tile redraw (helps in some browsers)
+            const center = mapInstance.getCenter();
+            mapInstance.setView(center, mapInstance.getZoom(), { animate: false });
+          });
+        }
+      });
+    }, 350);
   }
 }
 
 // toggles among overview/forecast/waste charts
 function showChartTab(tab) {
   // hide everything except always-visible blocks
+
   document.querySelectorAll('#chartGrid > div:not(.chart-always)').forEach(el=> el.style.display='none');
   if (tab === 'overview') {
     document.querySelectorAll('.chart-overview').forEach(el=>el.style.display='block');
@@ -654,11 +448,9 @@ async function loadCommunityEvents(){
     
     console.log('🟢 loadCommunityEvents: cards created with real ML predictions');
     
-    // Ensure Google Maps is loaded before initializing the map
-    ensureGoogleMaps(() => {
-      initializeEventsMap(j.events || []);
-      renderCommunityCharts(j.events || [], predictionData);
-    });
+    // Initialize Leaflet map and charts directly
+    initializeEventsMap(j.events || []);
+    renderCommunityCharts(j.events || [], predictionData);
   }catch(e){
     console.error('❌ loadCommunityEvents error:', e);
     const feed = document.getElementById('eventsFeed');
@@ -773,36 +565,16 @@ function saveRiskLevelToDatabase(level) {
 
 // Initialize map showing all event locations
 // ======================== DIRECTIONS SERVICE ========================
-let directionsService;
-let directionsRenderer;
+// Directions service replaced with Leaflet routing
+// Routes are now calculated and displayed via drawEventRoutes() which draws polylines from route_coords in database
 
 function initDirections() {
-  directionsService = new google.maps.DirectionsService();
-  directionsRenderer = new google.maps.DirectionsRenderer({
-    map: window.map,
-    suppressMarkers: false,
-    polylineOptions: {
-      strokeColor: '#667eea',
-      strokeWeight: 5,
-      strokeOpacity: 0.8
-    }
-  });
+  console.log('✅ Directions initialized (using Leaflet polylines instead of Google Maps API)');
 }
 
 function calculateRoute(origin, destination) {
-  if (!directionsService) initDirections();
-
-  directionsService.route({
-    origin: origin,
-    destination: destination,
-    travelMode: google.maps.TravelMode.DRIVING
-  })
-  .then(response => {
-    directionsRenderer.setDirections(response);
-  })
-  .catch(err => {
-    console.error('Directions request failed:', err);
-  });
+  console.log('✅ Route calculation using pre-stored coordinates via drawEventRoutes()');
+  // Routes are now displayed from database route_coords field using L.polyline()
 }
 
 function getDirections() {
@@ -819,7 +591,7 @@ function getDirections() {
 
 function clearDirections() {
   if (directionsRenderer) {
-    directionsRenderer.setMap(null);
+    // Directions renderer removed (using Leaflet polylines)
     directionsRenderer = null;
   }
   const startInput = document.getElementById('dir-start');
@@ -828,50 +600,31 @@ function clearDirections() {
   if (endInput) endInput.value = '';
 }
 
-// ======================== GOOGLE MAPS EVENT INITIALIZATION ========================
+// ======================== LEAFLET EVENT MAP INITIALIZATION ========================
 
 function initializeEventsMap(events) {
   const container = document.getElementById('eventsMapContainer');
   if (!container) return;
-  // if API not yet available, load then retry
-  if (!window.google || !window.google.maps) {
-    ensureGoogleMaps(() => initializeEventsMap(events));
-    return;
-  }
 
-  // prepare container
+  // Prepare container
   container.innerHTML = '';
   const mapDiv = document.createElement('div');
-  mapDiv.id = 'eventsMapGoogle';
+  mapDiv.id = 'eventsMapLeaflet';
   mapDiv.style.cssText = 'width:100%; height:100%; position:relative;';
   container.appendChild(mapDiv);
 
-  // Create directions panel
-  const directionsPanel = document.createElement('div');
-  directionsPanel.id = 'directions-panel';
-  directionsPanel.style.cssText = 'position:absolute; top:10px; left:50%; transform:translateX(-50%); z-index:5; background:white; padding:10px 16px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.2); display:flex; gap:10px; align-items:center; font-family:sans-serif;';
-  directionsPanel.innerHTML = `
-    <input id="dir-start" placeholder="📍 Start location" style="padding:8px 12px; border:1px solid #ddd; border-radius:6px; font-size:0.9rem; width:200px;" />
-    <input id="dir-end" placeholder="🏁 End location" style="padding:8px 12px; border:1px solid #ddd; border-radius:6px; font-size:0.9rem; width:200px;" />
-    <button onclick="getDirections()" style="padding:8px 16px; background:#667eea; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:600;">Go</button>
-    <button onclick="clearDirections()" style="padding:8px 12px; background:#e2e8f0; color:#333; border:none; border-radius:6px; cursor:pointer;">✕ Clear</button>
-  `;
-  mapDiv.appendChild(directionsPanel);
-
-  const center = { lat: 13.1448, lng: 123.7435 };
-  window.map = new google.maps.Map(mapDiv, {
-    center,
-    zoom: 12,
-    mapTypeId: 'satellite',
-    zoomControl: true,
-    mapId: 'legazpi-events-map'
-  });
+  // Create Leaflet map
+  const center = [13.1448, 123.7435];
+  window.map = L.map('eventsMapLeaflet').setView(center, 12);
   
-  const map = window.map; // Reference for local use
-  console.log('✅ Google Map initialized, map.data exists:', !!map.data);
+  // Add OSM tiles
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 19
+  }).addTo(window.map);
 
-  // Initialize directions service
-  initDirections();
+  const map = window.map;
+  console.log('✅ Leaflet Map initialized');
 
   function coordsForEvent(ev) {
     let lat = 13.1448;
@@ -913,10 +666,16 @@ function initializeEventsMap(events) {
   }
 
   function plotEvents(list) {
-    const bounds = new google.maps.LatLngBounds();
+    const bounds = L.latLngBounds();
     let plotCount = 0;
     const heatmapData = [];  // For heatmap visualization
     console.log('🚀 plotEvents: Starting with', list.length, 'events');
+    
+    // DEBUG: Log event data for inspection
+    console.log('📋 EVENT DATA INSPECTION:');
+    list.forEach((ev, idx) => {
+      console.log(`  [${idx}] ${ev.title}: start=(${ev.start_lat}, ${ev.start_lng}), end=(${ev.end_lat}, ${ev.end_lng}), location=${ev.location}, capacity=${ev.capacity}`);
+    });
     
     // === DRAW EVENT ROUTES (CONNECTING LINES) ===
     function drawEventRoutes(eventsList) {
@@ -939,8 +698,26 @@ function initializeEventsMap(events) {
         const current = sortedEvents[i];
         const next = sortedEvents[i + 1];
         
-        if (!current.start_lat || !current.start_lng || !next.start_lat || !next.start_lng) {
-          console.warn('⏭️ Skipping route:', current.title, '→', next.title, '- missing coordinates');
+        // STRICT validation: both coordinates must be valid numbers
+        const currStart = {
+          lat: Number(current.start_lat),
+          lng: Number(current.start_lng)
+        };
+        const nextStart = {
+          lat: Number(next.start_lat),
+          lng: Number(next.start_lng)
+        };
+        
+        const isValidCoord = (lat, lng) => {
+          return Number.isFinite(lat) && Number.isFinite(lng) && 
+                 lat !== 0 && lng !== 0 &&
+                 lat >= 10 && lat <= 20 && lng >= 120 && lng <= 130; // Philippines bounds
+        };
+        
+        if (!isValidCoord(currStart.lat, currStart.lng) || !isValidCoord(nextStart.lat, nextStart.lng)) {
+          console.warn('⏭️ Skipping route:', current.title, '→', next.title, '- INVALID COORDINATES');
+          console.warn('   Current:', currStart, 'Valid:', isValidCoord(currStart.lat, currStart.lng));
+          console.warn('   Next:', nextStart, 'Valid:', isValidCoord(nextStart.lat, nextStart.lng));
           continue;
         }
         
@@ -959,126 +736,72 @@ function initializeEventsMap(events) {
           routeColor = '#ff9800';
         }
         
-        // Draw polyline (route)
-        const routeLine = new google.maps.Polyline({
-          path: [currentCoords, nextCoords],
-          geodesic: true,
-          strokeColor: routeColor,
-          strokeOpacity: 0.7,
-          strokeWeight: 3,
-          map: map,
-          title: `Route: ${current.title} → ${next.title}`,
-          clickable: true,
-          zIndex: 10
-        });
+        // Draw polyline (route) using Leaflet
+        const latlngs = [
+          [currentCoords.lat, currentCoords.lng],
+          [nextCoords.lat, nextCoords.lng]
+        ];
         
-        // Route info window
-        const routeInfo = new google.maps.InfoWindow({
-          content: `
-            <div style="background: white; padding: 12px; border-radius: 6px; font-size: 13px;">
-              <strong style="display: block; margin-bottom: 8px;">📍 Tour Route</strong>
-              <div style="margin-bottom: 6px;">
-                <strong>From:</strong> ${current.title}
-              </div>
-              <div style="margin-bottom: 6px;">
-                <strong>To:</strong> ${next.title}
-              </div>
+        const routeLine = L.polyline(latlngs, {
+          color: routeColor,
+          weight: 6,
+          opacity: 1.0,
+          dashArray: '',
+          lineCap: 'round',
+          lineJoin: 'round'
+        }).addTo(map);
+        
+        // Add popup on click
+        routeLine.bindPopup(`
+          <div style="padding: 8px; font-size: 13px;">
+            <strong>📍 Tour Route</strong><br>
+            <div style="margin-top: 8px;">
+              <strong>From:</strong> ${current.title}<br>
+              <strong>To:</strong> ${next.title}
             </div>
-          `
+          </div>
+        `);
+        
+        // Add hover effect
+        routeLine.on('mouseover', function() {
+          this.setStyle({ weight: 8, opacity: 1.0 });
+        });
+        routeLine.on('mouseout', function() {
+          this.setStyle({ weight: 6, opacity: 1.0 });
         });
         
-        routeLine.addListener('mouseover', () => {
-          routeLine.setOptions({ strokeWeight: 5, strokeOpacity: 1 });
-        });
-        
-        routeLine.addListener('mouseout', () => {
-          routeLine.setOptions({ strokeWeight: 3, strokeOpacity: 0.7 });
-        });
-        
-        routeLine.addListener('click', (e) => {
-          routeInfo.setPosition(e.latLng);
-          routeInfo.open(map);
-        });
-        
+        console.log('🎯 LEAFLET POLYLINE CREATED:');
+        console.log('   From:', current.title, currentCoords);
+        console.log('   To:', next.title, nextCoords);
+        console.log('   Color:', routeColor);
         console.log('✅ Route drawn:', current.title, '→', next.title);
       }
     }
     
-    // === LOAD GEOJSON BOUNDARY WITH RISK LEVEL ===
+    // === LOAD GEOJSON BOUNDARY ===
     console.log('📍 Loading Legazpi City boundary...');
     const geojsonPath = window.location.pathname.includes('/frontend/') 
       ? './legazpi_boundary.geojson' 
       : './frontend/legazpi_boundary.geojson';
-    console.log('📂 GeoJSON fetch path:', geojsonPath);
     
-    fetch(apiUrl('api.php?action=get_city_risk_level&city=Legazpi'))
-      .then(res => res.json())
-      .then(data => {
-        console.log('✅ Risk level fetched:', data);
+    fetch(geojsonPath)
+      .then(response => response.json())
+      .then(geojsonData => {
+        console.log('✅ GeoJSON loaded, features:', geojsonData.features.length);
+        const riskColor = '#4caf50'; // Default green, Leaflet version
         
-        // Map risk level to color
-        const riskToColor = {
-          'low': '#00FF00',
-          'moderate': '#FFFF00',
-          'high': '#FF0000'
-        };
-        window.currentRiskColor = riskToColor[data.risk_level] || '#00FF00';
-        console.log('🎨 Risk color:', window.currentRiskColor, 'for level:', data.risk_level);
+        L.geoJSON(geojsonData, {
+          style: {
+            fillColor: riskColor,
+            fillOpacity: 0.35,
+            color: '#000000',
+            weight: 2
+          }
+        }).addTo(map);
         
-        // Now load GeoJSON and apply the fetched risk color
-        return fetch(geojsonPath)
-          .then(response => {
-            console.log('✅ GeoJSON response status:', response.status, response.ok);
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            return response.json();
-          })
-          .then(geojsonData => {
-            console.log('✅ GeoJSON loaded, features:', geojsonData.features.length);
-            if (!geojsonData.features || geojsonData.features.length === 0) {
-              throw new Error('GeoJSON has no features');
-            }
-            map.data.addGeoJson(geojsonData);
-            
-            // Apply fetched risk level color
-            map.data.setStyle({
-              fillColor: window.currentRiskColor,
-              fillOpacity: 0.35,
-              strokeColor: '#000000',
-              strokeWeight: 2,
-              clickable: true
-            });
-            
-            console.log('✅ 🟢 Legazpi City boundary rendered with color:', window.currentRiskColor);
-          });
+        console.log('✅ 🟢 Legazpi City boundary rendered');
       })
-      .catch(err => {
-        console.warn('⚠️ Risk level fetch error:', err.message);
-        // Fallback: load GeoJSON with default green color
-        console.log('🔄 Attempting GeoJSON fallback...', geojsonPath);
-        return fetch(geojsonPath)
-          .then(response => {
-            console.log('✅ GeoJSON (fallback) response status:', response.status, response.ok);
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            return response.json();
-          })
-          .then(geojsonData => {
-            console.log('✅ GeoJSON loaded (fallback), features:', geojsonData.features.length);
-            if (!geojsonData.features || geojsonData.features.length === 0) {
-              throw new Error('GeoJSON has no features');
-            }
-            window.currentRiskColor = '#00FF00';
-            map.data.addGeoJson(geojsonData);
-            map.data.setStyle({
-              fillColor: window.currentRiskColor,
-              fillOpacity: 0.35,
-              strokeColor: '#000000',
-              strokeWeight: 2,
-              clickable: true
-            });
-            console.log('✅ 🟢 GeoJSON boundary rendered with default green');
-          })
-          .catch(e => console.error('❌ GeoJSON load failed (fallback):', e.message));
-      });
+      .catch(e => console.warn('⚠️ GeoJSON load failed:', e.message));
     
     // Draw event routes (BEFORE processing individual events)
     console.log('🛣️ Initializing event routes...');
@@ -1094,166 +817,113 @@ function initializeEventsMap(events) {
       const visitors = ev.prediction ? Math.round(ev.prediction.attendance) : 35000;
       const { lat, lng } = coordsForEvent(ev);
       console.log('📌 Creating marker for:', ev.title, '- Coords:', lat, lng);
-      bounds.extend({ lat, lng });
 
       // === RISK LEVEL CALCULATION ===
       const capacity = ev.capacity || 50000;
       const occupancy = Math.round((visitors / capacity) * 100);
       let riskLevel = 'LOW';
       let riskColor = '#4caf50';    // Green
-      let riskBgColor = '#4caf5033'; // Green with transparency
       let markerRadius = 300;
       
       if (occupancy > 85) {
         riskLevel = 'HIGH';
         riskColor = '#e74c3c';       // Red
-        riskBgColor = '#e74c3c33';
         markerRadius = 450;
       } else if (occupancy > 50) {
         riskLevel = 'MEDIUM';
         riskColor = '#ff9800';       // Orange/Yellow
-        riskBgColor = '#ff980033';
         markerRadius = 360;
       }
       
-      // Add heatmap data point for visitor concentration visualization
-      heatmapData.push({
-        location: new google.maps.LatLng(lat, lng),
-        weight: occupancy / 100  // Weight by occupancy percentage
-      });
+      // === CREATE RISK ZONE CIRCLE (LEAFLET) ===
+      const waste = ev.prediction && ev.prediction.waste_prediction ? Math.round(ev.prediction.waste_prediction) : Math.round((visitors / 50000) * 2900);
+      const trafficHours = Math.min(10, Math.max(1, Math.round(occupancy / 10))); // Estimate traffic peak hours based on occupancy
+      const riskEmoji = riskLevel === 'HIGH' ? '🔴' : riskLevel === 'MEDIUM' ? '🟠' : '🟢';
       
-      // === CREATE RISK ZONE POLYGON (CIRCLE) ===
-      const circle = new google.maps.Circle({
-        strokeColor: riskColor,
-        strokeOpacity: 0.9,
-        strokeWeight: 3,
+      const circle = L.circle([lat, lng], {
+        color: riskColor,
         fillColor: riskColor,
         fillOpacity: 0.25,
-        map,
-        center: { lat, lng },
-        radius: markerRadius,
-        clickable: true,
-        title: `${ev.title} - ${riskLevel} Risk Zone`
-      });
+        weight: 3,
+        radius: markerRadius
+      }).addTo(map)
+        .bindPopup(`
+          <div style="padding: 12px; border-radius: 6px; font-size: 13px;">
+            <strong style="display: block; margin-bottom: 8px;">${ev.title}</strong>
+            <div style="margin-bottom: 6px;">
+              <strong>⚠️ Risk:</strong> ${riskLevel} ${occupancy}%
+            </div>
+            <div style="margin-bottom: 6px;">
+              <strong>👥 Visitors:</strong> ${Number(visitors).toLocaleString()}
+            </div>
+            <div style="margin-bottom: 6px;">
+              <strong>🗑️ Waste (kg):</strong> ${Number(waste).toLocaleString()}
+            </div>
+            <div style="margin-bottom: 6px;">
+              <strong>⏱️ Traffic peak (hrs):</strong> ${trafficHours}
+            </div>
+            <div>
+              <strong>📍 Location:</strong> ${ev.location || 'Legazpi City'}
+            </div>
+          </div>
+        `);
       
-      // === CREATE CUSTOM MARKER WITH RISK ICON ===
-      const riskEmoji = riskLevel === 'HIGH' ? '🔴' : riskLevel === 'MEDIUM' ? '🟠' : '🟢';
-      const markerIcon = {
-        path: google.maps.SymbolPath.CIRCLE,
-        scale: 15,
-        fillColor: riskColor,
-        fillOpacity: 1,
-        strokeColor: '#ffffff',
-        strokeWeight: 2
-      };
-      
-      // Using AdvancedMarkerElement with custom content
-      const markerContent = document.createElement('div');
-      markerContent.style.cssText = 'background:' + markerIcon.fillColor + ';border:3px solid ' + markerIcon.strokeColor + ';border-radius:50%;width:35px;height:35px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:bold;cursor:pointer;';
-      markerContent.innerHTML = riskEmoji;
-      
-      const markerPin = new google.maps.marker.AdvancedMarkerElement({
-        position: { lat, lng },
-        map: map,
-        title: `${ev.title} - ${riskLevel} (${occupancy}%)`,
-        content: markerContent
-      });
-      
-      console.log('📍 Event marker added (AdvancedMarkerElement):', ev.title, '- Risk:', riskLevel, '- Occupancy:', occupancy + '%');
-      
-      // === RISK ZONE HOVER EFFECTS ===
-      circle.addListener('mouseover', () => {
-        circle.setOptions({ fillOpacity: 0.4, strokeWeight: 4 });
-      });
-      
-      circle.addListener('mouseout', () => {
-        circle.setOptions({ fillOpacity: 0.25, strokeWeight: 3 });
-      });
-      
-      markerPin.addListener('mouseover', () => {
-        circle.setOptions({ fillOpacity: 0.4, strokeWeight: 4 });
-        infoWindow.open({ anchor: markerPin, map });
-      });
-      
-      markerPin.addListener('mouseout', () => {
-        circle.setOptions({ fillOpacity: 0.25, strokeWeight: 3 });
-        infoWindow.close();
-      });
-      
-      markerPin.addListener('click', () => {
-        infoWindow.open({ anchor: markerPin, map });
-      });
-
-      // Add directions on marker click
-      markerPin.addEventListener('gmp-click', () => {
-        if (confirm(`Get directions to ${ev.title}?`)) {
-          const eventLat = lat;
-          const eventLng = lng;
-          // Try to use browser geolocation
-          navigator.geolocation.getCurrentPosition(
-            pos => {
-              const userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-              calculateRoute(userPos, { lat: eventLat, lng: eventLng });
-            },
-            () => {
-              // Fallback: prompt for start location
-              const start = prompt('Enter your starting location (or address):');
-              if (start) {
-                calculateRoute(start, { lat: eventLat, lng: eventLng });
-              }
-            }
-          );
-        }
-      });
-
-      // Build enhanced popup with image and description
-      const img = ev.image || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=500&h=300&fit=crop';
-      let dateStr = 'TBA';
-      if (ev.datetime) {
-        const dateObj = new Date(ev.datetime);
-        dateStr = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      // === CREATE LEAFLET MARKER WITH EMOJI ===
+      try {
+        const marker = L.circleMarker([lat, lng], {
+          radius: 10,
+          fillColor: riskColor,
+          color: '#fff',
+          weight: 3,
+          opacity: 1,
+          fillOpacity: 1
+        }).addTo(map);
+        
+        // Add emoji tooltip
+        marker.bindTooltip(riskEmoji, {
+          permanent: true,
+          direction: 'center'
+        });
+        
+        // Add popup with event details
+        marker.bindPopup(`
+          <div style="padding: 12px; font-size: 13px;">
+            <strong>${ev.title}</strong><br>
+            ⚠️ Risk: ${riskLevel} ${occupancy}%<br>
+            👥 ${Number(visitors).toLocaleString()} visitors<br>
+            🗑️ Waste: ${Number(waste).toLocaleString()} kg<br>
+            ⏱️ Traffic peak (hrs): ${trafficHours}<br>
+            📍 ${ev.location || 'Legazpi City'}
+          </div>
+        `);
+        
+        // Hover effects
+        marker.on('mouseover', () => {
+          circle.setStyle({ fillOpacity: 0.4, weight: 4 });
+          marker.openPopup();
+        });
+        
+        marker.on('mouseout', () => {
+          circle.setStyle({ fillOpacity: 0.25, weight: 2 });
+          marker.closePopup();
+        });
+        
+        console.log('📌 Leaflet marker added:', ev.title);
+      } catch(err) {
+        console.warn('⚠️ Error creating marker:', err.message);
       }
-      const desc = ev.description ? ev.description.substring(0, 80) + (ev.description.length > 80 ? '...' : '') : 'No description';
-
-      const popupContent = `
-        <div style="width: 300px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-          <div style="height: 160px; overflow: hidden; background: linear-gradient(135deg, ${riskColor}, ${riskColor}); position: relative;">
-            <img src="${img}" alt="${ev.title}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.9;">
-            <div style="position: absolute; top: 8px; right: 8px; background: ${riskColor}; color: white; padding: 6px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;">
-              ${riskEmoji} ${riskLevel}
-            </div>
-          </div>
-          <div style="padding: 14px;">
-            <h3 style="margin: 0 0 8px 0; font-size: 1rem; font-weight: 700; color: #1a202c;">${ev.title}</h3>
-            <div style="color: #666; font-size: 0.85rem; margin-bottom: 10px; line-height: 1.4;">${desc}</div>
-            <div style="border-top: 1px solid #e2e8f0; padding-top: 10px; font-size: 0.8rem;">
-              <div style="color: #718096; margin-bottom: 5px;">📅 <strong>${dateStr}</strong></div>
-              <div style="color: #718096; margin-bottom: 5px;">👥 <strong>${Number(visitors).toLocaleString()}</strong> expected visitors</div>
-              <div style="color: #718096; margin-bottom: 5px;">📍 ${ev.location || 'Legazpi City'}</div>
-              <div style="color: #718096; margin-bottom: 5px;">📊 <strong>${occupancy}%</strong> capacity (${Number(capacity).toLocaleString()} max)</div>
-              <div style="background: linear-gradient(90deg, ${riskColor}33 ${occupancy}%, #eee ${occupancy}%); height: 6px; border-radius: 3px; margin-top: 8px;"></div>
-            </div>
-          </div>
-        </div>
-      `;
-      const infoWindow = new google.maps.InfoWindow({ content: popupContent });
       
-      // Click to open popup
-      circle.addListener('click', () => {
-        console.log('✅ Risk zone clicked - showing popup');
-        infoWindow.open({ anchor: circle, map });
-      });
+      // Bounds tracking
+      if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        bounds.extend([lat, lng]);
+      }
     });
     
-    // === CREATE HEATMAP REPLACEMENT: Visitor Density Visualization ===
-    // NOTE: google.maps.visualization.HeatmapLayer is DEPRECATED (May 2025)
-    // Using custom Circle visualization instead (more future-proof)
+    // === CREATE HEATMAP REPLACEMENT: Visitor Density Visualization (Leaflet-based) ===
+    // Converting from deprecated google.maps.visualization.HeatmapLayer to Leaflet circles
     if (heatmapData.length > 0) {
-      if (!google.maps.geometry?.spherical) {
-        console.error('❌ geometry library not loaded — add "geometry" to your Maps script libraries param');
-      } else {
-        console.log('🔥 Creating visitor density visualization with', heatmapData.length, 'data points');
-      
+      console.log('🔥 Creating visitor density visualization with', heatmapData.length, 'data points via Leaflet');
+    
       // Cluster nearby points to visualize visitor concentration areas
       const radiusKm = 2;
       const clusters = [];
@@ -1261,7 +931,10 @@ function initializeEventsMap(events) {
       heatmapData.forEach(point => {
         let foundCluster = false;
         for (let cluster of clusters) {
-          const distance = google.maps.geometry.spherical.computeDistanceBetween(point.location, cluster.center) / 1000;
+          // Simple distance calculation: sqrt((lat2-lat1)^2 + (lng2-lng1)^2) * 111 (km per degree)
+          const latDiff = cluster.center.lat - point.location.lat;
+          const lngDiff = cluster.center.lng - point.location.lng;
+          const distance = Math.sqrt(latDiff*latDiff + lngDiff*lngDiff) * 111;
           if (distance < radiusKm) {
             cluster.points.push(point);
             foundCluster = true;
@@ -1273,26 +946,23 @@ function initializeEventsMap(events) {
         }
       });
       
-      // Draw concentration circles
+      // Draw concentration circles using Leaflet
       clusters.forEach(cluster => {
         const intensity = Math.min(cluster.points.length / 10, 1);
         const radius = 500 + (cluster.points.length * 100);
-        new google.maps.Circle({
-          center: cluster.center,
+        L.circle([cluster.center.lat, cluster.center.lng], {
           radius: radius,
-          map: map,
-          strokeColor: '#FF4444',
-          strokeOpacity: 0.4,
-          strokeWeight: 2,
+          color: '#FF4444',
+          opacity: 0.4,
+          weight: 2,
           fillColor: '#FF4444',
           fillOpacity: 0.1 + (intensity * 0.4),
-          zIndex: 100
-        });
+          className: 'heatmap-cluster'
+        }).addTo(map);
       });
-      console.log('✅ 🔥 Visitor density visualization complete - ' + clusters.length + ' areas');
-      }
+      console.log('✅ 🔥 Visitor density visualization complete - ' + clusters.length + ' areas (Leaflet-based)');
     } else {
-      console.warn('⚠️ No heatmap data or geometry library unavailable');
+      console.warn('⚠️ No heatmap data available');
     }
     
     console.log('✅ plotEvents complete: plotted', plotCount, 'out of', list.length, 'events');
@@ -1304,8 +974,61 @@ function initializeEventsMap(events) {
     console.log('✅ 🛣️ Event routes');
     console.log('═══════════════════════════════════════════════════════');
     
-    if (!bounds.isEmpty()) {
+    // DEBUG: Log actual map state
+    console.log('🔍 MAP STATE DEBUG:');
+    console.log('   Map object:', !!map);
+    console.log('   Map center:', map.getCenter());
+    console.log('   Map zoom:', map.getZoom());
+    console.log('   Bounds valid:', bounds.isValid());
+    if (bounds.isValid()) {
+      console.log('   Bounds NE:', bounds.getNorthEast());
+      console.log('   Bounds SW:', bounds.getSouthWest());
+    }
+    console.log('   Events plotted:', plotCount);
+    console.log('   Heatmap points:', heatmapData.length);
+    
+    if (bounds.isValid()) {
       map.fitBounds(bounds);
+      console.log('📍 Bounds fitted - map should now show all features');
+    } else {
+      console.warn('⚠️ Bounds are empty - no coordinates found! Check event data.');
+      // Fallback: show default Legazpi area
+      map.setView([13.1448, 123.7435], 13);
+      console.log('📍 Using default Legazpi center as fallback');
+      
+      // Add TEST MARKERS to verify map is working
+      console.log('🧪 Adding test markers to verify map rendering (Leaflet)...');
+      const testMarkers = [
+        { title: 'TEST 🟢 - Low Risk', lat: 13.128, lng: 123.748, color: '#4caf50' },
+        { title: 'TEST 🟠 - Medium Risk', lat: 13.134, lng: 123.766, color: '#ff9800' },
+        { title: 'TEST 🔴 - High Risk', lat: 13.140, lng: 123.735, color: '#e74c3c' }
+      ];
+      
+      testMarkers.forEach(test => {
+        // Circle background using Leaflet
+        L.circle([test.lat, test.lng], {
+          radius: 350,
+          color: test.color,
+          fillColor: test.color,
+          fillOpacity: 0.25,
+          weight: 2
+        }).addTo(map);
+        
+        // Marker with tooltip
+        L.circleMarker([test.lat, test.lng], {
+          radius: 12,
+          fillColor: test.color,
+          color: '#fff',
+          weight: 3,
+          opacity: 1,
+          fillOpacity: 1
+        })
+        .bindTooltip(test.title, {permanent: true, direction: 'center'})
+        .bindPopup(test.title)
+        .addTo(map);
+        
+        console.log('✅ Test marker added (Leaflet):', test.title);
+      });
     }
   }
 
@@ -1471,8 +1194,11 @@ function renderCommunityCharts(events, mlPredData) {
       
       <!-- Event Route Map -->
       <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; margin-bottom: 12px;">
-        <h4 style="margin: 0 0 10px 0; font-size: 0.8rem; color: #aaa; text-transform: uppercase;">🗺️ Event Route & Location</h4>
-        <div id="eventRouteMap-${index}" style="width: 100%; height: 180px; border-radius: 6px; background: #1a1a2e; border: 1px solid rgba(102,126,234,0.3); position: relative;"></div>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+          <h4 style="margin: 0; font-size: 0.8rem; color: #aaa; text-transform: uppercase;">🗺️ Event Route & Location</h4>
+          <button id="routeToggleBtn-${index}" class="route-toggle-btn" type="button">Hide directions</button>
+        </div>
+        <div id="eventRouteMap-${index}" style="width: 100%; height: 420px; min-height: 420px; border-radius: 10px; background: #1a1a2e; border: 1px solid rgba(102,126,234,0.3); position: relative; overflow: hidden;"></div>
         <div style="margin-top: 8px; font-size: 0.75rem; color: #999;">
           <div>🏁 Start: ${event.start_lat && event.start_lng && !isNaN(parseFloat(event.start_lat)) && !isNaN(parseFloat(event.start_lng)) ? `${parseFloat(event.start_lat).toFixed(4)}°N, ${parseFloat(event.start_lng).toFixed(4)}°E` : `<span style="color: #e74c3c;">Not set</span>`}</div>
           <div>🏁 End: ${event.end_lat && event.end_lng && !isNaN(parseFloat(event.end_lat)) && !isNaN(parseFloat(event.end_lng)) ? `${parseFloat(event.end_lat).toFixed(4)}°N, ${parseFloat(event.end_lng).toFixed(4)}°E` : `<span style="color: #e74c3c;">Not set</span>`}</div>
@@ -1519,22 +1245,27 @@ function renderCommunityCharts(events, mlPredData) {
         type_end_lng: typeof event.end_lng
       });
       
-      // Check if Google Maps is available
-      if (!window.google || !google.maps) {
-        console.log('📍 Waiting for Google Maps API... retrying for event', index);
-        setTimeout(initEventRouteMap, 200);
-        return;
-      }
+        // Leaflet map always initializes (Google Maps check removed)
       
       try {
         // Default center (Legazpi City)
         const defaultCenter = { lat: 13.1448, lng: 123.7435 };
         
-        // Get event coordinates
-        let startLat = event.start_lat ? parseFloat(event.start_lat) : null;
-        let startLng = event.start_lng ? parseFloat(event.start_lng) : null;
-        let endLat = event.end_lat ? parseFloat(event.end_lat) : null;
-        let endLng = event.end_lng ? parseFloat(event.end_lng) : null;
+        // Get event coordinates (robust parsing for strings like "13.1, 123.4")
+        const parseCoord = (val) => {
+          if (val === null || val === undefined) return null;
+          if (typeof val === 'number') return val;
+          const str = String(val).trim();
+          if (!str) return null;
+          const parts = str.split(/[ ,]+/).filter(Boolean);
+          const num = Number(parts[0]);
+          return Number.isFinite(num) ? num : null;
+        };
+
+        let startLat = parseCoord(event.start_lat);
+        let startLng = parseCoord(event.start_lng);
+        let endLat = parseCoord(event.end_lat);
+        let endLng = parseCoord(event.end_lng);
         
         console.log(`📍 Event "${event.title}" parsed coordinates:`, {startLat, startLng, endLat, endLng, types: {startLat: typeof startLat, startLng: typeof startLng, endLat: typeof endLat, endLng: typeof endLng}});
         
@@ -1546,130 +1277,155 @@ function renderCommunityCharts(events, mlPredData) {
         
         console.log('✅ Coordinate validation:', {hasStartCoords, hasEndCoords, values: {startLat, startLng, endLat, endLng}});
         
-        // Create map centered on event location or default
-        const mapCenter = hasStartCoords ? { lat: startLat, lng: startLng } : defaultCenter;
-        const eventRouteMap = new google.maps.Map(routeMapContainer, {
-          center: mapCenter,
-          zoom: 13,
-          mapTypeId: 'roadmap',
-          zoomControl: true,
-          streetViewControl: false,
-          fullscreenControl: false,
-          mapId: 'legazpi-event-route-map'
-        });
+        // Create Leaflet map (converted from Google Maps)
+        const mapCenter = hasStartCoords ? [startLat, startLng] : [defaultCenter.lat, defaultCenter.lng];
+        const eventRouteMap = L.map(routeMapContainer).setView(mapCenter, 13);
+        // Keep reference for later invalidateSize() calls when tab becomes visible
+        routeMapContainer._leaflet_map = eventRouteMap;
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors',
+          maxZoom: 19
+        }).addTo(eventRouteMap);
         
-        // TEST: Draw a VERY VISIBLE yellow test polyline to verify map renders
-        try {
-          const testLine = new google.maps.Polyline({
-            path: [
-              { lat: 13.1448, lng: 123.7435 },  // Legazpi center
-              { lat: 13.1480, lng: 123.7480 }   // Point ~5km away
-            ],
-            strokeColor: '#FFFF00',
-            strokeWeight: 10,
-            strokeOpacity: 1,
-            map: eventRouteMap,
-            zIndex: 100
-          });
-          console.log('✨✨✨ 🟡 YELLOW TEST LINE VISIBLE - MAP IS WORKING ✨✨✨');
-        } catch(testErr) {
-          console.error('❌ Yellow test line failed:', testErr);
-        }
         
         // If no coordinates, show message on map
         if (!hasStartCoords && !hasEndCoords) {
-          const noCoordMsg = new google.maps.InfoWindow({
-            content: `<div style="font-size: 12px; padding: 8px; color: #666;"><strong>⚠️ No Route Set</strong><br>Admin must set start/end locations</div>`,
-            position: defaultCenter
-          });
-          noCoordMsg.open(eventRouteMap);
+          L.popup({
+            latlng: [defaultCenter.lat, defaultCenter.lng],
+            content: `<div style="font-size: 12px; padding: 8px; color: #666;"><strong>⚠️ No Route Set</strong><br>Admin must set start/end locations</div>`
+          }).openOn(eventRouteMap);
           console.log('⏭️ No coordinates for event:', event.title);
           return;
         }
         
-        // Create bounds to fit all markers
-        const bounds = new google.maps.LatLngBounds();
+        // Create bounds to fit all markers (Leaflet)
+        const bounds = L.latLngBounds();
         
-        // Add start point marker if available (using AdvancedMarkerElement)
+        // Add start point marker if available (Leaflet)
         if (hasStartCoords) {
-          const startContent = document.createElement('div');
-          startContent.style.cssText = 'background:#4caf50;border:3px solid #fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.3);';
-          startContent.innerHTML = '🟢';
-          
-          new google.maps.marker.AdvancedMarkerElement({
-            position: { lat: startLat, lng: startLng },
-            map: eventRouteMap,
-            title: 'Event Start Point',
-            content: startContent
-          });
-          bounds.extend({ lat: startLat, lng: startLng });
+          L.circleMarker([startLat, startLng], {
+            radius: 10,
+            fillColor: '#4caf50',
+            color: '#fff',
+            weight: 3,
+            opacity: 1,
+            fillOpacity: 1
+          })
+          .bindTooltip('Event Start Point', {permanent: true, direction: 'center'})
+          .bindPopup('🟢 Event Start Point')
+          .addTo(eventRouteMap);
+          bounds.extend([startLat, startLng]);
         }
         
-        // Add end point marker if available (using AdvancedMarkerElement)
+        // Add end point marker if available (Leaflet)
         if (hasEndCoords) {
-          const endContent = document.createElement('div');
-          endContent.style.cssText = 'background:#e74c3c;border:3px solid #fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.3);';
-          endContent.innerHTML = '🔴';
-          
-          new google.maps.marker.AdvancedMarkerElement({
-            position: { lat: endLat, lng: endLng },
-            map: eventRouteMap,
-            title: 'Event End Point',
-            content: endContent
-          });
-          bounds.extend({ lat: endLat, lng: endLng });
+          L.circleMarker([endLat, endLng], {
+            radius: 10,
+            fillColor: '#e74c3c',
+            color: '#fff',
+            weight: 3,
+            opacity: 1,
+            fillOpacity: 1
+          })
+          .bindTooltip('Event End Point', {permanent: true, direction: 'center'})
+          .bindPopup('🔴 Event End Point')
+          .addTo(eventRouteMap);
+          bounds.extend([endLat, endLng]);
         }
         
-        // Draw route line if both points exist
-        if (hasStartCoords && hasEndCoords) {
-          console.log('🔵 POLYLINE TRIGGER: Drawing route for', event.title);
-          console.log('   Coordinates: Start(' + startLat + ',' + startLng + ') → End(' + endLat + ',' + endLng + ')');
-          
-          try {
-            // Create polyline with HIGHLY VISIBLE styling
-            const polylinePath = [
-              { lat: parseFloat(startLat), lng: parseFloat(startLng) },
-              { lat: parseFloat(endLat), lng: parseFloat(endLng) }
-            ];
-            
-            console.log('📐 Polyline path:', polylinePath);
-            
-            const routeLine = new google.maps.Polyline({
-              path: polylinePath,
-              geodesic: true,
-              strokeColor: '#FF4444',        // BRIGHT RED
-              strokeOpacity: 1.0,
-              strokeWeight: 8,                // THICKER
-              icons: [{
-                icon: { path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, scale: 2, strokeColor: '#FF4444' },
-                offset: '50%'
-              }],
-              map: eventRouteMap,
-              zIndex: 1000,
-              clickable: true
+        // Draw route line if both points exist (OSRM routing)
+        if (hasStartCoords && hasEndCoords && typeof L.Routing !== 'undefined') {
+          console.log('🔵 ROUTE TRIGGER: Drawing OSRM route for', event.title);
+          const routeControl = L.Routing.control({
+            waypoints: [
+              L.latLng(parseFloat(startLat), parseFloat(startLng)),
+              L.latLng(parseFloat(endLat), parseFloat(endLng))
+            ],
+            routeWhileDragging: false,
+            router: L.Routing.osrmv1({
+              serviceUrl: 'https://router.project-osrm.org/route/v1'
+            }),
+            lineOptions: {
+              styles: [{ color: '#FF4444', weight: 4 }]
+            },
+            show: true,
+            addWaypoints: false,
+            fitSelectedRoutes: true,
+            createMarker: function(i, waypoint, n) {
+              const icon = L.divIcon({
+                html: i === 0 ? '🟢' : '🔴',
+                className: 'custom-marker'
+              });
+              return L.marker(waypoint.latLng, { icon });
+            }
+          }).addTo(eventRouteMap);
+
+          // Add a close button and toggle control so users can show/hide routing instructions
+          const routingContainer = routeControl.getContainer && routeControl.getContainer();
+          const toggleBtn = document.getElementById(`routeToggleBtn-${index}`);
+
+          if (routingContainer) {
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'route-control-close';
+            closeBtn.type = 'button';
+            closeBtn.title = 'Close route instructions';
+            closeBtn.textContent = '×';
+
+            const setRoutingVisible = (visible) => {
+              routingContainer.style.display = visible ? '' : 'none';
+              if (toggleBtn) toggleBtn.textContent = visible ? 'Hide directions' : 'Show directions';
+            };
+
+            closeBtn.addEventListener('click', () => {
+              setRoutingVisible(false);
             });
-            
-            console.log('✅✅✅ POLYLINE SUCCESSFULLY CREATED ✅✅✅');
-            console.log('PATH LENGTH:', routeLine.getPath().getLength());
-            console.log('MAP ASSIGNED:', routeLine.getMap() ? 'YES' : 'NO');
-            
-            // Extend bounds to include polyline
-            const polylineBounds = new google.maps.LatLngBounds();
-            polylinePath.forEach(point => polylineBounds.extend(point));
-            bounds.union(polylineBounds);
-            
-          } catch(polyErr) {
-            console.error('❌❌❌ POLYLINE CREATION FAILED:', polyErr);
+
+            if (toggleBtn) {
+              toggleBtn.addEventListener('click', () => {
+                const isHidden = routingContainer.style.display === 'none';
+                setRoutingVisible(isHidden);
+              });
+            }
+
+            routingContainer.appendChild(closeBtn);
+
+            // Start visible, but allow user to toggle
+            setRoutingVisible(true);
+          } else if (toggleBtn) {
+            // If routing container isn't available, hide the toggle button
+            toggleBtn.style.display = 'none';
           }
+        } else if (hasStartCoords && hasEndCoords) {
+          console.log('🔵 POLYLINE FALLBACK: Drawing straight line for', event.title);
+          const polylinePath = [
+            [parseFloat(startLat), parseFloat(startLng)],
+            [parseFloat(endLat), parseFloat(endLng)]
+          ];
+          const routeLine = L.polyline(polylinePath, {
+            color: '#FF4444',
+            opacity: 1.0,
+            weight: 4,
+            className: 'event-route-polyline'
+          }).addTo(eventRouteMap);
+
+          bounds.extend([startLat, startLng]);
+          bounds.extend([endLat, endLng]);
+          console.log('✅ Fallback polyline rendered:', polylinePath);
         } else {
-          console.log('⏭️ SKIPPING POLYLINE - Coords missing:', {hasStartCoords, hasEndCoords});
+          console.log('⏭️ SKIPPING ROUTE - Coords missing:', {hasStartCoords, hasEndCoords});
         }
         
-        // Fit map bounds to show all markers AND polyline
-        if (!bounds.isEmpty()) {
-          console.log('📍 Fitting bounds:', bounds.getNorthEast(), bounds.getSouthWest());
-          eventRouteMap.fitBounds(bounds, 50);  // 50px padding
+        // Fit map bounds to show all markers AND polyline (Leaflet)
+        if (bounds.isValid()) {
+          console.log('📍 Fitting bounds via Leaflet');
+          eventRouteMap.fitBounds(bounds, {padding: [50, 50]});
         }
+        // Ensure map fully loads in card (especially when hidden during initialization)
+        requestAnimationFrame(() => {
+          eventRouteMap.invalidateSize(true);
+          const center = eventRouteMap.getCenter();
+          eventRouteMap.setView(center, eventRouteMap.getZoom(), { animate: false });
+        });
         
         console.log('✅ Route map ready for:', event.title, '| Has start coords:', hasStartCoords, '| Has end coords:', hasEndCoords);
       } catch(mapErr) {
@@ -1829,15 +1585,15 @@ function scheduleChartUpdates() {
   }, timeUntilNextUpdate);
 }
 
-// ======================== GOOGLE MAPS ROUTE INITIALIZATION ========================
+// ======================== LEAFLET ROUTE INITIALIZATION (converted from Google Maps) ========================
 
 function initializeRouteMap(event, routes, crowdLevel) {
   console.log('🔵 initializeRouteMap called for event', event && event.title, 'routes count', routes ? routes.length : 0);
   const container = document.getElementById('routeMapContainer');
   if (!container) return;
 
-  // handle Google quota errors by falling back to a simple canvas path
-  if (window.gmQuotaExceeded || !window.google || !google.maps) {
+  // Fallback for when Leaflet is not available
+  if (!window.L) {
     renderFallbackRoute(container, event, routes, crowdLevel);
     return;
   }
@@ -1847,47 +1603,57 @@ function initializeRouteMap(event, routes, crowdLevel) {
   mapDiv.style.cssText = 'width:100%; height:100%; border-radius:8px; overflow:hidden; position:relative;';
   container.appendChild(mapDiv);
 
-  const center = { lat:13.112621547653507, lng:123.75351323035586 };
+  const center = [13.112621547653507, 123.75351323035586];
   let map;
   try {
-    map = new google.maps.Map(mapDiv, { center, zoom:14, mapTypeId:'satellite', zoomControl:true, mapId: 'legazpi-parade-route-map' });
+    map = L.map(mapDiv).setView(center, 14);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(map);
   } catch (gmErr) {
-    console.warn('Google Maps initialization failed:', gmErr);
+    console.warn('Leaflet initialization failed:', gmErr);
     renderFallbackRoute(container, event, routes, crowdLevel);
     return;
   }
-  // show event endpoints if available (using AdvancedMarkerElement)
+  
+  // Show event endpoints if available (using Leaflet)
   if (event) {
     if (event.start_lat && event.start_lng) {
-      const startContent = document.createElement('div');
-      startContent.innerHTML = '🟢';
-      startContent.style.cssText = 'font-size:20px;font-weight:bold;';
-      new google.maps.marker.AdvancedMarkerElement({
-        map: map,
-        position: { lat: parseFloat(event.start_lat), lng: parseFloat(event.start_lng) },
-        title: 'Start Point',
-        content: startContent
-      });
+      L.circleMarker([parseFloat(event.start_lat), parseFloat(event.start_lng)], {
+        radius: 10,
+        fillColor: '#4caf50',
+        color: '#fff',
+        weight: 3,
+        opacity: 1,
+        fillOpacity: 1
+      })
+      .bindTooltip('Start Point', {permanent: true, direction: 'center'})
+      .bindPopup('🟢 Start Point')
+      .addTo(map);
     }
     if (event.end_lat && event.end_lng) {
-      const endContent = document.createElement('div');
-      endContent.innerHTML = '🔴';
-      endContent.style.cssText = 'font-size:20px;font-weight:bold;';
-      new google.maps.marker.AdvancedMarkerElement({
-        map: map,
-        position: { lat: parseFloat(event.end_lat), lng: parseFloat(event.end_lng) },
-        title: 'End Point',
-        content: endContent
-      });
+      L.circleMarker([parseFloat(event.end_lat), parseFloat(event.end_lng)], {
+        radius: 10,
+        fillColor: '#e74c3c',
+        color: '#fff',
+        weight: 3,
+        opacity: 1,
+        fillOpacity: 1
+      })
+      .bindTooltip('End Point', {permanent: true, direction: 'center'})
+      .bindPopup('🔴 End Point')
+      .addTo(map);
     }
   }
-  const bounds = new google.maps.LatLngBounds();
+  
+  const bounds = L.latLngBounds();
   const trafficColors = ['#4caf50','#ff9800','#e74c3c'];
 
   if (!routes || !routes.length) {
-    // show overlay message inside map
+    // Show overlay message inside map
     const msg = document.createElement('div');
-    msg.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-weight:600;text-align:center;pointer-events:none;';
+    msg.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#333;font-weight:600;text-align:center;pointer-events:none;background:rgba(255,255,255,0.8);padding:20px;border-radius:8px;';
     msg.textContent = 'No route data available';
     mapDiv.appendChild(msg);
     console.warn('⚠️ initializeRouteMap: no routes passed');
@@ -1908,8 +1674,8 @@ ${route.restrictions ? '⚠️ '+route.restrictions : ''}
     routes.forEach((route, idx) => {
       console.log('🔵 route loop idx', idx, 'name', route.name, 'coords length', route.coordinates ? route.coordinates.length : 0);
       if (route.coordinates && route.coordinates.length) {
-        const path = route.coordinates.map(c => ({ lat:c[0], lng:c[1] }));
-        path.forEach(p=>bounds.extend(p));
+        const path = route.coordinates.map(c => [c[0], c[1]]);
+        path.forEach(p => bounds.extend(p));
         let baseLevel = 0;
         if (typeof route.traffic_level !== 'undefined') baseLevel = Number(route.traffic_level);
         else if (typeof route.crowd_percentage !== 'undefined') {
@@ -1919,39 +1685,42 @@ ${route.restrictions ? '⚠️ '+route.restrictions : ''}
           else baseLevel = 0;
         }
         const color = trafficColors[baseLevel] || trafficColors[0];
-        const poly = new google.maps.Polyline({ path, strokeColor:color, strokeOpacity:0.9, strokeWeight: idx===0?5:3, map });
-        poly.addListener('click', () => showRouteInfo(route, idx));
+        const weight = idx===0 ? 5 : 3;
+        L.polyline(path, {color, opacity: 0.9, weight})
+          .bindPopup(() => showRouteInfo(route, idx))
+          .addTo(map);
       }
     });
   }
 
-  // start/end markers (using AdvancedMarkerElement)
-  const startPos = {lat:13.149245587017868, lng:123.75440311340692};
-  const startMarkerContent = document.createElement('div');
-  startMarkerContent.innerHTML = '🟢';
-  startMarkerContent.style.cssText = 'font-size:24px;cursor:pointer;';
-  const startMarkerElem = new google.maps.marker.AdvancedMarkerElement({
-    position: startPos,
-    map: map,
-    title: 'Parade Start',
-    content: startMarkerContent
-  });
-  startMarkerContent.addEventListener('gmp-click', ()=>{
-    new google.maps.InfoWindow({content:`<strong>📍 Parade Start</strong><br>Saint Raphael Church<br>👥 ${crowdLevel.toLocaleString()} visitors`}).open(map, startMarkerElem);
-  });
+  // Parade start/end markers (using Leaflet)
+  const startPos = [13.149245587017868, 123.75440311340692];
+  L.circleMarker(startPos, {
+    radius: 12,
+    fillColor: '#4caf50',
+    color: '#fff',
+    weight: 3,
+    opacity: 1,
+    fillOpacity: 1
+  })
+  .bindTooltip('🟢 Parade Start', {permanent: true, direction: 'center'})
+  .bindPopup(`<strong>📍 Parade Start</strong><br>Saint Raphael Church<br>👥 ${crowdLevel.toLocaleString()} visitors`)
+  .addTo(map);
   
-  const endPos = {lat:13.134327078936007, lng:123.76561383427422};
-  const endMarkerContent = document.createElement('div');
-  endMarkerContent.innerHTML = '🔴';
-  endMarkerContent.style.cssText = 'font-size:24px;cursor:pointer;';
-  new google.maps.marker.AdvancedMarkerElement({
-    position: endPos,
-    map: map,
-    title: 'Parade End',
-    content: endMarkerContent
-  });
+  const endPos = [13.134327078936007, 123.76561383427422];
+  L.circleMarker(endPos, {
+    radius: 12,
+    fillColor: '#e74c3c',
+    color: '#fff',
+    weight: 3,
+    opacity: 1,
+    fillOpacity: 1
+  })
+  .bindTooltip('🔴 Parade End', {permanent: true, direction: 'center'})
+  .bindPopup(`<strong>📍 Parade End</strong><br>Legazpi City Center<br>👥 ${crowdLevel.toLocaleString()} visitors`)
+  .addTo(map);
 
-  // show other events
+  // Show other events
   fetch(apiUrl('api.php?action=list_events')).then(r=>r.json()).then(data=>{
     if(data.events && Array.isArray(data.events)){
       data.events.forEach(ev=>{
@@ -1959,19 +1728,24 @@ ${route.restrictions ? '⚠️ '+route.restrictions : ''}
         const eventLat = ev.start_lat || 13.112621547653507;
         const eventLng = ev.start_lng || 123.75351323035586;
         const visitors = Math.round((ev.prediction && ev.prediction.attendance) || (ev.capacity*0.7));
+        const waste = ev.prediction && ev.prediction.waste_prediction ? Math.round(ev.prediction.waste_prediction) : Math.round((visitors / 50000) * 2900);
+        const occupancy = ev.capacity ? Math.round((visitors / ev.capacity) * 100) : 0;
+        const trafficHours = Math.min(10, Math.max(1, Math.round(occupancy / 10)));
         let markerColor = '#667eea';
         const ratio = ev.capacity? visitors/ev.capacity:0;
         if(ratio>0.85) markerColor='#e74c3c';
         else if(ratio>0.6) markerColor='#ff9800';
-        const circ = new google.maps.Circle({
-          strokeColor:'#fff', strokeOpacity:1, strokeWeight:2,
-          fillColor:markerColor, fillOpacity:0.8,
-          map, center:{lat:eventLat,lng:eventLng}, radius:300
-        });
-        circ.addListener('click',()=>{
-          new google.maps.InfoWindow({content:`<div style="text-align:center;"><strong>📍 ${ev.title}</strong><br>${ev.location}<br>👥 ${visitors.toLocaleString()}</div>`}).open(map,{lat:eventLat,lng:eventLng});
-        });
-        bounds.extend({lat:eventLat,lng:eventLng});
+        L.circleMarker([eventLat, eventLng], {
+          radius: 8,
+          fillColor: markerColor,
+          color: '#fff',
+          weight: 2,
+          opacity: 1,
+          fillOpacity: 0.8
+        })
+        .bindPopup(`<div style="text-align:center;"><strong>📍 ${ev.title}</strong><br>${ev.location}<br>👥 ${visitors.toLocaleString()} visitors<br>🗑️ ${waste.toLocaleString()} kg waste<br>⏱️ Est. traffic: ${trafficHours} hrs</div>`)
+        .addTo(map);
+        bounds.extend([eventLat, eventLng]);
       });
     }
   }).catch(e=>console.error('Error fetching events for map:',e));
@@ -2044,19 +1818,24 @@ function displayRouteSuggestions(routes) {
   suggBox.innerHTML = html;
 }
 
-// Render routes inside the modal map container: routeMapContainer-<evId>
+// Render routes inside the modal map container: routeMapContainer-<evId> (converted to Leaflet)
 function displayRouteMap(evId, routes) {
   const container = document.getElementById('routeMapContainer-' + evId);
-  if (!container || !window.google || !google.maps) return;
+  if (!container || !window.L) return;
 
   container.innerHTML = '';
   const mapDiv = document.createElement('div');
   mapDiv.style.cssText = 'width:100%; height:100%; min-height:360px; border-radius:8px; overflow:hidden;';
   container.appendChild(mapDiv);
 
-  const center = { lat:13.1448, lng:123.7435 };
-  const map = new google.maps.Map(mapDiv, { center, zoom:13, mapTypeId:'satellite', mapId: 'legazpi-display-route-map' });
-  const bounds = new google.maps.LatLngBounds();
+  const center = [13.1448, 123.7435];
+  const map = L.map(mapDiv).setView(center, 13);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 19
+  }).addTo(map);
+  
+  const bounds = L.latLngBounds();
   const trafficColors = ['#4caf50', '#ff9800', '#e74c3c'];
 
   function showRouteInfo(route, idx) {
@@ -2067,7 +1846,7 @@ function displayRouteMap(evId, routes) {
   if (routes && routes.length) {
     routes.forEach((route, idx) => {
       if (!route.coordinates || !route.coordinates.length) return;
-      const path = route.coordinates.map(c => ({ lat:c[0], lng:c[1] }));
+      const path = route.coordinates.map(c => [c[0], c[1]]);
       path.forEach(p => bounds.extend(p));
       let baseLevel = 0;
       if (typeof route.traffic_level !== 'undefined') baseLevel = Number(route.traffic_level);
@@ -2076,16 +1855,18 @@ function displayRouteMap(evId, routes) {
         baseLevel = cp > 75 ? 2 : (cp > 50 ? 1 : 0);
       }
       const color = trafficColors[baseLevel] || trafficColors[0];
-      const poly = new google.maps.Polyline({ path, strokeColor:color, strokeOpacity:0.9, strokeWeight: idx===0?5:3, map });
-      poly.addListener('click', () => showRouteInfo(route, idx));
+      const weight = idx===0 ? 5 : 3;
+      L.polyline(path, {color, opacity: 0.9, weight})
+        .bindPopup(() => showRouteInfo(route, idx))
+        .addTo(map);
     });
   }
 
   if (!bounds.isEmpty()) {
-    console.log('🔵 initializeRouteMap: fitting bounds');
-    map.fitBounds(bounds, { padding: 40 });
+    console.log('🔵 displayRouteMap: fitting bounds');
+    map.fitBounds(bounds, {padding: [40, 40]});
   } else {
-    console.warn('🔵 initializeRouteMap: bounds empty, nothing to fit');
+    console.warn('🔵 displayRouteMap: bounds empty, nothing to fit');
   }
   return map;
 }
@@ -2244,11 +2025,6 @@ document.addEventListener('DOMContentLoaded', function() {
   loadCommunityEvents();
   // default to map view; load maps lazily
   if (document.getElementById('mapTabBtn')) {
-    document.getElementById('mapTabBtn').addEventListener('click', function() {
-      ensureGoogleMaps();
-    });
-    // call once now to queue script if map tab is auto-activated
-    ensureGoogleMaps();
     toggleEventTab('map');
   }
 });
@@ -2862,7 +2638,7 @@ function renderModalPredictionCharts(ev) {
               <p id="shopModalContact" style="margin:2px 0 0 0; font-weight:600; color:#1e293b; font-size:0.8rem; line-height:1.3; word-break:break-word;"></p>
             </div>
             <div style="border-left:4px solid #667eea; padding-left:10px;">
-              <p style="margin:0; font-size:0.65rem; color:#667eea; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">👤 Owner</p>
+              <p style="margin:0; font-size:0.65rem; color:#667eea; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">� Landmark</p>
               <p id="shopModalOwner" style="margin:2px 0 0 0; font-weight:600; color:#1e293b; font-size:0.8rem; line-height:1.3; word-break:break-word;"></p>
             </div>
           </div>
@@ -2887,6 +2663,18 @@ function renderModalPredictionCharts(ev) {
   
   <script>
   function openShopModalFunc(shopId) {
+    const shop = (window.noveltyShops || []).find(s => s.id === shopId);
+    if (shop) {
+      document.getElementById('shopModalName').textContent = shop.name;
+      document.getElementById('shopModalDescription').textContent = shop.description;
+      document.getElementById('shopModalImage').src = shop.image || 'https://source.unsplash.com/featured/900x600/?souvenir,market';
+      document.getElementById('shopModalAddress').textContent = `${shop.address || ''}${shop.distance ? ' • ' + shop.distance + ' km' : ''}`;
+      document.getElementById('shopModalContact').textContent = `${shop.phone || ''}${shop.hours ? ' • ' + shop.hours : ''}`;
+      document.getElementById('shopModalOwner').textContent = shop.landmark || '';
+      const prodList = (shop.specialties || []).map(s => `<span class="shop-tag">${s}</span>`).join('');
+      document.getElementById('shopProductsList').innerHTML = prodList ? `<div style="display:flex; flex-wrap:wrap; gap:10px;">${prodList}</div>` : '<p style="color:#888;">No specialties listed.</p>';
+    }
+
     document.getElementById('shopDetailModal').style.display = 'flex';
     document.body.style.overflow = 'hidden';
   }
@@ -3274,7 +3062,7 @@ const accommodationData = {
 // Destination data
 const destinationData = {
   'Lignon Hill': {
-    image: 'assets/lignon.jpg',
+    image: 'assets/lig.jpg',
     description: 'Lignon Hill is a scenic viewpoint perfect for sunset watching and photography. Located in Legazpi City, it offers panoramic views of Mayon Volcano and the surrounding landscape. The hill is a favored spot for locals and tourists alike, especially during golden hour when the volcano is bathed in warm light.',
     highlights: [
       '🌅 Best sunset views',
@@ -4565,41 +4353,45 @@ function showMap() {
     const mapElement = document.getElementById('directionsMap');
     if (!mapElement) return;
     mapElement.innerHTML = '';
-    if (!window.google || !google.maps) {
+    if (!window.L) {
       mapElement.innerHTML = '<p style="color:red;">Map library not loaded</p>';
       return;
     }
 
-    const legazpiCenter = { lat: 13.112621547653507, lng: 123.75351323035586 };
-    const map = new google.maps.Map(mapElement, {
-      center: legazpiCenter,
-      zoom: 13,
-      mapTypeId: 'satellite',
-      mapId: 'legazpi-itinerary-map'
-    });
-    const bounds = new google.maps.LatLngBounds();
+    const legazpiCenter = [13.112621547653507, 123.75351323035586];
+    const map = L.map(mapElement).setView(legazpiCenter, 13);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(map);
+
+    const bounds = L.latLngBounds();
 
     if (userLocation.lat && userLocation.lon) {
-      const userContent = document.createElement('div');
-      userContent.innerHTML = '📍';
-      userContent.style.cssText = 'font-size:24px;';
-      new google.maps.marker.AdvancedMarkerElement({
-        position: { lat: userLocation.lat, lng: userLocation.lon },
-        map,
-        title: 'Your Location',
-        content: userContent
-      });
-      bounds.extend({ lat: userLocation.lat, lng: userLocation.lon });
+      L.circleMarker([userLocation.lat, userLocation.lon], {
+        radius: 10,
+        fillColor: '#667eea',
+        color: '#fff',
+        weight: 3,
+        opacity: 1,
+        fillOpacity: 1
+      })
+      .bindTooltip('📍 Your Location', {permanent: true, direction: 'center'})
+      .bindPopup('Your Location')
+      .addTo(map);
+      bounds.extend([userLocation.lat, userLocation.lon]);
     } else {
-      const legazpiContent = document.createElement('div');
-      legazpiContent.innerHTML = '🗺️';
-      legazpiContent.style.cssText = 'font-size:24px;';
-      new google.maps.marker.AdvancedMarkerElement({
-        position: legazpiCenter,
-        map,
-        title: 'Legazpi City Center',
-        content: legazpiContent
-      });
+      L.circleMarker(legazpiCenter, {
+        radius: 10,
+        fillColor: '#ff9800',
+        color: '#fff',
+        weight: 3,
+        opacity: 1,
+        fillOpacity: 1
+      })
+      .bindTooltip('🗺️ Legazpi City Center', {permanent: true, direction: 'center'})
+      .bindPopup('Legazpi City Center')
+      .addTo(map);
       bounds.extend(legazpiCenter);
     }
 
@@ -4616,16 +4408,18 @@ function showMap() {
     currentItinerary.destinations.forEach(dest => {
       const coords = destinationCoords[dest];
       if (coords) {
-        const destContent = document.createElement('div');
-        destContent.innerHTML = '⭐';
-        destContent.style.cssText = 'font-size:20px;';
-        new google.maps.marker.AdvancedMarkerElement({
-          position: { lat: coords.lat, lng: coords.lon },
-          map,
-          title: dest,
-          content: destContent
-        });
-        bounds.extend({ lat: coords.lat, lng: coords.lon });
+        L.circleMarker([coords.lat, coords.lon], {
+          radius: 8,
+          fillColor: '#e74c3c',
+          color: '#fff',
+          weight: 2,
+          opacity: 1,
+          fillOpacity: 0.8
+        })
+        .bindTooltip('⭐ ' + dest, {permanent: true, direction: 'center'})
+        .bindPopup(dest)
+        .addTo(map);
+        bounds.extend([coords.lat, coords.lon]);
       }
     });
 

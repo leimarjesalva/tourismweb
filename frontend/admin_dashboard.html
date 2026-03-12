@@ -5,16 +5,12 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Admin Dashboard - Legazpi Explorer</title>
   <link rel="stylesheet" href="style.css" />
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <!-- Leaflet JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Google Maps JavaScript API -->
-  <script
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD2wFzfW2LAFExynq5ZksNael7CXCYoIco&libraries=geometry&callback=initMaps"
-    async defer></script>
-  <script>
-    function initMaps(){
-      console.log('Google Maps API loaded');
-    }
-  </script>
+  <!-- Leaflet JS and Chart.js are included above -->
   <style>
     /* ===== MODERN ADMIN DASHBOARD DESIGN ===== */
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -1917,20 +1913,22 @@ function drawRouteLine() {
   
   try {
     // Create new polyline route between start and end points
-    routeLine = new google.maps.Polyline({
-      path: [
-        { lat: startLat, lng: startLng },
-        { lat: endLat, lng: endLng }
-      ],
-      geodesic: true,
-      strokeColor: '#667eea',
-      strokeOpacity: 0.9,
-      strokeWeight: 4,
-      map: eventPickerMap,
-      title: 'Event Route',
-      clickable: true,
-      zIndex: 100
-    });
+    routeLine = L.polyline([
+      [startLat, startLng],
+      [endLat, endLng]
+    ], {
+      color: '#667eea',
+      weight: 4,
+      opacity: 0.9,
+      dashArray: ''
+    }).addTo(eventPickerMap)
+      .bindPopup(`
+        <div style="padding: 8px;">
+          <strong>📍 Event Route</strong><br>
+          Start: ${startLat.toFixed(4)}, ${startLng.toFixed(4)}<br>
+          End: ${endLat.toFixed(4)}, ${endLng.toFixed(4)}
+        </div>
+      `);
     
     console.log('✅ Polyline created successfully:', {startLat, startLng, endLat, endLng});
   } catch(err) {
@@ -1938,46 +1936,14 @@ function drawRouteLine() {
     return;
   }
   
-  // Add click listener to show route info with distance
-  routeLine.addListener('click', (e) => {
-    try {
-      // Try to calculate distance using geometry library
-      const distance = google.maps.geometry.spherical.computeDistanceBetween(
-        new google.maps.LatLng(startLat, startLng),
-        new google.maps.LatLng(endLat, endLng)
-      );
-      const distanceKm = (distance / 1000).toFixed(2);
-      
-      const routeInfo = new google.maps.InfoWindow({
-        content: `<div style="font-size: 12px; padding: 8px;"><strong>📍 Event Route</strong><br>Distance: ${distanceKm} km</div>`,
-        position: e.latLng
-      });
-      routeInfo.open(eventPickerMap);
-    } catch(err) {
-      // Fallback if geometry library not available
-      const routeInfo = new google.maps.InfoWindow({
-        content: `<div style="font-size: 12px; padding: 8px;"><strong>📍 Event Route</strong><br>Route drawn successfully</div>`,
-        position: e.latLng
-      });
-      routeInfo.open(eventPickerMap);
-    }
-  });
-  
   // Auto-fit map bounds to show entire route with padding
-  const bounds = new google.maps.LatLngBounds();
-  bounds.extend({ lat: startLat, lng: startLng });
-  bounds.extend({ lat: endLat, lng: endLng });
-  
-  // Add padding to bounds
-  const centerLat = (startLat + endLat) / 2;
-  const centerLng = (startLng + endLng) / 2;
-  const padding = 0.02; // Roughly 2km padding
-  
-  bounds.extend({ lat: centerLat + padding, lng: centerLng + padding });
-  bounds.extend({ lat: centerLat - padding, lng: centerLng - padding });
+  const bounds = L.latLngBounds([
+    [startLat, startLng],
+    [endLat, endLng]
+  ]);
   
   try {
-    eventPickerMap.fitBounds(bounds);
+    eventPickerMap.fitBounds(bounds, { padding: [50, 50] });
     console.log('✅ Map fitted to route bounds with padding');
     showSnackbar('🛣️ Event route line drawn on map!', 'success');
   } catch(err) {
@@ -2009,52 +1975,44 @@ function updateLocationCard(isStart, lat, lng) {
 }
 
 function initEventLocationPicker() {
-  if (eventPickerMap || !window.google || !google.maps) return;
+  if (eventPickerMap) return;
 
   setTimeout(() => {
     const mapElement = document.getElementById('eventLocationPickerMap');
     if (!mapElement) return;
 
     const center = { lat: 13.1448, lng: 123.7435 };
-    eventPickerMap = new google.maps.Map(mapElement, {
-      center,
-      zoom: 13,
-      mapTypeId: 'satellite',
-      zoomControl: true,
-      scrollwheel: true
-    });
+    eventPickerMap = L.map('eventLocationPickerMap').setView([center.lat, center.lng], 13);
+    
+    // Add OSM tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(eventPickerMap);
 
-    eventPickerMap.addListener('click', function(e) {
+    eventPickerMap.on('click', function(e) {
       if (!pickMode) {
         showSnackbar('Select a location type first', 'info');
         return;
       }
-      const lat = e.latLng.lat();
-      const lng = e.latLng.lng();
+      const lat = e.latlng.lat;
+      const lng = e.latlng.lng;
 
       const addMarker = (isStart) => {
-        if (isStart && startMarker) startMarker.setMap(null);
-        if (!isStart && endMarker) endMarker.setMap(null);
-        const marker = new google.maps.Marker({
-          position: { lat, lng },
-          map: eventPickerMap,
+        if (isStart && startMarker) startMarker.remove();
+        if (!isStart && endMarker) endMarker.remove();
+        
+        const marker = L.marker([lat, lng], {
           draggable: true,
-          title: isStart ? 'Start Point' : 'End Point',
-          icon: {
-            path: google.maps.SymbolPath.CIRCLE,
-            scale: 8,
-            fillColor: isStart ? '#4caf50' : '#e74c3c',
-            fillOpacity: 0.9,
-            strokeColor: '#fff',
-            strokeWeight: 2
-          }
+          title: isStart ? 'Start Point' : 'End Point'
+        }).addTo(eventPickerMap)
+          .bindPopup(`<strong>${isStart ? 'Start' : 'End'} Point</strong><br>Drag to adjust`);
+        
+        marker.on('dragend', function() {
+          const p = this.getLatLng();
+          updateLocationCard(isStart, p.lat, p.lng);
         });
-        const info = new google.maps.InfoWindow({ content: `<strong>${isStart ? 'Start' : 'End'} Point</strong><br>Drag to adjust` });
-        marker.addListener('click', () => info.open(eventPickerMap, marker));
-        marker.addListener('dragend', function(evt) {
-          const p = evt.latLng;
-          updateLocationCard(isStart, p.lat(), p.lng());
-        });
+        
         if (isStart) startMarker = marker;
         else endMarker = marker;
       };
@@ -2089,11 +2047,11 @@ document.getElementById('pickEndEventBtn')?.addEventListener('click', () => {
 
 document.getElementById('clearEventPickBtn')?.addEventListener('click', () => {
   if (startMarker) {
-    try { startMarker.setMap(null); } catch(e) {}
+    try { if (startMarker && startMarker.remove) startMarker.remove(); } catch(e) {}
     startMarker = null;
   }
   if (endMarker) {
-    try { endMarker.setMap(null); } catch(e) {}
+    try { if (endMarker && endMarker.remove) endMarker.remove(); } catch(e) {}
     endMarker = null;
   }
   
@@ -2145,28 +2103,17 @@ window.editEvent = async function(id) {
     document.querySelector('input[name="start_lat"]').value = lat;
     document.querySelector('input[name="start_lng"]').value = lng;
     
-    if (startMarker) startMarker.setMap(null);
+    if (startMarker && startMarker.remove) startMarker.remove();
     
-    startMarker = new google.maps.Marker({
-      position: { lat: lat, lng: lng },
-      map: eventPickerMap,
+    startMarker = L.marker([lat, lng], {
       draggable: true,
-      title: 'Start Point',
-      icon: {
-        path: google.maps.SymbolPath.CIRCLE,
-        scale: 8,
-        fillColor: '#4caf50',
-        fillOpacity: 0.9,
-        strokeColor: '#fff',
-        strokeWeight: 2
-      }
-    });
+      title: 'Start Point'
+    }).addTo(eventPickerMap)
+      .bindPopup('<strong>Start Point</strong><br>Drag to adjust');
     
-    const startInfoWindow = new google.maps.InfoWindow({ content: '<strong>Start Point</strong><br>Drag to adjust' });
-    startMarker.addListener('click', () => startInfoWindow.open(eventPickerMap, startMarker));
-    startMarker.addListener('dragend', function(evt) {
-      const p = evt.latLng;
-      updateLocationCard(true, p.lat(), p.lng());
+    startMarker.on('dragend', function(evt) {
+      const p = this.getLatLng();
+      updateLocationCard(true, p.lat, p.lng);
     });
     
     updateLocationCard(true, lat, lng);
@@ -2178,28 +2125,17 @@ window.editEvent = async function(id) {
     document.querySelector('input[name="end_lat"]').value = lat;
     document.querySelector('input[name="end_lng"]').value = lng;
     
-    if (endMarker) endMarker.setMap(null);
+    if (endMarker && endMarker.remove) endMarker.remove();
     
-    endMarker = new google.maps.Marker({
-      position: { lat: lat, lng: lng },
-      map: eventPickerMap,
+    endMarker = L.marker([lat, lng], {
       draggable: true,
-      title: 'End Point',
-      icon: {
-        path: google.maps.SymbolPath.CIRCLE,
-        scale: 8,
-        fillColor: '#e74c3c',
-        fillOpacity: 0.9,
-        strokeColor: '#fff',
-        strokeWeight: 2
-      }
-    });
+      title: 'End Point'
+    }).addTo(eventPickerMap)
+      .bindPopup('<strong>End Point</strong><br>Drag to adjust');
     
-    const endInfoWindow = new google.maps.InfoWindow({ content: '<strong>End Point</strong><br>Drag to adjust' });
-    endMarker.addListener('click', () => endInfoWindow.open(eventPickerMap, endMarker));
-    endMarker.addListener('dragend', function(evt) {
-      const p = evt.latLng;
-      updateLocationCard(false, p.lat(), p.lng());
+    endMarker.on('dragend', function(evt) {
+      const p = this.getLatLng();
+      updateLocationCard(false, p.lat, p.lng);
     });
     
     updateLocationCard(false, lat, lng);
@@ -3061,23 +2997,22 @@ async function previewRoute(eventId){
   try{
     const r = await getJSON('../backend/api.php?action=get_event_parade_details&event_id='+eventId);
     if(!r.success){ showSnackbar('Preview error: '+(r.error||'failed'),'error'); return; }
-    if (!window.google || !google.maps) { showSnackbar('Google Maps not available','error'); return; }
-    const map = new google.maps.Map(mapDiv, {
-      center:{lat:13.1448,lng:123.7435},
-      zoom:13,
-      mapTypeId:'satellite'
-    });
-    const bounds = new google.maps.LatLngBounds();
+    if (!window.L) { showSnackbar('Leaflet not available','error'); return; }
+    const map = L.map(mapDiv).setView([13.1448, 123.7435], 13);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(map);
+    const bounds = L.latLngBounds();
     const colors = ['#1f78b4','#33a02c','#e31a1c'];
     (r.routes||[]).forEach((rt, idx)=>{
       const geo = rt.geojson && rt.geojson.geometry ? rt.geojson.geometry : { type:'LineString', coordinates: rt.coordinates };
-      const path = geo.coordinates.map(c=>({lat:c[1],lng:c[0]}));
+      const path = geo.coordinates.map(c=>[c[1],c[0]]);
       path.forEach(p=>bounds.extend(p));
-      const poly = new google.maps.Polyline({path,strokeColor:colors[idx%colors.length],strokeWeight:4,strokeOpacity:0.9,map});
-      const gmLink = path.length ? `https://www.google.com/maps/dir/?api=1&origin=${path[0].lat},${path[0].lng}&destination=${path[path.length-1].lat},${path[path.length-1].lng}&travelmode=driving` : '#';
-      poly.addListener('click', ()=>{
-         new google.maps.InfoWindow({content: rt.name + '<br/>Dist: '+rt.distance+' km<br/>Dur: '+rt.duration+' min<br/><a href="'+gmLink+'" target="_blank">Open in Maps ↗</a>'}).open(map);
-      });
+      const gmLink = path.length ? `https://www.google.com/maps/dir/?api=1&origin=${path[0][0]},${path[0][1]}&destination=${path[path.length-1][0]},${path[path.length-1][1]}&travelmode=driving` : '#';
+      L.polyline(path, {color: colors[idx%colors.length], weight: 4, opacity: 0.9})
+        .bindPopup(rt.name + '<br/>Dist: '+rt.distance+' km<br/>Dur: '+rt.duration+' min<br/><a href="'+gmLink+'" target="_blank">Open in Maps ↗</a>')
+        .addTo(map);
     });
     if(!bounds.isEmpty()) map.fitBounds(bounds);
   }catch(e){ console.error(e); showSnackbar('Preview failed','error'); }
@@ -4181,65 +4116,59 @@ let destPickerMap = null; let destMarker = null;
 let hotelPickerMap = null; let hotelMarker = null;
 
 function initDestPickerMap(){
-  if (destPickerMap || !window.google || !google.maps) return;
+  if (destPickerMap || !window.L) return;
   const mapDiv = document.getElementById('destPickerMap');
   if (!mapDiv) return;
-  const center = { lat:13.1448, lng:123.7435 };
-  destPickerMap = new google.maps.Map(mapDiv, {
-    center,
-    zoom: 13,
-    mapTypeId: 'satellite',
-    zoomControl: true
-  });
-  destPickerMap.addListener('click', function(e){
-    const lat = e.latLng.lat().toFixed(4);
-    const lng = e.latLng.lng().toFixed(4);
+  const center = [13.1448, 123.7435];
+  destPickerMap = L.map(mapDiv).setView(center, 13);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 19
+  }).addTo(destPickerMap);
+  destPickerMap.on('click', function(e){
+    const lat = e.latlng.lat.toFixed(4);
+    const lng = e.latlng.lng.toFixed(4);
     document.querySelector('input[name="latitude"]').value = lat;
     document.querySelector('input[name="longitude"]').value = lng;
-    if (destMarker) destMarker.setMap(null);
-    destMarker = new google.maps.Marker({
-      position:{lat:parseFloat(lat),lng:parseFloat(lng)},
-      map: destPickerMap,
-      draggable:true,
-      title:'Destination'
-    });
-    destMarker.addListener('dragend', function(evt){
-      const p = evt.latLng;
-      document.querySelector('input[name="latitude"]').value = p.lat().toFixed(4);
-      document.querySelector('input[name="longitude"]').value = p.lng().toFixed(4);
+    if (destMarker) destMarker.remove();
+    destMarker = L.marker([parseFloat(lat), parseFloat(lng)], {
+      draggable: true,
+      title: 'Destination'
+    }).addTo(destPickerMap);
+    destMarker.on('dragend', function(evt){
+      const p = this.getLatLng();
+      document.querySelector('input[name="latitude"]').value = p.lat.toFixed(4);
+      document.querySelector('input[name="longitude"]').value = p.lng.toFixed(4);
     });
     showSnackbar('Location selected!', 'success');
   });
 }
 
 function initHotelPickerMap(){
-  if (hotelPickerMap || !window.google || !google.maps) return;
+  if (hotelPickerMap || !window.L) return;
   const mapDiv = document.getElementById('hotelPickerMap');
   if (!mapDiv) return;
-  const center = { lat:13.1448, lng:123.7435 };
-  hotelPickerMap = new google.maps.Map(mapDiv, {
-    center,
-    zoom: 13,
-    mapTypeId: 'satellite',
-    zoomControl: true
-  });
-  hotelPickerMap.addListener('click', function(e){
-    const lat = e.latLng.lat().toFixed(4);
-    const lng = e.latLng.lng().toFixed(4);
+  const center = [13.1448, 123.7435];
+  hotelPickerMap = L.map(mapDiv).setView(center, 13);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 19
+  }).addTo(hotelPickerMap);
+  hotelPickerMap.on('click', function(e){
+    const lat = e.latlng.lat.toFixed(4);
+    const lng = e.latlng.lng.toFixed(4);
     const f = document.getElementById('itineraryHotelForm');
     f.latitude.value = lat;
     f.longitude.value = lng;
-    if (hotelMarker) hotelMarker.setMap(null);
-    hotelMarker = new google.maps.Marker({
-      position:{lat:parseFloat(lat),lng:parseFloat(lng)},
-      map: hotelPickerMap,
-      draggable:true,
-      title:'Hotel'
-    });
-    hotelMarker.addListener('dragend', function(evt){
-      const p = evt.latLng;
-      f.latitude.value = p.lat().toFixed(4);
-      f.longitude.value = p.lng().toFixed(4);
+    if (hotelMarker) hotelMarker.remove();
+    hotelMarker = L.marker([parseFloat(lat), parseFloat(lng)], {
+      draggable: true,
+      title: 'Hotel'
+    }).addTo(hotelPickerMap);
+    hotelMarker.on('dragend', function(evt){
+      const p = this.getLatLng();
+      f.latitude.value = p.lat.toFixed(4);
+      f.longitude.value = p.lng.toFixed(4);
     });
     showSnackbar('Location selected!', 'success');
   });

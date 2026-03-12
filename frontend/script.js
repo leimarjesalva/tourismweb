@@ -1,4 +1,4 @@
-/* ===== LEGAZPI EXPLORER - CLEAN VERSION ===== */
+﻿/* ===== LEGAZPI EXPLORER - CLEAN VERSION ===== */
 /* All duplicates and non-functioning code removed */
 
 // SNACKBAR / TOAST UTILITY
@@ -257,6 +257,48 @@ const noveltyShops = [
     directions: 'From LCC Legazpi: Take Quezon Avenue heading downtown. Shop is located near the Ibalong Monument, opposite to a local restaurant. Easy walking distance from city center.'
   }
 ];
+
+// Expose for modal consumption and render guest-side shop cards
+if (typeof window !== 'undefined') {
+  window.noveltyShops = noveltyShops;
+}
+
+function renderNoveltyShops() {
+  const container = document.getElementById('shopsContainer');
+  if (!container) return;
+  container.innerHTML = '';
+
+  noveltyShops.forEach(shop => {
+    const imageUrl = shop.image || 'https://source.unsplash.com/featured/400x260/?souvenir,market';
+    const card = document.createElement('div');
+    card.className = 'shop-card';
+    card.onclick = () => openShopModalFunc(shop.id);
+    card.innerHTML = `
+      <div class="shop-card-image" style="background-image:url('${imageUrl}');"></div>
+      <div class="shop-card-content">
+        <div class="shop-card-header">
+          <h3>${shop.name}</h3>
+          <span class="shop-rating">⭐ ${shop.rating.toFixed(1)}</span>
+        </div>
+        <p class="shop-card-desc">${shop.description}</p>
+        <div class="shop-card-meta">
+          <span>📍 ${shop.distance} km</span>
+          <span>⏰ ${shop.hours}</span>
+        </div>
+        <div class="shop-card-tags">
+          ${ (shop.specialties || []).slice(0,5).map(t => `<span class="shop-tag">${t}</span>`).join('') }
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+if (document.readyState === 'loading') {
+  window.addEventListener('DOMContentLoaded', renderNoveltyShops);
+} else {
+  renderNoveltyShops();
+}
 
 // ===== ENHANCED ROUTES WITH DETAILED DIRECTIONS =====
 
@@ -936,16 +978,13 @@ function initFestivalCharts() {
 }
 
 function initFestivalMap() {
-  if (!window.google || !google.maps) return;
   if (festivalMap) return;
   const mapEl = document.getElementById('festivalMap');
   if (!mapEl) return;
-  festivalMap = new google.maps.Map(mapEl, {
-    center: { lat: 13.1448, lng: 123.7435 },
-    zoom: 13,
-    mapTypeId: 'satellite',
-    zoomControl: true
-  });
+  festivalMap = L.map(mapEl).setView([13.1448, 123.7435], 13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(festivalMap);
 }
 
 function clearFestivalMarkers(){
@@ -961,27 +1000,19 @@ function renderFestivalHeat(points){
     const norm = Math.sqrt((p.attendance||0) / maxAtt);
     const minR = 40, maxR = 600;
     const radius = Math.round(minR + (maxR - minR) * norm);
-    const color = p.intensity > 0.6 ? 'rgba(255,80,80,0.7)' : (p.intensity > 0.3 ? 'rgba(255,160,80,0.6)' : 'rgba(0,200,120,0.5)');
-    const circle = new google.maps.Circle({
-      strokeColor: color,
-      strokeOpacity: 1,
-      strokeWeight: 1,
+    const color = p.intensity > 0.6 ? '#ff5050' : (p.intensity > 0.3 ? '#ffa050' : '#00c878');
+    const circle = L.circle([p.lat, p.lon], {
+      color: color,
       fillColor: color,
       fillOpacity: 0.32,
-      map: festivalMap,
-      center: { lat: p.lat, lng: p.lon },
       radius: radius
-    });
+    }).addTo(festivalMap);
     festivalMarkers.push(circle);
-    const info = new google.maps.InfoWindow({
-      content: `<strong>${p.location}</strong><br/>Visitors: ${p.attendance}<br/>Intensity: ${p.intensity}`
-    });
-    circle.addListener('click', () => info.open(festivalMap));
+    circle.bindPopup(`<strong>${p.location}</strong><br/>Visitors: ${p.attendance}<br/>Intensity: ${p.intensity}`);
   });
   if (points.length > 0) {
     try {
-      const bounds = new google.maps.LatLngBounds();
-      festivalMarkers.forEach(m => { try { bounds.union(m.getBounds()); } catch(e){} });
+      const bounds = L.latLngBounds(points.map(p => [p.lat, p.lon]));
       festivalMap.fitBounds(bounds);
     } catch (e) { /* ignore */ }
   }

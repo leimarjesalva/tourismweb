@@ -591,8 +591,8 @@ section {
 
 /* Background - Mayon Volcano */
 .layer-back {
-  background-image: url("assets/sun.png");
-  background-size: 58%;
+  background-image: url("assets/zzz.jpg");
+  background-size: 58%;             
   background-position: center;
   transform: translateZ(-1px) scale(2);
 }
@@ -949,6 +949,103 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 .card:hover .card-image-container,
 .card:hover video {
   transform: scale(1.05);
+}
+
+/* Novelty Shop Cards */
+.shop-card {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  cursor: pointer;
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  min-height: 380px;
+}
+
+.shop-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+}
+
+.shop-card-image {
+  height: 180px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.shop-card-content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.shop-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.shop-card h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  line-height: 1.2;
+  color: #f7f7f7;
+}
+
+.shop-rating {
+  background: rgba(255,255,255,0.12);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  color: #ffd700;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.shop-card-desc {
+  color: rgba(255,255,255,0.8);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin: 0 0 12px 0;
+  flex: 1;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.shop-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.75);
+  margin-bottom: 12px;
+}
+
+.shop-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.shop-tag {
+  background: rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.92);
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  white-space: nowrap;
 }
 
 .card-image-container {
@@ -1518,6 +1615,90 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+/* Leaflet Routing Machine tweaks */
+.leaflet-routing-container {
+  max-height: 190px;
+  overflow: hidden;
+  border-radius: 10px;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+  background: #111;
+  color: #f5f5f5;
+}
+
+/* Ensure routing text is readable */
+.leaflet-routing-container, 
+.leaflet-routing-instructions, 
+.leaflet-routing-instruction, 
+.leaflet-routing-alternatives, 
+.leaflet-routing-instruction .leaflet-routing-summary {
+  /* keep background solid for legibility */
+  background: gray !important;
+  color: #f5f5f5 !important;
+}
+
+.leaflet-routing-instruction {
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+}
+
+.leaflet-routing-instruction:last-child {
+  border-bottom: none;
+}
+
+.leaflet-routing-controls a, 
+.leaflet-routing-controls button {
+  color: #f5f5f5 !important;
+}
+
+/* Close button for routing instructions */
+.route-control-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 1001;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.45);
+}
+
+.route-control-close:hover {
+  background: rgba(0, 0, 0, 0.75);
+}
+
+/* Toggle button for showing/hiding directions panel */
+.route-toggle-btn {
+  padding: 6px 10px;
+  font-size: 12px;
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.25);
+  color: #eee;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.route-toggle-btn:hover {
+  background: rgba(0, 0, 0, 0.35);
+  transform: translateY(-1px);
+}
+
+.route-toggle-btn:active {
+  transform: translateY(0);
+}
+
+.route-control-close:hover {
+  background: rgba(0, 0, 0, 0.75);
 }
 
 .card-modal-content {
@@ -2441,10 +2622,6 @@ footer {
   margin-bottom: 0.3rem;
 }
 
-.dark .destinations-selector label:first-child {
-  color: #ddd;
-}
-
 .checkbox-group {
   display: flex;
   flex-direction: column;
@@ -2459,10 +2636,6 @@ footer {
   color: #555;
   font-size: 0.9rem;
   transition: color 0.2s ease;
-}
-
-.dark .checkbox-group label {
-  color: #bbb;
 }
 
 .checkbox-group label:hover {
@@ -3238,6 +3411,7 @@ footer {
 
   .itinerary-item {
     padding: 1rem;
+    margin-bottom: 0.8rem;
   }
 
   .itinerary-actions {
@@ -3255,23 +3429,46 @@ footer {
     border-radius: 10px;
   }
 
+  .hotel-card-header {
+    padding: 1rem;
+  }
+
   .hotel-name {
     font-size: 1.1rem;
   }
 
+  .hotel-card-body {
+    padding: 1rem;
+  }
+
+  .hotel-rate {
+    font-size: 1.2rem;
+  }
+
+  .hotel-actions {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .hotel-btn {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+    width: 100%;
+  }
+
   .hotels-grid {
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 1rem;
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
   }
 
   .card-grid {
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: 1fr;
     gap: 1.5rem;
-    padding: 0 1rem;
+    padding: 0 0.8rem;
   }
 
   .card {
-    min-height: 340px;
+    min-height: 300px;
   }
 }
 
@@ -3679,7 +3876,7 @@ footer {
   /* Itinerary */
   .create-itinerary-wrapper {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 0.8rem;
   }
 
   .itinerary-column {
@@ -3687,7 +3884,7 @@ footer {
   }
 
   .itinerary-column.itinerary-right {
-    max-height: 50vh;
+    max-height: 45vh;
   }
 
   /* Events */
@@ -3769,6 +3966,7 @@ footer {
   .section h2 {
     font-size: 1.5rem;
     margin-bottom: 1rem;
+    padding-bottom: 1rem;
   }
 
   /* Cards */
@@ -4852,11 +5050,12 @@ img, video, iframe, embed, object {
   /* Modal responsive */
   .festival-modal-content {
     grid-template-columns: 1fr 1fr;
-    max-height: 85vh;
+    width: 90%;
+    max-width: 900px;
   }
 
   #shopDetailModal > div {
-    max-width: 85vw !important;
+    max-width: 850px !important;
   }
 }
 
