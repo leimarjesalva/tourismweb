@@ -937,6 +937,18 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
   width: 100%;
 }
 
+/* Dropdown readability fix */
+select, select option {
+  color: #222 !important;
+  background: #fff !important;
+}
+
+/* For custom dropdown classes if any */
+.dropdown, .dropdown select, .dropdown option {
+  color: #222 !important;
+  background: #fff !important;
+}
+
 .dark .card {
   background: #2d2d2d;
 }
