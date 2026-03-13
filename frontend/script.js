@@ -272,22 +272,13 @@ function renderNoveltyShops() {
     const imageUrl = shop.image || 'https://source.unsplash.com/featured/400x260/?souvenir,market';
     const card = document.createElement('div');
     card.className = 'shop-card';
-    card.onclick = () => openShopModalFunc(shop.id);
     card.innerHTML = `
       <div class="shop-card-image" style="background-image:url('${imageUrl}');"></div>
       <div class="shop-card-content">
         <div class="shop-card-header">
           <h3>${shop.name}</h3>
-          <span class="shop-rating">⭐ ${shop.rating.toFixed(1)}</span>
         </div>
-        <p class="shop-card-desc">${shop.description}</p>
-        <div class="shop-card-meta">
-          <span>📍 ${shop.distance} km</span>
-          <span>⏰ ${shop.hours}</span>
-        </div>
-        <div class="shop-card-tags">
-          ${ (shop.specialties || []).slice(0,5).map(t => `<span class="shop-tag">${t}</span>`).join('') }
-        </div>
+        <button class="view-shop-btn" onclick="openShopModalFunc(${shop.id})">View Shop</button>
       </div>
     `;
     container.appendChild(card);
@@ -1220,13 +1211,8 @@ async function renderShopsOnPage() {
     return;
   }
 
-  // Render each shop with improved card layout
+  // Render each shop with simplified card layout
   Object.entries(shopsCache).forEach(([shopId, shop]) => {
-    const products = productsCache[shopId] || [];
-    const productThumbs = products.slice(0,3).map(p => `<img src="${p.image}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/120'" />`).join('');
-    const priceFrom = products.length ? products.reduce((min,p)=> Math.min(min, parseFloat(p.price.replace(/[^0-9.-]+/g,''))), Infinity) : null;
-    const priceLabel = priceFrom && isFinite(priceFrom) ? ('From ₱' + parseFloat(priceFrom).toFixed(2)) : '';
-
     const card = document.createElement('div');
     card.className = 'card shop-card';
     card.setAttribute('data-shop-id', shopId);
@@ -1240,10 +1226,8 @@ async function renderShopsOnPage() {
         <div class="shop-badge">Local</div>
       </div>
       <div class="card-content">
-        <div class="shop-header"><h3>${shop.name}</h3><div class="shop-owner">by ${shop.owner || 'Artisan'}</div></div>
-        <p class="shop-desc">${(shop.description||'').substring(0,140)}</p>
-        <div class="product-previews">${productThumbs}</div>
-        <div class="shop-actions"><span class="price-from">${priceLabel}</span><button class="btn btn-primary" onclick="event.stopPropagation(); openShopModal(${shopId})">View Shop</button></div>
+        <div class="shop-header"><h3>${shop.name}</h3></div>
+        <div class="shop-actions"><button class="btn btn-primary" onclick="event.stopPropagation(); openShopModal(${shopId})">View Shop</button></div>
       </div>
     `;
 
