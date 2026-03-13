@@ -974,11 +974,56 @@ async function generateItineraryPDF(it){
   container.style.padding = '18px';
   container.style.fontFamily = 'Arial, Helvetica, sans-serif';
   const destList = Array.isArray(it.destinations) ? it.destinations : (typeof it.destinations === 'string' ? (it.destinations.startsWith('[')?JSON.parse(it.destinations):it.destinations.split(',').map(s=>s.trim())) : []);
-  container.innerHTML = `<h1>${escapeHtml(it.title||'Itinerary')}</h1>
+  let html = `<h1>${escapeHtml(it.title||'Itinerary')}</h1>
     <p><strong>By:</strong> ${escapeHtml(it.user_name||it.name||'Guest')}</p>
-    <p><strong>Days:</strong> ${escapeHtml(String(it.days||1))}</p>
-    <h3>Destinations</h3>
-    <ol>${destList.map(d=>'<li>'+escapeHtml(String(d))+'</li>').join('')}</ol>`;
+    <p><strong>Days:</strong> ${escapeHtml(String(it.days||1))}</p>`;
+  // Always show transportation summary, even if empty
+  html += '<h3>🚗 Transportation & Routes</h3>';
+  if (it.transportation && Array.isArray(it.transportation) && it.transportation.length > 0) {
+    html += '<ul>';
+    for (const t of it.transportation) {
+      html += `<li><strong>${escapeHtml(t.destination||'')}</strong>: ${escapeHtml(t.bestOption||'')} (${escapeHtml(String(t.distance||''))} km)`;
+      if (t.fares) {
+        html += ' - ';
+        if (Array.isArray(t.fares)) {
+          html += t.fares.map(f=>escapeHtml(f.mode+': ₱'+f.fare)).join(', ');
+        } else {
+          html += escapeHtml(String(t.fares));
+        }
+      }
+      if (t.directions) {
+        html += `. <em>${escapeHtml(t.directions)}</em>`;
+      }
+      html += '</li>';
+    }
+    html += '</ul>';
+  } else {
+    html += '<p>No transportation details available.</p>';
+  }
+  html += '<h3>Destinations</h3>';
+  html += `<ol>${destList.map(d=>'<li>'+escapeHtml(String(d))+'</li>').join('')}</ol>`;
+  // Always show transportation details table, even if empty
+  html += '<h3>🚗 Transportation & Routes Details</h3>';
+  if (it.transportation && Array.isArray(it.transportation) && it.transportation.length > 0) {
+    html += '<table style="width:100%;border-collapse:collapse;margin-bottom:18px;">';
+    html += '<thead><tr style="background:#f7f7f7"><th style="padding:8px;border:1px solid #ccc">Destination</th><th style="padding:8px;border:1px solid #ccc">Mode</th><th style="padding:8px;border:1px solid #ccc">Distance (km)</th><th style="padding:8px;border:1px solid #ccc">Fare</th><th style="padding:8px;border:1px solid #ccc">Directions</th></tr></thead>';
+    html += '<tbody>';
+    for (const t of it.transportation) {
+      html += `<tr><td style="padding:8px;border:1px solid #ccc">${escapeHtml(t.destination||'')}</td><td style="padding:8px;border:1px solid #ccc">${escapeHtml(t.bestOption||'')}</td><td style="padding:8px;border:1px solid #ccc">${escapeHtml(String(t.distance||''))}</td><td style="padding:8px;border:1px solid #ccc">`;
+      if (t.fares) {
+        if (Array.isArray(t.fares)) {
+          html += t.fares.map(f=>escapeHtml(f.mode+': ₱'+f.fare)).join('<br>');
+        } else {
+          html += escapeHtml(String(t.fares));
+        }
+      }
+      html += `</td><td style="padding:8px;border:1px solid #ccc">${escapeHtml(t.directions||'')}</td></tr>`;
+    }
+    html += '</tbody></table>';
+  } else {
+    html += '<p>No transportation details available.</p>';
+  }
+  container.innerHTML = html;
   document.body.appendChild(container);
   const opt = { margin:0.5, filename: (it.title||'itinerary')+'.pdf', html2canvas:{scale:2}, jsPDF:{unit:'in',format:'a4',orientation:'portrait'} };
   await html2pdf().from(container).set(opt).save();
