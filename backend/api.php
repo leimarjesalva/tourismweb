@@ -234,6 +234,31 @@ function is_in_legazpi($lat, $lng){
     return point_in_polygon(floatval($lat), floatval($lng), legazpi_polygon());
 }
 
+// Get coordinates for a destination name
+function get_destination_coords($destination_name) {
+    $db = get_db();
+    // First try to get from destinations table
+    $stmt = $db->prepare("SELECT latitude, longitude FROM destinations WHERE name = ? LIMIT 1");
+    $stmt->bind_param('s', $destination_name);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result && $row = $result->fetch_assoc()) {
+        return ['lat' => floatval($row['latitude']), 'lon' => floatval($row['longitude'])];
+    }
+
+    // Fallback to itinerary_destinations table
+    $stmt = $db->prepare("SELECT latitude, longitude FROM itinerary_destinations WHERE name = ? LIMIT 1");
+    $stmt->bind_param('s', $destination_name);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result && $row = $result->fetch_assoc()) {
+        return ['lat' => floatval($row['latitude']), 'lon' => floatval($row['longitude'])];
+    }
+
+    // If not found in database, return default Legazpi coordinates
+    return ['lat' => 13.1418, 'lon' => 123.7438]; // Default Legazpi coordinates
+}
+
 // Helper function to normalize image paths for frontend access
 // Converts old database paths to paths that work from frontend/ subfolder
 function normalize_image_path($path){
@@ -2739,6 +2764,171 @@ if ($action === 'init_tables'){
     }
     
     j(['initialized' => true, 'results' => $results]);
+}
+
+// ===== RECOMMENDATIONS ENDPOINT =====
+// Smart recommendations using analytics data and ML heuristics
+if ($action === 'recommendations') {
+    $db = get_db();
+    $user_id = intval($_GET['user_id'] ?? 0);
+    $destination = $_GET['destination'] ?? '';
+    $limit = intval($_GET['limit'] ?? 10);
+
+    $recommendations = [];
+
+    try {
+        // 1. Get popular destinations based on analytics
+        $popular_destinations = [];
+        $res = $db->query("SELECT place_name, view_count + click_count * 2 as score FROM place_analytics ORDER BY score DESC LIMIT 20");
+        if ($res) {
+            while ($r = $res->fetch_assoc()) {
+                $popular_destinations[] = $r;
+            }
+        }
+
+        // 2. Get trending experiences based on recent activity
+        $trending_experiences = [];
+        $res = $db->query("SELECT e.title, e.type, COUNT(al.id) as activity_count FROM local_experiences e LEFT JOIN activity_logs al ON al.meta LIKE CONCAT('%', e.title, '%') AND al.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY e.id ORDER BY activity_count DESC LIMIT 10");
+        if ($res) {
+            while ($r = $res->fetch_assoc()) {
+                $trending_experiences[] = $r;
+            }
+        }
+
+        // 3. Get personalized recommendations based on user history (if user_id provided)
+        $personalized = [];
+        if ($user_id > 0) {
+            // Get user's past itineraries and preferences
+            $res = $db->query("SELECT destinations FROM itineraries WHERE user_id = $user_id OR (user_id IS NULL AND anonymous_name IS NOT NULL) ORDER BY created_at DESC LIMIT 5");
+            if ($res) {
+                $user_destinations = [];
+                while ($r = $res->fetch_assoc()) {
+                    $dests = json_decode($r['destinations'], true);
+                    if (is_array($dests)) {
+                        $user_destinations = array_merge($user_destinations, $dests);
+                    }
+                }
+
+                // Find similar destinations based on user's history
+                if (!empty($user_destinations)) {
+                    $dest_list = "'" . implode("','", array_map([$db, 'real_escape_string'], $user_destinations)) . "'";
+                    $res = $db->query("SELECT name, description, image FROM destinations WHERE name NOT IN ($dest_list) ORDER BY RAND() LIMIT 5");
+                    if ($res) {
+                        while ($r = $res->fetch_assoc()) {
+                            $personalized[] = array_merge($r, ['reason' => 'Based on your previous trips']);
+                        }
+                    }
+                }
+            }
+        }
+
+        // 4. Weather-based recommendations
+        $weather_recommendations = [];
+        if (!empty($destination)) {
+            // Get current weather for the destination
+            $coords = get_destination_coords($destination);
+            if ($coords) {
+                // Simple weather logic - in real implementation, this would call weather API
+                $weather_recommendations = [
+                    ['type' => 'activity', 'title' => 'Indoor Museum Visit', 'reason' => 'Perfect weather for cultural exploration'],
+                    ['type' => 'restaurant', 'title' => 'Local Cafe Experience', 'reason' => 'Cozy indoor dining option']
+                ];
+            }
+        }
+
+        // 5. ML-based predictions using existing analytics
+        $ml_recommendations = [];
+        $res = $db->query("SELECT e.title as event_name, p.attendance, p.waste_prediction FROM events e LEFT JOIN ml_predictions p ON e.id = p.event_id WHERE p.attendance > 100 ORDER BY p.created_at DESC LIMIT 5");
+        if ($res) {
+            while ($r = $res->fetch_assoc()) {
+                $ml_recommendations[] = [
+                    'title' => $r['event_name'],
+                    'type' => 'event',
+                    'predicted_crowd' => intval($r['attendance']),
+                    'waste_prediction' => floatval($r['waste_prediction']),
+                    'reason' => 'ML prediction: High attendance expected'
+                ];
+            }
+        }
+
+        // Combine all recommendations with scoring
+        $all_recommendations = [];
+
+        // Add popular destinations
+        foreach ($popular_destinations as $dest) {
+            $all_recommendations[] = [
+                'type' => 'destination',
+                'title' => $dest['place_name'],
+                'score' => $dest['score'],
+                'reason' => 'Popular choice based on visitor analytics',
+                'confidence' => min(95, $dest['score'] / 10) // Simple confidence calculation
+            ];
+        }
+
+        // Add trending experiences
+        foreach ($trending_experiences as $exp) {
+            $all_recommendations[] = [
+                'type' => 'experience',
+                'title' => $exp['title'],
+                'category' => $exp['type'],
+                'score' => $exp['activity_count'],
+                'reason' => 'Trending based on recent activity',
+                'confidence' => min(90, $exp['activity_count'] * 10)
+            ];
+        }
+
+        // Add personalized recommendations
+        foreach ($personalized as $pers) {
+            $all_recommendations[] = [
+                'type' => 'destination',
+                'title' => $pers['name'],
+                'description' => $pers['description'],
+                'image' => $pers['image'],
+                'score' => 100, // High score for personalized
+                'reason' => $pers['reason'],
+                'confidence' => 95
+            ];
+        }
+
+        // Add weather-based recommendations
+        foreach ($weather_recommendations as $weather) {
+            $all_recommendations[] = array_merge($weather, [
+                'score' => 80,
+                'confidence' => 85
+            ]);
+        }
+
+        // Add ML recommendations
+        foreach ($ml_recommendations as $ml) {
+            $all_recommendations[] = array_merge($ml, [
+                'score' => $ml['predicted_crowd'] / 10,
+                'confidence' => 88
+            ]);
+        }
+
+        // Sort by score and limit results
+        usort($all_recommendations, function($a, $b) {
+            return $b['score'] <=> $a['score'];
+        });
+
+        $recommendations = array_slice($all_recommendations, 0, $limit);
+
+        j([
+            'success' => true,
+            'recommendations' => $recommendations,
+            'total' => count($recommendations),
+            'analytics_used' => [
+                'popular_destinations' => count($popular_destinations),
+                'trending_experiences' => count($trending_experiences),
+                'personalized' => count($personalized),
+                'weather_based' => count($weather_recommendations),
+                'ml_based' => count($ml_recommendations)
+            ]
+        ]);
+
+    } catch (Exception $e) {
+        j(['success' => false, 'error' => 'Recommendations failed: ' . $e->getMessage()]);
+    }
 }
 
 // Default

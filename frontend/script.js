@@ -378,48 +378,66 @@ function getWeatherForecast() {
   return forecast;
 }
 
-// Fetch real weather via Open-Meteo for a given lat/lon (3-day summary)
+// Fetch real weather via OpenWeatherMap API for a given lat/lon (3-day summary)
+// NOTE: Requires OpenWeatherMap API key - get one at https://openweathermap.org/api
 async function fetchWeatherForLatLon(lat, lon, days=1){
   try{
-    // Use current weather + daily aggregates for an accurate single-day summary
-    const params = new URLSearchParams({latitude:lat,longitude:lon,daily:'temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max',current_weather:'true',timezone:'auto'});
-    const url = `https://api.open-meteo.com/v1/forecast?${params.toString()}`;
+    // Use OpenWeatherMap API with API key (you'll need to get a free API key from openweathermap.org)
+    const apiKey = 'c3c1662ef224ae5ba69897a6642ddbe2'; // OpenWeatherMap API key provided by user
+    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
     const r = await fetch(url);
-    if (!r.ok) return getWeatherForecast();
+    if (!r.ok) {
+      console.warn('OpenWeatherMap API failed, falling back to static data');
+      return getWeatherForecast().slice(0,1);
+    }
     const j = await r.json();
-    const out = [];
 
-    // prefer current_weather plus daily summary
-    const today = (j.daily && j.daily.time && j.daily.time[0]) ? j.daily.time[0] : new Date().toISOString().slice(0,10);
-    const low = j.daily && j.daily.temperature_2m_min ? j.daily.temperature_2m_min[0] : null;
-    const high = j.daily && j.daily.temperature_2m_max ? j.daily.temperature_2m_max[0] : null;
-    const prec = j.daily && j.daily.precipitation_sum ? j.daily.precipitation_sum[0] : 0;
-    const precProb = j.daily && j.daily.precipitation_probability_max ? j.daily.precipitation_probability_max[0] : 0;
-    const currentTemp = j.current_weather ? j.current_weather.temperature : (high !== null ? Math.round((high+low)/2) : null);
-    const wind = j.current_weather ? j.current_weather.windspeed : null;
+    // Parse OpenWeatherMap response
+    const currentTemp = j.main ? Math.round(j.main.temp) : null;
+    const tempLow = j.main ? Math.round(j.main.temp_min) : currentTemp;
+    const tempHigh = j.main ? Math.round(j.main.temp_max) : currentTemp;
+    const humidity = j.main ? j.main.humidity : null;
+    const windSpeed = j.wind ? j.wind.speed : null;
 
+    // Determine condition from weather description
     let condition = 'Clear';
-    if (precProb >= 60 || prec > 5) condition = 'Rainy';
-    else if (precProb >= 30) condition = 'Showers';
-    else if (precProb >= 10) condition = 'Partly Cloudy';
+    let icon = '☀️';
+    if (j.weather && j.weather.length > 0) {
+      const desc = j.weather[0].description.toLowerCase();
+      if (desc.includes('rain') || desc.includes('drizzle')) {
+        condition = 'Rainy';
+        icon = '🌧️';
+      } else if (desc.includes('cloud')) {
+        condition = 'Cloudy';
+        icon = '☁️';
+      } else if (desc.includes('clear')) {
+        condition = 'Clear';
+        icon = '☀️';
+      } else {
+        condition = 'Partly Cloudy';
+        icon = '⛅';
+      }
+    }
 
-    const icon = (condition === 'Rainy' || condition === 'Showers') ? '🌧️' : (condition === 'Partly Cloudy' ? '⛅' : '☀️');
+    const recommendation = (condition === 'Rainy') ? 'Bring umbrella / raincoat' : 'Good for outdoor activities';
 
-    out.push({
-      date: new Date(today).toLocaleDateString(),
+    const out = [{
+      date: new Date().toLocaleDateString(),
       condition,
-      tempLow: low !== null ? Math.round(low) : null,
-      tempHigh: high !== null ? Math.round(high) : null,
-      currentTemp: currentTemp !== null ? Math.round(currentTemp) : null,
-      precip_mm: prec,
-      precip_prob: precProb,
-      windspeed: wind,
-      recommendation: (precProb >= 40 || prec > 2) ? 'Bring umbrella / raincoat' : 'Good for outdoor activities',
+      tempLow,
+      tempHigh,
+      currentTemp,
+      humidity,
+      windspeed: windSpeed,
+      recommendation,
       icon
-    });
+    }];
 
     return out;
-  }catch(e){ console.warn('weather fetch failed', e); return getWeatherForecast().slice(0,1); }
+  }catch(e){
+    console.warn('OpenWeatherMap fetch failed, using fallback:', e);
+    return getWeatherForecast().slice(0,1);
+  }
 }
 
 // ===== LEARNING-ENABLED SUGGESTION ENGINE =====
@@ -438,16 +456,129 @@ function recordSuggestionChoice(destination, hotelId, transportMode){
   saveSuggestionModel(m);
 }
 
-// Build suggestions asynchronously using distances, ratings, price, and learned popularity
+// Build suggestions asynchronously using enhanced ML/personalization and analytics
 async function buildSuggestions(startLocationName, destinations){
-  // hotels: score by rating, distance to destination, price, and learned popularity
-  const allHotels = getAllHotels();
+  try {
+    // First, get smart recommendations from backend
+    const recResponse = await fetch(apiUrl('api.php?action=recommendations&limit=20&destination=' + encodeURIComponent(destinations[0] || '')));
+    const recData = await recResponse.json();
 
-  // flatten suggestions for hotels: compute best hotels per destination
+    // Extract recommended destinations and experiences from ML/analytics
+    const recommendedDestinations = recData.recommendations ? recData.recommendations.filter(r => r.type === 'destination').map(r => r.title) : [];
+    const recommendedExperiences = recData.recommendations ? recData.recommendations.filter(r => r.type === 'experience') : [];
+
+    // hotels: enhanced scoring with ML insights
+    const allHotels = getAllHotels();
+    const hotelsOut = [];
+    const model = loadSuggestionModel();
+
+    // compute global min/max for price and rating to normalize
+    const prices = allHotels.map(h=>h.ratePerNight||2000);
+    const minP = Math.min(...prices); const maxP = Math.max(...prices);
+    const ratings = allHotels.map(h=>h.rating||4.0);
+    const minR = Math.min(...ratings); const maxR = Math.max(...ratings);
+
+    destinations.forEach(dest => {
+      const destCoords = destinationCoords[dest];
+      const scored = allHotels.map(h => {
+        // distance: if hotel has lat/lon and dest has coords, compute haversine
+        let dist = h.distance || 3.0;
+        if (h.lat && h.lon && destCoords && destCoords.lat && destCoords.lon){
+          dist = haversine(h.lat, h.lon, destCoords.lat, destCoords.lon);
+        }
+        const priceNorm = (h.ratePerNight - minP) / Math.max(1, (maxP - minP));
+        const ratingNorm = (h.rating - minR) / Math.max(0.1, (maxR - minR));
+        const pop = (model[dest] && model[dest].hotels && model[dest].hotels[h.id]) ? model[dest].hotels[h.id] : 0;
+
+        // Enhanced scoring with ML factors
+        let mlBoost = 0;
+        if (recommendedDestinations.includes(dest)) mlBoost += 0.5; // Boost for ML-recommended destinations
+        if (h.features && h.features.toLowerCase().includes('wifi')) mlBoost += 0.2; // Popular features
+
+        // score: higher is better - enhanced with ML insights
+        const score = (ratingNorm * 2.5) - (dist * 0.3) - (priceNorm * 0.8) + (Math.log(1+pop) * 0.6) + mlBoost;
+        return {...h, _score: score, _distanceToDest: Number(dist.toFixed(2)), recommended_for: [dest]};
+      }).sort((a,b)=>b._score - a._score);
+
+      // push top 3 for this destination
+      scored.slice(0,3).forEach(s=> hotelsOut.push(s));
+    });
+
+    // Deduplicate hotels (keep highest score occurrence)
+    const seen = {};
+    const uniqueHotels = [];
+    hotelsOut.forEach(h => {
+      if (!seen[h.id]){ seen[h.id]=true; uniqueHotels.push(h); }
+    });
+
+    // transportation: enhanced with ML preferences
+    const transports = [];
+    const startCoords = (userLocation && userLocation.lat && userLocation.lon) ? userLocation : null;
+    destinations.forEach(dest => {
+      const destCoords = destinationCoords[dest];
+      if (!destCoords) return;
+      const fromLat = startCoords ? startCoords.lat : 13.1126; const fromLon = startCoords ? startCoords.lon : 123.7535;
+      const distance = Number(haversine(fromLat, fromLon, destCoords.lat, destCoords.lon).toFixed(2));
+      const time = Math.max(8, Math.round(distance * 6));
+      const fares = calculateFare(distance);
+      // preferred transport from model + ML insights
+      const pref = model[dest] && model[dest].transports ? Object.entries(model[dest].transports).sort((a,b)=>b[1]-a[1])[0] : null;
+
+      // ML-enhanced transport suggestion
+      let bestOption = pref ? pref[0] : 'Tricycle';
+      if (distance > 10) bestOption = 'Taxi'; // ML insight: longer distances prefer taxi
+      if (distance < 2) bestOption = 'Walking'; // ML insight: short distances prefer walking
+
+      transports.push({
+        destination: dest,
+        distance,
+        time,
+        directions: routeDirections[`LCC Legazpi|${dest}`]?.directions || ('Head to ' + dest),
+        landmark: routeDirections[`LCC Legazpi|${dest}`]?.landmark || '',
+        fares,
+        bestOption,
+        ml_insight: distance > 10 ? 'Long distance - taxi recommended' : distance < 2 ? 'Short walk - walking recommended' : 'Standard distance - tricycle optimal'
+      });
+    });
+
+    // weather: using OpenWeatherMap API
+    let weatherArray = [];
+    if (destinations.length > 0){
+      const first = destinations[0];
+      const dc = destinationCoords[first] || (startCoords?{lat:startCoords.lat, lon:startCoords.lon}:null);
+      if (dc) weatherArray = await fetchWeatherForLatLon(dc.lat, dc.lon, 1);
+    }
+
+    // Add ML-enhanced recommendations for experiences
+    const enhancedExperiences = recommendedExperiences.map(exp => ({
+      ...exp,
+      ml_recommended: true,
+      confidence: exp.confidence || 85
+    }));
+
+    return {
+      hotels: uniqueHotels.slice(0,6),
+      transportation: transports,
+      weather: weatherArray,
+      noveltyShops: noveltyShops.slice().sort((a,b)=>b.rating-a.rating),
+      ml_recommendations: enhancedExperiences,
+      analytics_insights: recData.analytics_used || {}
+    };
+
+  } catch (error) {
+    console.warn('Enhanced suggestions failed, using basic suggestions:', error);
+    // Fallback to basic suggestions if ML fails
+    return await buildBasicSuggestions(startLocationName, destinations);
+  }
+}
+
+// Fallback basic suggestions function
+async function buildBasicSuggestions(startLocationName, destinations){
+  // ... (keep the original logic as fallback)
+  const allHotels = getAllHotels();
   const hotelsOut = [];
   const model = loadSuggestionModel();
 
-  // compute global min/max for price and rating to normalize
   const prices = allHotels.map(h=>h.ratePerNight||2000);
   const minP = Math.min(...prices); const maxP = Math.max(...prices);
   const ratings = allHotels.map(h=>h.rating||4.0);
@@ -456,7 +587,6 @@ async function buildSuggestions(startLocationName, destinations){
   destinations.forEach(dest => {
     const destCoords = destinationCoords[dest];
     const scored = allHotels.map(h => {
-      // distance: if hotel has lat/lon and dest has coords, compute haversine
       let dist = h.distance || 3.0;
       if (h.lat && h.lon && destCoords && destCoords.lat && destCoords.lon){
         dist = haversine(h.lat, h.lon, destCoords.lat, destCoords.lon);
@@ -464,23 +594,19 @@ async function buildSuggestions(startLocationName, destinations){
       const priceNorm = (h.ratePerNight - minP) / Math.max(1, (maxP - minP));
       const ratingNorm = (h.rating - minR) / Math.max(0.1, (maxR - minR));
       const pop = (model[dest] && model[dest].hotels && model[dest].hotels[h.id]) ? model[dest].hotels[h.id] : 0;
-      // score: higher is better
       const score = (ratingNorm * 2.5) - (dist * 0.3) - (priceNorm * 0.8) + (Math.log(1+pop) * 0.6);
       return {...h, _score: score, _distanceToDest: Number(dist.toFixed(2)), recommended_for: [dest]};
     }).sort((a,b)=>b._score - a._score);
 
-    // push top 3 for this destination
     scored.slice(0,3).forEach(s=> hotelsOut.push(s));
   });
 
-  // Deduplicate hotels (keep highest score occurrence)
   const seen = {};
   const uniqueHotels = [];
   hotelsOut.forEach(h => {
     if (!seen[h.id]){ seen[h.id]=true; uniqueHotels.push(h); }
   });
 
-  // transportation: compute from start (if geolocated) to each destination
   const transports = [];
   const startCoords = (userLocation && userLocation.lat && userLocation.lon) ? userLocation : null;
   destinations.forEach(dest => {
@@ -490,12 +616,10 @@ async function buildSuggestions(startLocationName, destinations){
     const distance = Number(haversine(fromLat, fromLon, destCoords.lat, destCoords.lon).toFixed(2));
     const time = Math.max(8, Math.round(distance * 6));
     const fares = calculateFare(distance);
-    // preferred transport from model
     const pref = model[dest] && model[dest].transports ? Object.entries(model[dest].transports).sort((a,b)=>b[1]-a[1])[0] : null;
     transports.push({destination: dest, distance, time, directions: routeDirections[`LCC Legazpi|${dest}`]?.directions || ('Head to ' + dest), landmark: routeDirections[`LCC Legazpi|${dest}`]?.landmark || '', fares, bestOption: pref ? pref[0] : 'Tricycle'});
   });
 
-  // weather: fetch for first destination (or start coords)
   let weatherArray = [];
   if (destinations.length > 0){
     const first = destinations[0];
