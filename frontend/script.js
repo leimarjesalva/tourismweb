@@ -63,13 +63,69 @@
 // ===== HOTEL MANAGEMENT =====
 
 const hotelDatabase = [
+    {
+      id: 8, name: 'Alicia Hotel',
+      description: 'Modern hotel with comfortable rooms and great location.',
+      image: 'https://content.r9cdn.net/rimg/himg/b4/ee/d8/ostrovok-318743-7d24e3-971188.jpg?width=1200&height=630&crop=true',
+      rating: 4.4, ratePerNight: 2100, category: '3-Star', phone: '(052) 480-8888',
+      address: 'F. Aquende Drive, Legazpi City', landmark: 'Near Lignon Hill',
+      features: ['WiFi', 'Restaurant', 'Parking', 'Air Conditioning']
+    },
+    {
+      id: 9, name: 'Proxy by The Oriental Albay',
+      description: 'Stylish hotel with modern amenities and central location.',
+      image: 'https://ik.imagekit.io/tvlk/apr-asset/TzEv3ZUmG4-4Dz22hvmO9NUDzw1DGCIdWl4oPtKumOg=/lodging/33000000/32440000/32436200/32436107/6f30c21d_z.jpg?tr=q-80,c-at_max,w-740,h-500&_src=imagekit',
+      rating: 4.5, ratePerNight: 2500, category: '4-Star', phone: '(052) 480-7777',
+      address: 'Rizal Street', landmark: 'Downtown Legazpi',
+      features: ['WiFi', 'Restaurant', 'Bar', 'Conference', 'Parking']
+    },
+    {
+      id: 10, name: 'Hotel St. Ellis',
+      description: 'Upscale hotel with excellent service and amenities.',
+      image: 'https://pix10.agoda.net/hotelImages/237713/0/dd9bba179c0c378184dc722263dacb61.jpeg?s=414x232',
+      rating: 4.7, ratePerNight: 3200, category: '4-Star', phone: '(052) 480-6666',
+      address: 'Rizal Street', landmark: 'Near Embarcadero',
+      features: ['WiFi', 'Restaurant', 'Pool', 'Spa', 'Parking']
+    },
+    {
+      id: 11, name: 'Hotel Venezia',
+      description: 'Elegant hotel with Italian-inspired design and comfort.',
+      image: 'https://pix10.agoda.net/hotelImages/108416/0/264d01d0a7773aaa231ad0bd6d986541.jpeg?ce=0&s=414x232',
+      rating: 4.6, ratePerNight: 2800, category: '4-Star', phone: '(052) 480-5555',
+      address: 'Washington Drive', landmark: 'Near Airport',
+      features: ['WiFi', 'Restaurant', 'Bar', 'Parking', 'Airport Shuttle']
+    },
+    {
+      id: 12, name: 'Emerald Boutique Hotel',
+      description: 'Boutique hotel with personalized service and cozy rooms.',
+      image: 'https://cf.bstatic.com/xdata/images/hotel/max1024x768/74067984.jpg?k=ff9ffc1120fd859012aa9c4d1cf7c34466763d13512bde7cdf746148f111109d&o=',
+      rating: 4.5, ratePerNight: 2300, category: 'Boutique', phone: '(052) 480-4444',
+      address: 'Rizal Street', landmark: 'Near City Center',
+      features: ['WiFi', 'Restaurant', 'Parking', 'Family Rooms']
+    },
+    {
+      id: 13, name: 'La Edley Resort & Hotel',
+      description: 'Resort hotel with relaxing atmosphere and pool.',
+      image: 'https://scontent.fceb1-2.fna.fbcdn.net/v/t39.30808-6/480292972_659765783094080_4944662862255816960_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=7b2446&_nc_eui2=AeH518KJ-ABhaV2890UKFvWWSX47XrocBzJJfjteuhwHMkXAIILeanG4JPfxMbHA6TEIbFmVTR4FK3f92NvlskfQ&_nc_ohc=w_2QrTmJvmEQ7kNvwF97zu0&_nc_oc=Adm-NgZ_AcHipDYxF576387mCN2jhac0x20X3HpPdfL6IsU6Yt8-QTGO-tvynSYP_2U&_nc_zt=23&_nc_ht=scontent.fceb1-2.fna&_nc_gid=ppcxCKUzE1uzq0uH5nHeyA&_nc_ss=8&oh=00_Afyeg3U1OZp5f7rGycGpizRcx4JM0DlXjIofK5ULzdn-DQ&oe=69B9504C',
+      rating: 4.3, ratePerNight: 1800, category: 'Resort', phone: '(052) 480-3333',
+      address: 'San Fernando, Santo Domingo', landmark: 'Near Nuestra Senora de Salvacion',
+      features: ['WiFi', 'Pool', 'Restaurant', 'Parking']
+    },
+    {
+      id: 14, name: 'Daraga Guesthouses',
+      description: 'Affordable guesthouses for travelers and families.',
+      image: 'https://images.trvl-media.com/lodging/19000000/18800000/18799100/18799033/578e2d7f.jpg?impolicy=resizecrop&rw=575&rh=575&ra=fill',
+      rating: 4.2, ratePerNight: 1200, category: 'Guesthouse', phone: '(052) 480-2222',
+      address: 'Daraga town', landmark: 'Near Daraga Church',
+      features: ['WiFi', 'Parking', 'Family Rooms']
+    },
   {
     id: 1, name: 'The Marison Hotel', distance: 1.6,
     lat: 13.1130, lon: 123.7540,
     description: 'Highly recommended for its comfort and proximity to attractions.',
     rating: 4.8, ratePerNight: 2800, category: '3-Star', phone: '(052) 480-9999',
     address: 'Rizal Avenue, Downtown Legazpi', landmark: 'Across City Hall',
-    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop',
+    image: 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/ed/29/3b/caption.jpg?w=900&h=500&s=1',
     features: ['WiFi', 'Restaurant', 'Bar', 'Pool', 'Gym']
   },
   {
@@ -78,7 +134,7 @@ const hotelDatabase = [
     description: 'Known for clean rooms and good service with ocean views.',
     rating: 4.5, ratePerNight: 2200, category: '3-Star', phone: '(052) 481-1111',
     address: 'Embarcadero Road, Waterfront', landmark: 'Near Albay Gulf',
-    image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=400&h=300&fit=crop',
+    image: 'https://cf.bstatic.com/xdata/images/hotel/max1024x768/715749771.jpg?k=b158ac2bfcf19b8d45917a1a96fe298a67004d86d71a51287d24f7e97306f803&o=',
     features: ['WiFi', 'Restaurant', 'Spa', 'Ocean View', 'Parking']
   },
   {
@@ -87,7 +143,7 @@ const hotelDatabase = [
     description: 'Centrally located with modern amenities and city views.',
     rating: 4.7, ratePerNight: 3200, category: '4-Star', phone: '(052) 481-2222',
     address: 'Quezon Avenue, City Center', landmark: 'Near Ibalong Monument',
-    image: 'https://images.unsplash.com/photo-1517631008762-f94d3ad1807c?w=400&h=300&fit=crop',
+    image: 'https://scontent.fceb1-4.fna.fbcdn.net/v/t39.30808-6/482066976_1109196634586174_4270641781487625568_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=7b2446&_nc_eui2=AeGP3_KibGIGKCWPAqoDVoKs1ele98MjXXLV6V73wyNdcmuLMgSlO4q10wIrDTd0SBa1e0BMpHlZq0OWkgWGIStz&_nc_ohc=ueQFigw2YcQQ7kNvwEEb_Cb&_nc_oc=Adkuf8sf2-n_NTDozcTGmluE4zIpTk27-WQmOcRSWt8wic4HLmp5tTlUWttlTQgH5F4&_nc_zt=23&_nc_ht=scontent.fceb1-4.fna&_nc_gid=mQP81rSgFAgIAt2a9dVqCQ&_nc_ss=8&oh=00_Afwk-H9IkFN3iL7IoZW_23Ks_rggShCRkDqQ5YWl-Lgegw&oe=69B985D2',
     features: ['WiFi', 'Restaurant', 'Bar', 'Conference', 'Parking', 'Gym']
   },
   {
@@ -96,36 +152,9 @@ const hotelDatabase = [
     description: 'A solid choice with good, affordable rooms and excellent service.',
     rating: 4.4, ratePerNight: 1800, category: 'Budget-Friendly', phone: '(052) 481-3333',
     address: 'Caedo Street, Commercial Area', landmark: 'Next to Embarcadero Mall',
-    image: 'https://images.unsplash.com/photo-1574109216962-202b3f00ba8d?w=400&h=300&fit=crop',
+    image: 'https://images.trvl-media.com/lodging/13000000/12470000/12465000/12464957/b5f22c6c.jpg?impolicy=resizecrop&rw=575&rh=575&ra=fill',
     features: ['WiFi', 'Restaurant', 'Parking', 'Air Conditioning']
   },
-  {
-    id: 5, name: 'Legazpi Imperial Hotel', distance: 3.2,
-    lat: 13.1500, lon: 123.7350,
-    description: 'Luxury hotel with premium amenities and international service standards.',
-    rating: 4.9, ratePerNight: 5500, category: '5-Star', phone: '(052) 481-4444',
-    address: 'Rawis Street, Tourist District', landmark: 'Near Lignon Hill',
-    image: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=400&h=300&fit=crop',
-    features: ['WiFi', 'Fine Dining', 'Spa', 'Pool', 'Gym', 'Concierge']
-  },
-  {
-    id: 6, name: 'Albay Park Hotel', distance: 1.2,
-    lat: 13.1180, lon: 123.7560,
-    description: 'Cozy accommodation near parks and natural attractions.',
-    rating: 4.3, ratePerNight: 1600, category: 'Budget', phone: '(052) 481-5555',
-    address: 'Peñaranda Street, Central Station', landmark: 'Across Plaza Independencia',
-    image: 'https://images.unsplash.com/photo-1542314503-37143f4f4f19?w=400&h=300&fit=crop',
-    features: ['WiFi', 'Restaurant', 'Game Room', 'Family Rooms']
-  },
-  {
-    id: 7, name: 'Lignon Hill Resort', distance: 3.5,
-    lat: 13.1520, lon: 123.7390,
-    description: 'Mountain resort with stunning views and adventure activities.',
-    rating: 4.6, ratePerNight: 4200, category: '4-Star', phone: '(052) 481-6666',
-    address: 'Lignon Hill, Upper City', landmark: 'At Lignon Hill Summit',
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop',
-    features: ['WiFi', 'Restaurant', 'Private Pool', 'Hiking Trails', 'Parking']
-  }
 ];
 
 // Load custom hotels from localStorage
@@ -146,6 +175,16 @@ function getAllHotels() {
     rating: h.rating || 4.5, category: h.category || 'Custom'
   }));
   return [...hotelDatabase, ...customHotels];
+}
+
+// Get hotel image URL by hotel name (fallback to placeholder)
+function getHotelImage(name) {
+  if (!name) return 'https://via.placeholder.com/240x160?text=Hotel';
+  const allHotels = getAllHotels();
+  const match = allHotels.find(h => h.name.toLowerCase().trim() === name.toLowerCase().trim());
+  if (match && match.image) return match.image;
+  // fallback to generic hotel photo
+  return 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop';
 }
 
 // ===== DESTINATION COORDINATES & TRANSPORT ROUTES =====

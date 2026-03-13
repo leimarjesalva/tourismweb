@@ -2847,6 +2847,13 @@ function renderModalPredictionCharts(ev) {
             <!-- Summary Card (Hidden Initially) -->
             <div id="summaryCard" style="display: none; background: linear-gradient(135deg, rgba(255,122,24,0.2), rgba(255,106,136,0.2)); border: 2px solid rgba(255,122,24,0.4); border-radius: 12px; padding: 20px;">
               <h4 style="color: #ff7a18; font-weight: 700; margin: 0 0 15px 0;">📋 Your Itinerary Summary</h4>
+              <div style="display: flex; gap: 16px; align-items: center; margin-bottom: 16px;">
+                <img id="summaryHotelImage" src="https://via.placeholder.com/200x120?text=Hotel" alt="Selected Hotel" style="width: 160px; height: 100px; object-fit: cover; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2);" />
+                <div style="flex: 1;">
+                  <p style="color: #a0aec0; font-size: 0.85rem; margin: 0; opacity: 0.8;">📍 Selected Accommodation</p>
+                  <p style="color: #ff7a18; font-weight: 600; margin: 5px 0 0 0;" id="summaryAccommodation">-</p>
+                </div>
+              </div>
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                 <div>
                   <p style="color: #a0aec0; font-size: 0.85rem; margin: 0; opacity: 0.8;">Trip Name</p>
@@ -2868,17 +2875,12 @@ function renderModalPredictionCharts(ev) {
                   <p style="color: #a0aec0; font-size: 0.85rem; margin: 0; opacity: 0.8;">Travel Style</p>
                   <p style="color: white; font-weight: 600; margin: 5px 0 0 0;" id="summaryStyle">-</p>
                 </div>
-                <div style="grid-column: 1/-1;">
-                  <p style="color: #a0aec0; font-size: 0.85rem; margin: 0; opacity: 0.8;">📍 Selected Accommodation</p>
-                  <p style="color: #ff7a18; font-weight: 600; margin: 5px 0 0 0;" id="summaryAccommodation">-</p>
-                </div>
               </div>
             </div>
 
             <!-- Action Buttons -->
-            <div id="actionButtons" style="display: none; gap: 12px; grid-template-columns: 1fr 1fr; margin-top: 20px;">
-              <button onclick="printItinerary()" style="padding: 14px; background: linear-gradient(135deg, #3498db, #2980b9); color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 0.95rem; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 30px rgba(52,152,219,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">🖨️ Print Summary</button>
-              <button onclick="saveSummaryPDF()" style="padding: 14px; background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 0.95rem; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 30px rgba(231,76,60,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">📥 Save as PDF</button>
+            <div id="actionButtons" style="display: none; gap: 12px; grid-template-columns: 1fr; margin-top: 20px;">
+              <button onclick="saveSummaryPDF()" style="padding: 14px; background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 0.95rem; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 30px rgba(231,76,60,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">Download</button>
             </div>
           </div>
         </div>
@@ -3295,16 +3297,22 @@ function populateItineraryResults() {
         </div>
       `)
       .join('');
+    const hotelImg = getHotelImage(h.name);
     const isSelected = selectedAccommodation && selectedAccommodation.name === h.name;
     return `
       <div onclick="selectAccommodation('${h.name}', '${h.location}')" style="background: ${isSelected ? 'rgba(255,122,24,0.3)' : 'rgba(255,255,255,0.05)'}; padding: 14px; border-radius: 8px; border-left: 4px solid ${isSelected ? '#ff7a18' : '#ff7a18'}; margin-bottom: 12px; cursor: pointer; transition: all 0.3s;" onmouseover="this.style.background='rgba(255,122,24,0.2)'" onmouseout="this.style.background='${isSelected ? 'rgba(255,122,24,0.3)' : 'rgba(255,255,255,0.05)'}'; ">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-          <div style="color: white; font-weight: 700; font-size: 1rem;">${h.name}</div>
-          <span style="color: ${isSelected ? '#ff7a18' : '#a0aec0'}; font-weight: 700; font-size: 1.2rem;">${isSelected ? '✓' : ''}</span>
-        </div>
-        <div style="color: #a0aec0; font-size: 0.85rem; margin-bottom: 8px;">📍 ${h.location} (${h.distance})</div>
-        <div style="background: rgba(255,255,255,0.02); padding: 10px; border-radius: 6px; font-size: 0.85rem;">
-          ${transportHTML}
+        <div style="display: flex; gap: 12px; align-items: flex-start;">
+          <img src="${hotelImg}" alt="${h.name}" style="width: 140px; height: 90px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(255,255,255,0.18);" />
+          <div style="flex: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <div style="color: white; font-weight: 700; font-size: 1rem;">${h.name}</div>
+              <span style="color: ${isSelected ? '#ff7a18' : '#a0aec0'}; font-weight: 700; font-size: 1.2rem;">${isSelected ? '✓' : ''}</span>
+            </div>
+            <div style="color: #a0aec0; font-size: 0.85rem; margin-bottom: 8px;">📍 ${h.location} (${h.distance})</div>
+            <div style="background: rgba(255,255,255,0.02); padding: 10px; border-radius: 6px; font-size: 0.85rem;">
+              ${transportHTML}
+            </div>
+          </div>
         </div>
       </div>
     `;
@@ -3383,6 +3391,8 @@ function changeRoute() {
 function selectAccommodation(hotelName, hotelLocation) {
   selectedAccommodation = { name: hotelName, location: hotelLocation };
   document.getElementById('summaryAccommodation').textContent = `${hotelName} @ ${hotelLocation}`;
+  const hotelImgEl = document.getElementById('summaryHotelImage');
+  if (hotelImgEl) hotelImgEl.src = getHotelImage(hotelName);
   
   // Refresh hotel display to show selection state
   const hotels = accommodationData[currentDestination] || [];
@@ -3396,16 +3406,22 @@ function selectAccommodation(hotelName, hotelLocation) {
         </div>
       `)
       .join('');
+    const hotelImg = getHotelImage(h.name);
     const isSelected = selectedAccommodation && selectedAccommodation.name === h.name;
     return `
       <div onclick="selectAccommodation('${h.name}', '${h.location}')" style="background: ${isSelected ? 'rgba(255,122,24,0.3)' : 'rgba(255,255,255,0.05)'}; padding: 14px; border-radius: 8px; border-left: 4px solid ${isSelected ? '#ff7a18' : '#ff7a18'}; margin-bottom: 12px; cursor: pointer; transition: all 0.3s;" onmouseover="this.style.background='rgba(255,122,24,0.2)'" onmouseout="this.style.background='${isSelected ? 'rgba(255,122,24,0.3)' : 'rgba(255,255,255,0.05)'}'; ">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-          <div style="color: white; font-weight: 700; font-size: 1rem;">${h.name}</div>
-          <span style="color: ${isSelected ? '#ff7a18' : '#a0aec0'}; font-weight: 700; font-size: 1.2rem;">${isSelected ? '✓' : ''}</span>
-        </div>
-        <div style="color: #a0aec0; font-size: 0.85rem; margin-bottom: 8px;">📍 ${h.location} (${h.distance})</div>
-        <div style="background: rgba(255,255,255,0.02); padding: 10px; border-radius: 6px; font-size: 0.85rem;">
-          ${transportHTML}
+        <div style="display: flex; gap: 12px; align-items: flex-start;">
+          <img src="${hotelImg}" alt="${h.name}" style="width: 140px; height: 90px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(255,255,255,0.18);" />
+          <div style="flex: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <div style="color: white; font-weight: 700; font-size: 1rem;">${h.name}</div>
+              <span style="color: ${isSelected ? '#ff7a18' : '#a0aec0'}; font-weight: 700; font-size: 1.2rem;">${isSelected ? '✓' : ''}</span>
+            </div>
+            <div style="color: #a0aec0; font-size: 0.85rem; margin-bottom: 8px;">📍 ${h.location} (${h.distance})</div>
+            <div style="background: rgba(255,255,255,0.02); padding: 10px; border-radius: 6px; font-size: 0.85rem;">
+              ${transportHTML}
+            </div>
+          </div>
         </div>
       </div>
     `;
@@ -3516,6 +3532,7 @@ function saveSummaryPDF() {
 
   console.log('Saving summary:', { tripTitle, destination, days, budget, style, accommodation });
 
+  let hotelImgUrl = selectedAccommodation ? getHotelImage(selectedAccommodation.name) : 'https://via.placeholder.com/200x120?text=Hotel';
   let summaryContent = `
     <!DOCTYPE html>
     <html>
@@ -3536,6 +3553,7 @@ function saveSummaryPDF() {
         h2 { color: #ff7a18; border-bottom: 3px solid #ff7a18; padding-bottom: 10px; margin: 30px 0 20px 0; font-size: 1.5rem; }
         .section { margin-bottom: 30px; }
         .footer { margin-top: 40px; text-align: center; border-top: 2px solid #ddd; padding-top: 20px; color: #666; font-size: 0.9rem; }
+        .hotel-img-summary { width: 200px; height: 120px; object-fit: cover; border-radius: 12px; border: 1px solid #ff7a18; margin-bottom: 16px; }
         @media print { body { background: white; } .container { box-shadow: none; } }
       </style>
     </head>
@@ -3568,6 +3586,7 @@ function saveSummaryPDF() {
 
         <h2>🏨 Selected Accommodation</h2>
         <div class="section">
+          <img src="${hotelImgUrl}" alt="Hotel Image" class="hotel-img-summary" />
           <div class="summary-item" style="grid-column: 1/-1;">
             <label>🛏️ Hotel / Resort</label>
             <value>${accommodation}</value>
@@ -3662,6 +3681,7 @@ async function saveItineraryPDF() {
   const accommodation = selectedAccommodation ? `${selectedAccommodation.name} @ ${selectedAccommodation.location}` : 'Not selected';
   
   // Create HTML content for PDF
+  let hotelImgUrl = selectedAccommodation ? getHotelImage(selectedAccommodation.name) : 'https://via.placeholder.com/200x120?text=Hotel';
   let pdfContent = `
     <!DOCTYPE html>
     <html>
@@ -3687,6 +3707,7 @@ async function saveItineraryPDF() {
         .time { color: #ff7a18; font-weight: 700; }
         .activity { color: #333; margin: 5px 0; }
         .footer { margin-top: 40px; text-align: center; border-top: 2px solid #ddd; padding-top: 20px; color: #666; font-size: 0.9rem; }
+        .hotel-img-summary { width: 200px; height: 120px; object-fit: cover; border-radius: 12px; border: 1px solid #ff7a18; margin-bottom: 16px; }
         @media print { body { background: white; } .container { box-shadow: none; } }
       </style>
     </head>
@@ -3700,6 +3721,7 @@ async function saveItineraryPDF() {
         <div class="section">
           <h2>📋 Trip Details & Budget</h2>
           <div class="info-box">
+            <img src="${hotelImgUrl}" alt="Hotel Image" class="hotel-img-summary" />
             <p><strong>🎯 Destination:</strong> ${destination}</p>
             <p><strong>📅 Duration:</strong> ${days} Day(s)</p>
             <p><strong>💰 Budget Range:</strong> ${budget}</p>
