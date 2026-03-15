@@ -1,4 +1,4 @@
-providers = ["node"]
+providers = ["php"]
 
 [start]
-cmd = "node server.js"
+cmd = "bash start.sh"
