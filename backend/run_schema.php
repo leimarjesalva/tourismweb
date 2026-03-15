@@ -5,7 +5,7 @@ ini_set('display_errors', 1);
 require 'db.php';
 $db = get_db();
 
-$sql = file_get_contents(__DIR__ . '/capstone_db(2).sql');
+$sql = file_get_contents(__DIR__ . '/capstone_db.sql');
 
 if (!$sql) {
     die(json_encode(['error' => 'Cannot read SQL file']));
