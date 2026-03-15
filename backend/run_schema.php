@@ -1,7 +1,4 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
 $db = new mysqli(
     getenv('MYSQLHOST'),
     getenv('MYSQLUSER'),
@@ -20,21 +17,20 @@ if (!$sql) {
     die("Cannot read capstone_db.sql");
 }
 
-// Enable multi query
 $db->multi_query($sql);
 
 $results = [];
+$errors = [];
 do {
     $results[] = "OK";
-} while ($db->next_result());
-
-if ($db->errno) {
-    $results[] = "ERROR: " . $db->error;
-}
+    if ($db->errno && $db->errno != 1050) { // 1050 = table already exists
+        $errors[] = $db->error;
+    }
+} while (@$db->next_result());
 
 echo json_encode([
     'success' => true,
     'message' => 'Import done!',
     'queries_ran' => count($results),
-    'last_error' => $db->error ?: 'none'
+    'errors' => $errors
 ]);
