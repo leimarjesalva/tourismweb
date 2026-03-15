@@ -1,8 +1,8 @@
 <?php
 $uri = urldecode(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
 
-// Route backend PHP files
-if (strpos($uri, '/backend/') === 0) {
+// Route backend PHP files only
+if (strpos($uri, '/backend/') === 0 && substr($uri, -4) === '.php') {
     $file = '/app' . $uri;
     if (file_exists($file)) {
         chdir(dirname($file));
@@ -14,11 +14,19 @@ if (strpos($uri, '/backend/') === 0) {
     exit;
 }
 
-// Route img/uploads to frontend/img/uploads
-if (strpos($uri, '/img/') === 0) {
-    $file = '/app/frontend' . $uri;
+// Serve backend static files (images, etc.)
+if (strpos($uri, '/backend/uploads/') === 0) {
+    $file = '/app' . $uri;
     if (file_exists($file)) {
-        return false;
+        $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+        $mime = [
+            'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg',
+            'png' => 'image/png', 'gif' => 'image/gif',
+            'mp4' => 'video/mp4', 'webp' => 'image/webp'
+        ];
+        header('Content-Type: ' . ($mime[$ext] ?? 'application/octet-stream'));
+        readfile($file);
+        exit;
     }
 }
 
