@@ -107,18 +107,18 @@
     <div class="parallax-layer layer-front"></div>
 
     <div class="hero-text-overlay">
-        <h1 class="text-title" style="font-size: 3.5rem; font-weight: 800; color: white; line-height: 1.1; margin: 0 0 30px 0; letter-spacing: -1px; animation-delay: 0.2s;">Discover Legazpi City</h1>
+        <h1 class="text-title" style="animation-delay: 0.2s;">Discover Legazpi City</h1>
         <p class="text-paragraph" style="animation-delay: 0.4s;">Land of Baltog, Handiong, and Bantong — heroes of Ibalong.</p>
     </div>
 </section>
 
 <!-- =================== ABOUT US =================== -->
-<section id="about" class="parallax-bg scroll-animate" data-scroll-speed="0.5" style="background: linear-gradient(135deg, #0f172a 0%, #1a1f2e 100%), url('assets/aq.jpg') center/cover fixed; background-blend-mode: overlay; position: relative; width: 100%; padding: 120px 20px 40px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+<section id="about" class="parallax-bg scroll-animate" data-scroll-speed="0.5" style="background: linear-gradient(135deg, #0f172a 0%, #1a1f2e 100%), url('assets/aq.jpg') center/cover fixed; background-blend-mode: overlay; position: relative; width: 100%; padding: clamp(80px, 24vw, 120px) 20px clamp(20px, 8vw, 40px); display: flex; align-items: center; justify-content: center; overflow: hidden;">
   <!-- Background Overlay with Morph Animation -->
   <div style="position: absolute; inset: 0; background: linear-gradient(135deg, rgba(15,23,42,0.85), rgba(26,31,46,0.85)); pointer-events: none;"></div>
   
   <div style="max-width: 1400px; margin: 0 auto; position: relative; z-index: 1; animation: slideInUp 0.9s ease-out;">
-    <div class="about-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: clamp(24px, 6vw, 80px); align-items: center;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: clamp(40px, 16vw, 80px); align-items: center;">
       <!-- Left: Image Grid - Full View -->
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; height: 100%; opacity: 0; animation: fadeInScale 0.9s ease-out 0.2s forwards;">
         <!-- Large Left Image (3/4 aspect ratio) -->
@@ -149,26 +149,26 @@
             Who We Are?
           </span>
         </div>
-        <h2 class="text-title" style="font-size: 3.5rem; font-weight: 800; color: white; line-height: 1.1; margin: 0 0 30px 0; letter-spacing: -1px; animation-delay: 0.3s;">Our Mission</h2>
-        <p class="text-paragraph" style="color: #a0aec0; font-size: 1.15rem; line-height: 1.9; margin: 0 0 20px 0; font-weight: 300; animation-delay: 0.4s;">Legazpi Explorer is your gateway to the wonders of Albay. We connect travelers to authentic experiences, sustainable tourism practices, and the rich cultural heritage of our beautiful region.</p>
-        <p class="text-paragraph" style="color: #a0aec0; font-size: 1.15rem; line-height: 1.9; margin: 0 0 40px 0; font-weight: 300; animation-delay: 0.5s;">From the majestic Mayon Volcano to vibrant local festivals, we provide smart route planning, real-time predictions, and personal recommendations to make your journey unforgettable.</p>
+        <h2 class="text-title" style="font-size: clamp(2rem, 7vw, 3.5rem); font-weight: 800; color: white; line-height: 1.1; margin: 0 0 30px 0; letter-spacing: -1px; animation-delay: 0.3s;">Our Mission</h2>
+        <p class="text-paragraph" style="color: #a0aec0; font-size: clamp(1rem, 2.3vw, 1.15rem); line-height: 1.9; margin: 0 0 20px 0; font-weight: 300; animation-delay: 0.4s;">Legazpi Explorer is your gateway to the wonders of Albay. We connect travelers to authentic experiences, sustainable tourism practices, and the rich cultural heritage of our beautiful region.</p>
+        <p class="text-paragraph" style="color: #a0aec0; font-size: clamp(1rem, 2.3vw, 1.15rem); line-height: 1.9; margin: 0 0 40px 0; font-weight: 300; animation-delay: 0.5s;">From the majestic Mayon Volcano to vibrant local festivals, we provide smart route planning, real-time predictions, and personal recommendations to make your journey unforgettable.</p>
         
         <!-- Stats -->
-        <div class="about-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 40px; margin-bottom: 40px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 40px;">
           <div style="border-left: 3px solid #ff7a18; padding-left: 20px;">
-            <div style="font-size: 2rem; font-weight: 800; color: #ff7a18; margin-bottom: 8px;">50+</div>
-            <div style="color: #a0aec0; font-size: 0.95rem;">Destinations</div>
+            <div style="font-size: clamp(1.5rem, 4vw, 2rem); font-weight: 800; color: #ff7a18; margin-bottom: 8px;">50+</div>
+            <div style="color: #a0aec0; font-size: clamp(0.8rem, 1.9vw, 0.95rem);">Destinations</div>
           </div>
           <div style="border-left: 3px solid #667eea; padding-left: 20px;">
-            <div style="font-size: 2rem; font-weight: 800; color: #667eea; margin-bottom: 8px;">100K+</div>
-            <div style="color: #a0aec0; font-size: 0.95rem;">Travelers</div>
+            <div style="font-size: clamp(1.5rem, 4vw, 2rem); font-weight: 800; color: #667eea; margin-bottom: 8px;">100K+</div>
+            <div style="color: #a0aec0; font-size: clamp(0.8rem, 1.9vw, 0.95rem);">Travelers</div>
           </div>
         </div>
         
-        <a href="#destinations" class="hero-cta" style="display: inline-flex; align-items: center; gap: 12px; padding: 12px 28px; background: linear-gradient(135deg, #ff7a18, #ff6a88); color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 1rem; transition: all 0.3s; border: 2px solid transparent; white-space: nowrap;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 15px 40px rgba(255,122,24,0.4)'; this.style.borderColor='rgba(255,255,255,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'; this.style.borderColor='transparent'">Explore Now <span style="font-size: 1.2rem;">→</span></a>\n      </div>\n    </div>\n  </div>\n</section>
+        <a href="#destinations" style="display: inline-flex; align-items: center; gap: 12px; padding: 16px 36px; background: linear-gradient(135deg, #ff7a18, #ff6a88); color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 1rem; transition: all 0.3s; border: 2px solid transparent;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 15px 40px rgba(255,122,24,0.4)'; this.style.borderColor='rgba(255,255,255,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'; this.style.borderColor='transparent'">Explore Now <span style="font-size: 1.2rem;">→</span></a>\n      </div>\n    </div>\n  </div>\n</section>
 
 <!-- =================== COMMUNITY EVENTS =================== -->
-<section id="community-events" class="section dark" style="background: linear-gradient(135deg, #0f172a 0%, #1a1f2e 100%); padding: 80px 20px;">
+<section id="community-events" class="section dark" style="background: linear-gradient(135deg, #0f172a 0%, #1a1f2e 100%); padding: clamp(40px, 16vw, 80px) 20px;">
 
   <div style="max-width: 1400px; margin: 0 auto;">
     <!-- loading overlay -->
@@ -182,8 +182,8 @@
           <span style="display: inline-block; width: 24px; height: 3px; background: #ff7a18; border-radius: 2px;"></span>
           Events & News
         </span>
-        <h2 class="text-title" style="font-size: 3.2rem; font-weight: 800; color: white; line-height: 1.1; margin: 0; letter-spacing: -1px; animation-delay: 0.2s;">Community Events & Updates</h2>
-        <h3 class="events-subtitle text-paragraph" style="margin-top:8px; text-align:center; color:#e6eef8; font-size:1.6rem; font-weight:500; max-width:900px;">
+        <h2 class="text-title" style="font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 800; color: white; line-height: 1.1; margin: 0; letter-spacing: -1px; animation-delay: 0.2s;">Community Events & Updates</h2>
+        <h3 class="events-subtitle text-paragraph" style="margin-top:8px; text-align:center; color:#e6eef8; font-size:clamp(1.2rem,2.4vw,1.6rem); font-weight:500; max-width:900px;">
           Discover upcoming festivals, celebrations, and community gatherings happening throughout Legazpi City. Stay informed with real-time event information, predictions, and planning tools.
         </h3>
         <div style="margin-top:16px;">
@@ -2317,7 +2317,7 @@ function renderModalPredictionCharts(ev) {
             </span>
           </div>
         </div>
-        <h2 class="text-title" style="font-size: 3.2rem; color: white; margin: 0 0 30px 0; font-weight: 800; line-height: 1.02; animation-delay: 0.2s;">Discover Legazpi</h2>
+        <h2 class="text-title" style="font-size: clamp(2rem, 4vw, 3.2rem); color: white; margin: 0 0 30px 0; font-weight: 800; line-height: 1.02; animation-delay: 0.2s;">Discover Legazpi</h2>
         <p class="text-paragraph" style="color: #a0aec0; font-size: 1.15rem; line-height: 1.9; margin: 0; font-weight: 300; animation-delay: 0.3s;">
           Legazpi City, the capital of Albay province in the Bicol Region of the Philippines, is a vibrant destination known for its breathtaking natural wonders, rich cultural heritage, and warm hospitality. It is most famous for the majestic Mayon Volcano, often hailed as the world’s most perfectly shaped cone.
         </p>
@@ -2539,7 +2539,7 @@ function renderModalPredictionCharts(ev) {
           Unforgettable Moments
           <span style="display: inline-block; width: 24px; height: 3px; background: #ff7a18; border-radius: 2px;"></span>
         </span>
-        <h2 class="text-title" style="font-size: 3.2rem; font-weight: 800; color: white; line-height: 1.1; margin: 0; letter-spacing: -1px; animation-delay: 0.2s;">Local Experiences & Activities</h2>
+        <h2 class="text-title" style="font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 800; color: white; line-height: 1.1; margin: 0; letter-spacing: -1px; animation-delay: 0.2s;">Local Experiences & Activities</h2>
       </div>
       <p class="text-paragraph" style="color: #a0aec0; font-size: 1.05rem; line-height: 1.8; margin: 0 auto; font-weight: 300; max-width: 700px; text-align: center; animation-delay: 0.3s;">Immerse yourself in authentic local experiences, guided tours, and unique adventures. Discover the heart of Legazpi through carefully curated activities that connect you with our vibrant culture and breathtaking landscapes.</p>
     </div>
@@ -2563,7 +2563,7 @@ function renderModalPredictionCharts(ev) {
           Celebrate with Us
           <span style="display: inline-block; width: 24px; height: 3px; background: #ff7a18; border-radius: 2px;"></span>
         </span>
-        <h2 class="text-title" style="font-size: 3.2rem; font-weight: 800; color: white; line-height: 1.1; margin: 0; letter-spacing: -1px; animation-delay: 0.2s;">Festivals & Cultural Events</h2>
+        <h2 class="text-title" style="font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 800; color: white; line-height: 1.1; margin: 0; letter-spacing: -1px; animation-delay: 0.2s;">Festivals & Cultural Events</h2>
       </div>
       <p class="text-paragraph" style="color: #a0aec0; font-size: 1.05rem; line-height: 1.8; margin: 0 auto; font-weight: 300; max-width: 700px; text-align: center; animation-delay: 0.3s;">Experience the vibrant celebrations, traditional festivals, and cultural events that define Legazpi's spirit. From colorful processions to lively gatherings, each event tells a unique story of our heritage and community pride.</p>
     </div>
@@ -2597,7 +2597,7 @@ function renderModalPredictionCharts(ev) {
           <span style="display: inline-block; width: 24px; height: 3px; background: #ff7a18; border-radius: 2px;"></span>
           Local Treasures
         </span>
-        <h2 class="text-title" style="font-size: 3.2rem; font-weight: 800; color: white; line-height: 1.1; margin: 0; letter-spacing: -1px; animation-delay: 0.2s;">Discover Local Novelty Shops</h2>
+        <h2 class="text-title" style="font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 800; color: white; line-height: 1.1; margin: 0; letter-spacing: -1px; animation-delay: 0.2s;">Discover Local Novelty Shops</h2>
       </div>
       <p class="text-paragraph" style="color: #a0aec0; font-size: 1.05rem; line-height: 1.8; margin: 0; font-weight: 300; max-width: 700px; animation-delay: 0.3s;">Explore authentic local novelty shops showcasing unique products, handcrafted items, and regional treasures. Support local artisans and bring home memorable pieces from Legazpi.</p>
     </div>
@@ -2696,7 +2696,7 @@ function renderModalPredictionCharts(ev) {
           Plan Your Trip
           <span style="display: inline-block; width: 24px; height: 3px; background: #ff7a18; border-radius: 2px;"></span>
         </span>
-        <h2 class="text-title" style="font-size: 3.2rem; font-weight: 800; color: white; line-height: 1.1; margin: 0; letter-spacing: -1px; animation-delay: 0.2s;">✈️ Create Your Custom Itinerary</h2>
+        <h2 class="text-title" style="font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 800; color: white; line-height: 1.1; margin: 0; letter-spacing: -1px; animation-delay: 0.2s;">✈️ Create Your Custom Itinerary</h2>
       </div>
       <p class="text-paragraph" style="color: #a0aec0; font-size: 1.05rem; line-height: 1.8; margin: 0; font-weight: 300; max-width: 700px; animation-delay: 0.3s;">Explore stunning destinations, select your preferences, and let us create a personalized itinerary with hotel recommendations, transportation routes, and day-by-day activities.</p>
     </div>
