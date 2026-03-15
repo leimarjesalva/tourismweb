@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 14, 2026 at 02:07 AM
+-- Generation Time: Mar 15, 2026 at 04:51 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -738,7 +738,23 @@ INSERT INTO `activity_logs` (`id`, `user_email`, `user_name`, `anonymous`, `page
 (692, '', '', 1, 'itinerary', 'itinerary_summary_saved', '{\"action\":\"itinerary_summary_saved\",\"tripTitle\":\"sadadasda\",\"destination\":\"Highlands Park Legazpi City\",\"days\":1,\"budget\":\"Premium (\\u20b17,000-15,000\\/day)\",\"travelStyle\":\"\\ud83c\\udfd4\\ufe0f Adventure (hiking, activities)\",\"accommodation\":\"The Marison Hotel @ Yashano Mall Complex\",\"timestamp\":\"2026-03-13T06:32:00.034Z\",\"userAgent\":\"Mozilla\\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\\/537.36 (KHTML, like Gecko) Chrome\\/145.0.0.0 Safari\\/537.36\"}', '2026-03-13 06:32:00'),
 (693, '', 'Guest', 1, '0', 'view', NULL, '2026-03-13 06:37:22'),
 (694, '', '', 1, 'itinerary', 'destination_viewed', '{\"action\":\"destination_viewed\",\"ts\":\"2026-03-13T06:41:00.880Z\",\"destination\":\"Embarcadero de Legazpi\"}', '2026-03-13 06:41:01'),
-(695, '', 'Guest', 1, '0', 'view', NULL, '2026-03-13 06:46:42');
+(695, '', 'Guest', 1, '0', 'view', NULL, '2026-03-13 06:46:42'),
+(696, '', 'Guest', 1, '0', 'view', NULL, '2026-03-15 10:02:46'),
+(697, '', 'Guest', 1, '0', 'view', NULL, '2026-03-15 10:03:13'),
+(698, '', 'Guest', 1, '0', 'view', NULL, '2026-03-15 10:06:42'),
+(699, '', '', 1, 'itinerary', 'destination_viewed', '{\"action\":\"destination_viewed\",\"ts\":\"2026-03-15T10:07:37.825Z\",\"destination\":\"SEVENTY-SIX Farm\"}', '2026-03-15 10:07:37'),
+(700, '', 'Guest', 1, '0', 'view', NULL, '2026-03-15 10:16:13'),
+(701, '', 'Guest', 1, '0', 'view', NULL, '2026-03-15 10:31:34'),
+(702, '', 'Guest', 1, '0', 'view', NULL, '2026-03-15 10:36:45'),
+(703, '', 'Guest', 1, '0', 'view', NULL, '2026-03-15 10:42:42'),
+(704, '', 'Guest', 1, '0', 'view', NULL, '2026-03-15 10:57:19'),
+(705, '', 'Guest', 1, '0', 'view', NULL, '2026-03-15 10:57:55'),
+(706, '', 'Guest', 1, '0', 'view', NULL, '2026-03-15 11:16:20'),
+(707, '', 'Guest', 1, '0', 'view', NULL, '2026-03-15 11:22:02'),
+(708, '', 'Guest', 1, '0', 'view', NULL, '2026-03-15 12:04:31'),
+(709, '', 'Guest', 1, '0', 'view', NULL, '2026-03-15 12:49:45'),
+(710, '', 'Guest', 1, '0', 'view', NULL, '2026-03-15 13:12:33'),
+(711, '', 'Guest', 1, '0', 'view', NULL, '2026-03-15 13:57:19');
 
 -- --------------------------------------------------------
 
@@ -929,7 +945,8 @@ INSERT INTO `admin_event_logs` (`id`, `event_action`, `event_data`, `timestamp`,
 (165, 'destination_viewed', '{\"action\":\"destination_viewed\",\"ts\":\"2026-03-13T06:31:35.670Z\",\"destination\":\"Highlands Park Legazpi City\"}', '2026-03-13 07:31:35', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '127.0.0.1', '2026-03-13 06:31:35'),
 (166, 'itinerary_generated', '{\"action\":\"itinerary_generated\",\"ts\":\"2026-03-13T06:31:52.789Z\",\"tripTitle\":\"sadadasda\",\"destination\":\"Highlands Park Legazpi City\",\"days\":1}', '2026-03-13 07:31:52', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '127.0.0.1', '2026-03-13 06:31:52'),
 (167, 'itinerary_summary_saved', '{\"action\":\"itinerary_summary_saved\",\"tripTitle\":\"sadadasda\",\"destination\":\"Highlands Park Legazpi City\",\"days\":1,\"budget\":\"Premium (\\u20b17,000-15,000\\/day)\",\"travelStyle\":\"\\ud83c\\udfd4\\ufe0f Adventure (hiking, activities)\",\"accommodation\":\"The Marison Hotel @ Yashano Mall Complex\",\"timestamp\":\"2026-03-13T06:32:00.034Z\",\"userAgent\":\"Mozilla\\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\\/537.36 (KHTML, like Gecko) Chrome\\/145.0.0.0 Safari\\/537.36\"}', '2026-03-13 07:32:00', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '127.0.0.1', '2026-03-13 06:32:00'),
-(168, 'destination_viewed', '{\"action\":\"destination_viewed\",\"ts\":\"2026-03-13T06:41:00.880Z\",\"destination\":\"Embarcadero de Legazpi\"}', '2026-03-13 07:41:01', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '127.0.0.1', '2026-03-13 06:41:01');
+(168, 'destination_viewed', '{\"action\":\"destination_viewed\",\"ts\":\"2026-03-13T06:41:00.880Z\",\"destination\":\"Embarcadero de Legazpi\"}', '2026-03-13 07:41:01', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '127.0.0.1', '2026-03-13 06:41:01'),
+(169, 'destination_viewed', '{\"action\":\"destination_viewed\",\"ts\":\"2026-03-15T10:07:37.825Z\",\"destination\":\"SEVENTY-SIX Farm\"}', '2026-03-15 11:07:37', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Mobile Safari/537.36', '::1', '2026-03-15 10:07:37');
 
 -- --------------------------------------------------------
 
@@ -958,7 +975,9 @@ INSERT INTO `anonymous_sessions` (`id`, `session_id`, `ip_address`, `city`, `cou
 (1, 'sess_1772183833841_gxxp2iznv', '::1', 'Unknown', 'Unknown', 'Desktop', '2026-02-27 09:17:13', '2026-03-11 01:44:55', 542, 0),
 (2, 'sess_1771470311470_ddzaliesm', '::1', 'Unknown', 'Unknown', 'Desktop', '2026-02-28 01:12:14', '2026-03-05 03:02:55', 6, 0),
 (3, 'sess_1772900305520_5q1f7jcp0', '127.0.0.1', 'Unknown', 'Unknown', 'Desktop', '2026-03-07 16:18:27', '2026-03-10 09:11:34', 31, 0),
-(4, 'sess_1773365052340_ge68ogf7r', '127.0.0.1', 'Unknown', 'Unknown', 'Desktop', '2026-03-13 01:24:12', '2026-03-13 06:46:41', 33, 0);
+(4, 'sess_1773365052340_ge68ogf7r', '127.0.0.1', 'Unknown', 'Unknown', 'Desktop', '2026-03-13 01:24:12', '2026-03-13 06:46:41', 33, 0),
+(5, 'sess_1773357114584_2kbmqx1ob', '::1', 'Unknown', 'Unknown', 'Desktop', '2026-03-15 10:02:46', '2026-03-15 13:57:19', 14, 0),
+(6, 'sess_1773569773361_uhnwy4217', '::1', 'Unknown', 'Unknown', 'Desktop', '2026-03-15 10:16:13', '2026-03-15 10:16:13', 1, 0);
 
 -- --------------------------------------------------------
 
@@ -1768,19 +1787,19 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `activity_logs`
 --
 ALTER TABLE `activity_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=696;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=712;
 
 --
 -- AUTO_INCREMENT for table `admin_event_logs`
 --
 ALTER TABLE `admin_event_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=169;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=170;
 
 --
 -- AUTO_INCREMENT for table `anonymous_sessions`
 --
 ALTER TABLE `anonymous_sessions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `attendance_history`
