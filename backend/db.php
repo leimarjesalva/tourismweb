@@ -5,10 +5,11 @@ ini_set('log_errors', '1');
 
 session_start();
 
-define('DB_HOST', '127.0.0.1');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_NAME', 'capstone_db');
+define('DB_HOST', getenv('MYSQLHOST') ?: '127.0.0.1');
+define('DB_USER', getenv('MYSQLUSER') ?: 'root');
+define('DB_PASS', getenv('MYSQLPASSWORD') ?: '');
+define('DB_NAME', getenv('MYSQLDATABASE') ?: 'capstone_db');
+define('DB_PORT', getenv('MYSQLPORT') ?: 3306);
 
 
 define('ADMIN_USER', 'admin');
@@ -18,7 +19,7 @@ define('ADMIN_PASS', 'admin123');
 define('GOOGLE_CLIENT_ID', '592851137026-ojducpgk2od9rvtob47sn5k5fktqvi6h.apps.googleusercontent.com');
 
 function get_db(){
-    $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+    $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT);
     if ($mysqli->connect_errno) {
         http_response_code(500);
         echo json_encode(['error' => 'DB connect error: '.$mysqli->connect_error]);
