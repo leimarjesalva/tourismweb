@@ -1,7 +1,0 @@
-providers = ["php"]
-
-[phases.setup]
-nixPkgs = ["php", "phpExtensions.mysqli", "phpExtensions.pdo_mysql"]
-
-[start]
-cmd = "bash start.sh"
