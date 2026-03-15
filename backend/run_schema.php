@@ -5,10 +5,10 @@ ini_set('display_errors', 1);
 require 'db.php';
 $db = get_db();
 
-$sql = file_get_contents(__DIR__ . '/schema.sql');
+$sql = file_get_contents(__DIR__ . '/capstone_db(2).sql');
 
 if (!$sql) {
-    die(json_encode(['error' => 'Cannot read schema.sql']));
+    die(json_encode(['error' => 'Cannot read SQL file']));
 }
 
 $queries = array_filter(array_map('trim', explode(';', $sql)));
@@ -24,4 +24,4 @@ foreach ($queries as $query) {
 }
 
 header('Content-Type: application/json');
-echo json_encode(['success' => true, 'results' => $results]);
+echo json_encode(['success' => true, 'total' => count($results), 'results' => $results]);
