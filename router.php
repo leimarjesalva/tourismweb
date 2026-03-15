@@ -14,10 +14,18 @@ if (strpos($uri, '/backend/') === 0) {
     exit;
 }
 
+// Route img/uploads to frontend/img/uploads
+if (strpos($uri, '/img/') === 0) {
+    $file = '/app/frontend' . $uri;
+    if (file_exists($file)) {
+        return false;
+    }
+}
+
 // Serve frontend static files
 $frontendFile = '/app/frontend' . $uri;
 if (file_exists($frontendFile) && !is_dir($frontendFile)) {
-    return false; // Let PHP built-in server handle it
+    return false;
 }
 
 // Default - serve index.html
