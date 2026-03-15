@@ -2,26 +2,39 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-require 'db.php';
-$db = get_db();
+$db = new mysqli(
+    getenv('MYSQLHOST'),
+    getenv('MYSQLUSER'),
+    getenv('MYSQLPASSWORD'),
+    getenv('MYSQLDATABASE'),
+    getenv('MYSQLPORT')
+);
+
+if ($db->connect_errno) {
+    die("DB ERROR: " . $db->connect_error);
+}
 
 $sql = file_get_contents(__DIR__ . '/capstone_db.sql');
 
 if (!$sql) {
-    die(json_encode(['error' => 'Cannot read SQL file']));
+    die("Cannot read capstone_db.sql");
 }
 
-$queries = array_filter(array_map('trim', explode(';', $sql)));
+// Enable multi query
+$db->multi_query($sql);
 
 $results = [];
-foreach ($queries as $query) {
-    if (empty($query)) continue;
-    if ($db->query($query)) {
-        $results[] = "OK: " . substr($query, 0, 60);
-    } else {
-        $results[] = "ERROR: " . $db->error . " | " . substr($query, 0, 60);
-    }
+do {
+    $results[] = "OK";
+} while ($db->next_result());
+
+if ($db->errno) {
+    $results[] = "ERROR: " . $db->error;
 }
 
-header('Content-Type: application/json');
-echo json_encode(['success' => true, 'total' => count($results), 'results' => $results]);
+echo json_encode([
+    'success' => true,
+    'message' => 'Import done!',
+    'queries_ran' => count($results),
+    'last_error' => $db->error ?: 'none'
+]);
