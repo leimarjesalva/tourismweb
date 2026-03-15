@@ -574,6 +574,16 @@ section {
   .site-title::before { width: 28px; height: 28px; }
 }
 
+@media (max-width: 768px) {
+  #about { padding: 60px 20px 40px !important; }
+  .hero-text-overlay h1 { font-size: 2.6rem !important; }
+  .hero-text-overlay p { font-size: 1rem !important; }
+  .hero-cta { padding: 10px 18px !important; font-size: 0.95rem !important; }
+  .about-grid { gap: 40px !important; }
+  .about-stats { gap: 24px !important; }
+  #eventsMapContainer { height: 320px !important; }
+}
+
 /* ============================
    PARALLAX LANDING PAGE
 ============================ */
@@ -644,6 +654,11 @@ section {
   margin-top: 1rem;
 }
 
+.hero-cta {
+  white-space: nowrap;
+  max-width: 260px;
+  justify-content: center;
+}
 
 /* SECTION BASE */
 .section {
@@ -1252,7 +1267,7 @@ select, select option {
 /* Events subtitle styling: bold, header-like typographic treatment */
 .events-subtitle {
   color: #e6eef8;
-  font-size: clamp(1.3rem, 2.6vw, 1.8rem);
+  font-size: 1.8rem;
   font-weight: 800;
   letter-spacing: -0.4px;
   margin: 20px auto 0 auto;
@@ -2311,7 +2326,7 @@ footer {
 .festival-container { position: relative; padding: 56px 6vw; z-index: 2; max-width: 1200px; margin: 0 auto; }
 
 .festival-header { text-align: center; margin-bottom: 32px; }
-.festival-header h1 { font-size: clamp(1.8rem, 3.5vw, 2.6rem); letter-spacing: -0.5px; }
+.festival-header h1 { font-size: 2.6rem; letter-spacing: -0.5px; }
 .festival-header p { color: rgba(233,248,241,0.8); margin-top: 6px; }
 
 .festival-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
