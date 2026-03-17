@@ -187,8 +187,8 @@
         <h3 class="events-subtitle text-paragraph" style="margin-top:8px; text-align:center; color:#e6eef8; font-size:clamp(1.2rem,2.4vw,1.6rem); font-weight:500; max-width:900px;">
           Discover upcoming festivals, celebrations, and community gatherings happening throughout Legazpi City. Stay informed with real-time event information, predictions, and planning tools.
         </h3>
-        <div style="margin-top:16px;">
-          <button id="mapTabBtn" onclick="toggleEventTab('map')" style="margin-right:12px;padding:8px 16px;background:#667eea;color:#fff;border:none;border-radius:6px;cursor:pointer;">Live Map</button>
+        <div style="margin-top:16px; display:flex; gap:12px;">
+          <button id="mapTabBtn" onclick="toggleEventTab('map')" style="padding:8px 16px;background:#667eea;color:#fff;border:none;border-radius:6px;cursor:pointer;">Live Map</button>
           <button id="chartsTabBtn" onclick="toggleEventTab('charts')" style="padding:8px 16px;background:#444;color:#ccc;border:none;border-radius:6px;cursor:pointer;">Data Charts</button>
         </div>
       </div>
@@ -202,30 +202,21 @@
           <p style="color: white; font-size: 1.1rem; font-weight: 600; margin: 0 0 16px 0;">Live Event Map</p>
         <div style="width: 100%; height: 500px; border-radius: 16px; background: linear-gradient(135deg, rgba(102,126,234,0.12), rgba(118,75,162,0.08)); border: 1px solid rgba(102,126,234,0.25); box-shadow: 0 20px 60px rgba(0,0,0,0.3); position: relative;">
             <div id="eventsMapContainer" style="width: 100%; height: 100%; position: relative; border-radius: 16px; overflow: hidden;"></div>
-          </div>
-          <!-- Risk legend sits underneath map on narrow layouts -->
-          <div style="margin-top:24px; background: linear-gradient(135deg, rgba(102,126,234,0.12), rgba(118,75,162,0.08)); border: 1px solid rgba(102,126,234,0.25); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 14px;">
-            <p style="color: white; font-size: 0.9rem; font-weight: 600; margin: 0;">Risk Levels</p>
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <div style="width: 12px; height: 12px; border-radius: 50%; background: #4caf50; box-shadow: 0 0 0 3px rgba(76,175,80,0.2);"></div>
-              <span style="color: #cbd5e1; font-size: 0.85rem;">Low Risk (≤60%)</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <div style="width: 12px; height: 12px; border-radius: 50%; background: #ff9800; box-shadow: 0 0 0 3px rgba(255,152,0,0.2);"></div>
-              <span style="color: #cbd5e1; font-size: 0.85rem;">Medium Risk (60-85%)</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <div style="width: 12px; height: 12px; border-radius: 50%; background: #e74c3c; box-shadow: 0 0 0 3px rgba(231,76,60,0.2);"></div>
-              <span style="color: #cbd5e1; font-size: 0.85rem;">High Risk (>85%)</span>
+            <div id="heatmapWarning" style="display:none; position:absolute; top: 12px; left: 12px; background: rgba(222, 68, 68, 0.92); color: #fff; padding: 8px 12px; border-radius: 8px; font-size: 0.82rem; z-index: 1100;">⚠️ No heatmap data available</div>
+            <div id="eventRiskLegend" style="position:absolute; top: 12px; right: 12px; background: rgba(15, 23, 42, 0.84); border: 1px solid rgba(255,255,255,0.18); color: #fff; padding: 12px; border-radius: 10px; font-size: 0.78rem; z-index: 1100;">
+              <strong>Risk Levels</strong>
+              <div style="display:flex; gap: 6px; align-items:center; margin-top:6px;"><span style="width:10px;height:10px;border-radius:50%;background:#4caf50;"></span>Low (≤60%)</div>
+              <div style="display:flex; gap: 6px; align-items:center;"><span style="width:10px;height:10px;border-radius:50%;background:#ff9800;"></span>Medium (60-85%)</div>
+              <div style="display:flex; gap: 6px; align-items:center;"><span style="width:10px;height:10px;border-radius:50%;background:#e74c3c;"></span>High (>85%)</div>
             </div>
           </div>
+
         </div>
 
         <!-- Events feed below map in a responsive grid -->
         <div>
           <div style="margin-bottom: 32px; display:flex; align-items:center; justify-content:space-between;">
             <p style="color: white; font-size: 1.1rem; font-weight: 600; margin: 0;">Upcoming Events</p>
-            <span style="background:#e74c3c;color:white;padding:2px 8px;border-radius:4px;font-size:0.75rem;font-weight:700;">LIVE</span>
           </div>
           <div id="eventsFeed" class="event-grid"></div>
         </div>
@@ -395,13 +386,15 @@ async function loadCommunityEvents(){
         waste = Math.round((visitors / 50000) * 2900);
       }
       
+      // Persist computed prediction values so map uses same data as cards
+      ev.prediction = ev.prediction || {};
+      ev.prediction.attendance = visitors;
+      ev.prediction.waste_prediction = waste;
+      
       const occupancy = Math.round((visitors / capacity) * 100);
       
-      // Get risk level from ML model
-      let riskLevel = 'LOW';
-      let riskEmoji = '🟢';
-      if (occupancy > 85) { riskLevel = 'HIGH'; riskEmoji = '🔴'; }
-      else if (occupancy > 60) { riskLevel = 'MEDIUM'; riskEmoji = '🟠'; }
+      // Use unified risk helper for consistent thresholds and colors
+      const { riskLabel, riskColor } = getRiskLevelForOccupancy(occupancy);
       
       // ML Model Accuracy Badge
       const accuracyBadge = `<div style="display:inline-block; background:#e8f5e9; color:#2e7d32; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:700; margin-left:8px;">✓ 92.75% Accuracy</div>`;
@@ -440,7 +433,7 @@ async function loadCommunityEvents(){
             <div style="font-size:0.8rem; color:#aaa; margin-bottom:8px;">${ev.event_type || ''} ${ev.capacity && ev.capacity>0 ? '• ' + (ev.ticketed ? 'Ticketed' : 'Free') : ''}</div>
             <div style="font-size:0.9rem; margin-bottom:6px;">Est. visitors: <span style="color:${occupancy>85?'#e74c3c':'#4caf50'}; font-weight:700;">${Number(visitors).toLocaleString()}</span></div>
             <div style="font-size:0.8rem;">Capacity: ${Number(capacity).toLocaleString()} &middot; Waste: ${Number(waste).toLocaleString()} kg</div>
-            <div style="position:absolute; top:8px; right:8px; background:${riskLevel === 'LOW' ? '#4caf50' : riskLevel === 'MEDIUM' ? '#ff9800' : '#e74c3c'}; color:#111; padding:2px 6px; border-radius:4px; font-size:0.75rem; font-weight:700;">${riskEmoji}</div>
+            <div style="position:absolute; top:8px; right:8px; background:${riskColor}; color:#111; padding:2px 6px; border-radius:4px; font-size:0.75rem; font-weight:700;">${riskLabel}</div>
           </div>
         </div>
       `;
@@ -564,6 +557,16 @@ function saveRiskLevelToDatabase(level) {
   .catch(err => console.warn('⚠️ Database save error:', err));
 }
 
+function handleNoHeatmapData() {
+  const msg = '⚠️ No heatmap data available';
+  console.warn(msg);
+  const warningNode = document.getElementById('heatmapWarning');
+  if (warningNode) {
+    warningNode.textContent = msg;
+    warningNode.style.display = 'block';
+  }
+}
+
 // Initialize map showing all event locations
 // ======================== DIRECTIONS SERVICE ========================
 // Directions service replaced with Leaflet routing
@@ -599,6 +602,12 @@ function clearDirections() {
   const endInput = document.getElementById('dir-end');
   if (startInput) startInput.value = '';
   if (endInput) endInput.value = '';
+}
+
+function getRiskLevelForOccupancy(occupancy) {
+  if (occupancy > 85) return { riskCode:'HIGH', riskLabel:'High Risk', riskColor: '#e74c3c', riskEmoji: '🔴' };
+  if (occupancy > 60) return { riskCode:'MEDIUM', riskLabel:'Medium Risk', riskColor: '#ff9800', riskEmoji: '🟠' };
+  return { riskCode:'LOW', riskLabel:'Low Risk', riskColor: '#4caf50', riskEmoji: '🟢' };
 }
 
 // ======================== LEAFLET EVENT MAP INITIALIZATION ========================
@@ -730,12 +739,7 @@ function initializeEventsMap(events) {
         const currCapacity = current.capacity || 50000;
         const currOccupancy = Math.round((currVisitors / currCapacity) * 100);
         
-        let routeColor = '#4caf50';
-        if (currOccupancy > 85) {
-          routeColor = '#e74c3c';
-        } else if (currOccupancy > 50) {
-          routeColor = '#ff9800';
-        }
+        const { riskColor: routeColor } = getRiskLevelForOccupancy(currOccupancy);
         
         // Draw polyline (route) using Leaflet
         const latlngs = [
@@ -780,7 +784,10 @@ function initializeEventsMap(events) {
     }
     
     // === LOAD GEOJSON BOUNDARY ===
-    const geojsonPath = './legazpi_boundary.geojson';
+    console.log('📍 Loading Legazpi City boundary...');
+    const geojsonPath = window.location.pathname.includes('/frontend/') 
+      ? './legazpi_boundary.geojson' 
+      : './frontend/legazpi_boundary.geojson';
     
     fetch(geojsonPath)
       .then(response => response.json())
@@ -819,24 +826,23 @@ function initializeEventsMap(events) {
       // === RISK LEVEL CALCULATION ===
       const capacity = ev.capacity || 50000;
       const occupancy = Math.round((visitors / capacity) * 100);
-      let riskLevel = 'LOW';
-      let riskColor = '#4caf50';    // Green
-      let markerRadius = 300;
+      const { riskCode, riskLabel, riskColor, riskEmoji } = getRiskLevelForOccupancy(occupancy);
+      let markerRadius = riskCode === 'HIGH' ? 450 : riskCode === 'MEDIUM' ? 360 : 300;
       
-      if (occupancy > 85) {
-        riskLevel = 'HIGH';
-        riskColor = '#e74c3c';       // Red
-        markerRadius = 450;
-      } else if (occupancy > 50) {
-        riskLevel = 'MEDIUM';
-        riskColor = '#ff9800';       // Orange/Yellow
-        markerRadius = 360;
-      }
-      
+      // === CREATE HEATMAP SOURCE ENTRY ===
+      heatmapData.push({
+        location: { lat, lng },
+        occupancy,
+        capacity,
+        visitors,
+        riskCode,
+        riskLabel,
+        intensity: Math.min(1, Math.max(0.05, occupancy / 100))
+      });
+
       // === CREATE RISK ZONE CIRCLE (LEAFLET) ===
       const waste = ev.prediction && ev.prediction.waste_prediction ? Math.round(ev.prediction.waste_prediction) : Math.round((visitors / 50000) * 2900);
       const trafficHours = Math.min(10, Math.max(1, Math.round(occupancy / 10))); // Estimate traffic peak hours based on occupancy
-      const riskEmoji = riskLevel === 'HIGH' ? '🔴' : riskLevel === 'MEDIUM' ? '🟠' : '🟢';
       
       const circle = L.circle([lat, lng], {
         color: riskColor,
@@ -849,7 +855,7 @@ function initializeEventsMap(events) {
           <div style="padding: 12px; border-radius: 6px; font-size: 13px;">
             <strong style="display: block; margin-bottom: 8px;">${ev.title}</strong>
             <div style="margin-bottom: 6px;">
-              <strong>⚠️ Risk:</strong> ${riskLevel} ${occupancy}%
+              <strong>⚠️ Risk:</strong> ${riskLabel} ${occupancy}%
             </div>
             <div style="margin-bottom: 6px;">
               <strong>👥 Visitors:</strong> ${Number(visitors).toLocaleString()}
@@ -887,7 +893,7 @@ function initializeEventsMap(events) {
         marker.bindPopup(`
           <div style="padding: 12px; font-size: 13px;">
             <strong>${ev.title}</strong><br>
-            ⚠️ Risk: ${riskLevel} ${occupancy}%<br>
+            ⚠️ Risk: ${riskLabel} ${occupancy}%<br>
             👥 ${Number(visitors).toLocaleString()} visitors<br>
             🗑️ Waste: ${Number(waste).toLocaleString()} kg<br>
             ⏱️ Traffic peak (hrs): ${trafficHours}<br>
@@ -910,7 +916,7 @@ function initializeEventsMap(events) {
       } catch(err) {
         console.warn('⚠️ Error creating marker:', err.message);
       }
-      
+
       // Bounds tracking
       if (Number.isFinite(lat) && Number.isFinite(lng)) {
         bounds.extend([lat, lng]);
@@ -919,6 +925,12 @@ function initializeEventsMap(events) {
     
     // === CREATE HEATMAP REPLACEMENT: Visitor Density Visualization (Leaflet-based) ===
     // Converting from deprecated google.maps.visualization.HeatmapLayer to Leaflet circles
+    const colorizeIntensity = (value) => {
+      if (value > 0.85) return '#e74c3c';
+      if (value > 0.6) return '#ff9800';
+      return '#4caf50';
+    };
+
     if (heatmapData.length > 0) {
       console.log('🔥 Creating visitor density visualization with', heatmapData.length, 'data points via Leaflet');
     
@@ -946,21 +958,21 @@ function initializeEventsMap(events) {
       
       // Draw concentration circles using Leaflet
       clusters.forEach(cluster => {
-        const intensity = Math.min(cluster.points.length / 10, 1);
-        const radius = 500 + (cluster.points.length * 100);
+        const avgIntensity = cluster.points.reduce((sum, p) => sum + p.intensity, 0) / cluster.points.length;
+        const radius = 400 + (cluster.points.length * 80);
         L.circle([cluster.center.lat, cluster.center.lng], {
           radius: radius,
-          color: '#FF4444',
-          opacity: 0.4,
+          color: colorizeIntensity(avgIntensity),
+          opacity: 0.35,
           weight: 2,
-          fillColor: '#FF4444',
-          fillOpacity: 0.1 + (intensity * 0.4),
+          fillColor: colorizeIntensity(avgIntensity),
+          fillOpacity: 0.1 + (avgIntensity * 0.4),
           className: 'heatmap-cluster'
         }).addTo(map);
       });
       console.log('✅ 🔥 Visitor density visualization complete - ' + clusters.length + ' areas (Leaflet-based)');
     } else {
-      console.warn('⚠️ No heatmap data available');
+      handleNoHeatmapData();
     }
     
     console.log('✅ plotEvents complete: plotted', plotCount, 'out of', list.length, 'events');
@@ -1107,11 +1119,7 @@ function renderCommunityCharts(events, mlPredData) {
     const occupancy = Math.round((eventVisitors / eventCapacity) * 100);
     
     // Determine risk level specific to this event
-    let riskLevel = 'LOW';
-    let riskEmoji = '🟢';
-    let riskColor = '#4caf50';
-    if (occupancy > 85) { riskLevel = 'HIGH'; riskEmoji = '🔴'; riskColor = '#e74c3c'; }
-    else if (occupancy > 60) { riskLevel = 'MEDIUM'; riskEmoji = '🟠'; riskColor = '#ff9800'; }
+    const { riskLabel, riskEmoji, riskColor } = getRiskLevelForOccupancy(occupancy);
     
     // Get event date for display
     let eventDateStr = 'TBA';
@@ -1139,7 +1147,7 @@ function renderCommunityCharts(events, mlPredData) {
     card.innerHTML = `
       <!-- Risk Badge -->
       <div style="position: absolute; top: 0; right: 0; background: ${riskColor}; color: white; padding: 10px 14px; border-radius: 0 14px 0 8px; font-weight: 700; font-size: 0.9rem;">
-        ${riskEmoji} ${riskLevel}
+        ${riskLabel}
       </div>
       
       <!-- Event Header -->
@@ -1167,16 +1175,7 @@ function renderCommunityCharts(events, mlPredData) {
       </div>
       
       <!-- Capacity Stats -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
-        <!-- Capacity Usage -->
-        <div style="background: rgba(102,126,234,0.25); padding: 14px; border-radius: 10px; text-align: center; border: 1px solid rgba(102,126,234,0.4);">
-          <p style="margin: 0 0 8px 0; font-size: 0.8rem; color: #aaa; text-transform: uppercase; font-weight: 600;">Capacity Usage</p>
-          <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
-            <p style="margin: 0; font-size: 1.35rem; font-weight: 800; color: ${occupancy > 85 ? '#e74c3c' : occupancy > 60 ? '#ff9800' : '#4caf50'};">${occupancy}%</p>
-          </div>
-          <p style="margin: 4px 0 0 0; font-size: 0.75rem; color: #999;">of ${Number(eventCapacity).toLocaleString()}</p>
-        </div>
-        
+      <div style="display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 16px;">
         <!-- Total Capacity -->
         <div style="background: rgba(102,126,234,0.25); padding: 14px; border-radius: 10px; text-align: center; border: 1px solid rgba(102,126,234,0.4);">
           <p style="margin: 0 0 8px 0; font-size: 0.8rem; color: #aaa; text-transform: uppercase; font-weight: 600;">Max Capacity</p>
@@ -1187,7 +1186,7 @@ function renderCommunityCharts(events, mlPredData) {
       
       <!-- Accuracy Footer -->
       <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px; margin-bottom: 14px; text-align: center;">
-        <p style="margin: 0; font-size: 0.85rem; color: #4caf50; font-weight: 600;">✓ 92.75% ML Accuracy (ARIMA Model)</p>
+        <!-- Accuracy note removed as requested -->
       </div>
       
       <!-- Event Route Map -->
