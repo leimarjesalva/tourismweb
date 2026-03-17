@@ -79,6 +79,78 @@
         margin-bottom: 10px;
       }
     }
+
+    /* Leaflet popup style override - remove the white card background across all map layers */
+    .leaflet-popup-content-wrapper,
+    .leaflet-popup-content,
+    .leaflet-popup-tip {
+      background: rgba(0, 0, 0, 0.72) !important;
+      border: 0 !important;
+      box-shadow: none !important;
+      color: #fff !important;
+    }
+    .leaflet-popup-tip {
+      display: none !important;
+    }
+
+    /* Risk legend overlay should not show white drop effect */
+    #eventRiskLegend {
+      background: rgba(15, 23, 42, 0.85) !important;
+      border: 1px solid rgba(255, 255, 255, 0.18) !important;
+      box-shadow: none !important;
+    }
+
+    #eventRiskLegend span {
+      box-shadow: none !important;
+      border: 0 !important;
+      outline: none !important;
+    }
+
+    /* Tooltip dot as text only, no white card background */
+    .leaflet-tooltip {
+      background: transparent !important;
+      border: 0 !important;
+      box-shadow: none !important;
+      color: transparent !important; /* hide default text wrapper color */
+      text-shadow: none !important;
+      font-size: 0 !important;
+      padding: 0 !important;
+      line-height: 1 !important;
+    }
+
+    .leaflet-tooltip span,
+    .leaflet-tooltip:before,
+    .leaflet-tooltip:after {
+      background: transparent !important;
+      border: 0 !important;
+      box-shadow: none !important;
+      color: transparent !important;
+    }
+
+    .leaflet-tooltip.leaflet-zoom-animated {
+      opacity: 1 !important;
+    }
+
+    /* Replace tooltip marker with emoji content element if needed */
+    .leaflet-tooltip .tooltip-icon {
+      display: block;
+      font-size: 18px !important;
+      color: #e74c3c !important;
+      text-shadow: none !important;
+      background: transparent !important;
+      border: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    /* Remove any default leaflets info box (whitecard) in route mini maps */
+    .leaflet-control-layers, .leaflet-control-zoom, .leaflet-control-attribution {
+      background: rgba(0, 0, 0, 0.4) !important;
+      border: 0 !important;
+      box-shadow: none !important;
+      color: #fff !important;
+    }
+
   </style>
 </head>
 <body>
@@ -205,9 +277,9 @@
             <div id="heatmapWarning" style="display:none; position:absolute; top: 12px; left: 12px; background: rgba(222, 68, 68, 0.92); color: #fff; padding: 8px 12px; border-radius: 8px; font-size: 0.82rem; z-index: 1100;">⚠️ No heatmap data available</div>
             <div id="eventRiskLegend" style="position:absolute; top: 12px; right: 12px; background: rgba(15, 23, 42, 0.84); border: 1px solid rgba(255,255,255,0.18); color: #fff; padding: 12px; border-radius: 10px; font-size: 0.78rem; z-index: 1100;">
               <strong>Risk Levels</strong>
-              <div style="display:flex; gap: 6px; align-items:center; margin-top:6px;"><span style="width:10px;height:10px;border-radius:50%;background:#4caf50;"></span>Low (≤60%)</div>
-              <div style="display:flex; gap: 6px; align-items:center;"><span style="width:10px;height:10px;border-radius:50%;background:#ff9800;"></span>Medium (60-85%)</div>
-              <div style="display:flex; gap: 6px; align-items:center;"><span style="width:10px;height:10px;border-radius:50%;background:#e74c3c;"></span>High (>85%)</div>
+              <div style="display:flex; gap: 6px; align-items:center; margin-top:6px;"><span style="width:10px;height:10px;border-radius:50%;background:#4caf50;border: 0;box-shadow:none;filter:none;"></span>Low (≤60%)</div>
+              <div style="display:flex; gap: 6px; align-items:center;"><span style="width:10px;height:10px;border-radius:50%;background:#ff9800;border: 0;box-shadow:none;filter:none;"></span>Medium (60-85%)</div>
+              <div style="display:flex; gap: 6px; align-items:center;"><span style="width:10px;height:10px;border-radius:50%;background:#e74c3c;border: 0;box-shadow:none;filter:none;"></span>High (>85%)</div>
             </div>
           </div>
 
@@ -877,8 +949,8 @@ function initializeEventsMap(events) {
         const marker = L.circleMarker([lat, lng], {
           radius: 10,
           fillColor: riskColor,
-          color: '#fff',
-          weight: 3,
+          color: riskColor,
+          weight: 1,
           opacity: 1,
           fillOpacity: 1
         }).addTo(map);
@@ -1303,8 +1375,8 @@ function renderCommunityCharts(events, mlPredData) {
           L.circleMarker([startLat, startLng], {
             radius: 10,
             fillColor: '#4caf50',
-            color: '#fff',
-            weight: 3,
+            color: '#4caf50',
+            weight: 0,
             opacity: 1,
             fillOpacity: 1
           })
@@ -1319,8 +1391,8 @@ function renderCommunityCharts(events, mlPredData) {
           L.circleMarker([endLat, endLng], {
             radius: 10,
             fillColor: '#e74c3c',
-            color: '#fff',
-            weight: 3,
+            color: '#e74c3c',
+            weight: 0,
             opacity: 1,
             fillOpacity: 1
           })
@@ -1695,8 +1767,8 @@ ${route.restrictions ? '⚠️ '+route.restrictions : ''}
   L.circleMarker(startPos, {
     radius: 12,
     fillColor: '#4caf50',
-    color: '#fff',
-    weight: 3,
+    color: '#4caf50',
+    weight: 0,
     opacity: 1,
     fillOpacity: 1
   })
@@ -1708,8 +1780,8 @@ ${route.restrictions ? '⚠️ '+route.restrictions : ''}
   L.circleMarker(endPos, {
     radius: 12,
     fillColor: '#e74c3c',
-    color: '#fff',
-    weight: 3,
+    color: '#e74c3c',
+    weight: 0,
     opacity: 1,
     fillOpacity: 1
   })
@@ -4430,8 +4502,8 @@ function showMap() {
         L.circleMarker([coords.lat, coords.lon], {
           radius: 8,
           fillColor: '#e74c3c',
-          color: '#fff',
-          weight: 2,
+          color: '#e74c3c',
+          weight: 0,
           opacity: 1,
           fillOpacity: 0.8
         })
