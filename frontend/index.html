@@ -1028,21 +1028,21 @@ function initializeEventsMap(events) {
         }
       });
       
-      // Draw concentration circles using Leaflet
-      clusters.forEach(cluster => {
-        const avgIntensity = cluster.points.reduce((sum, p) => sum + p.intensity, 0) / cluster.points.length;
-        const radius = 400 + (cluster.points.length * 80);
-        L.circle([cluster.center.lat, cluster.center.lng], {
-          radius: radius,
-          color: colorizeIntensity(avgIntensity),
-          opacity: 0.35,
-          weight: 2,
-          fillColor: colorizeIntensity(avgIntensity),
-          fillOpacity: 0.1 + (avgIntensity * 0.4),
-          className: 'heatmap-cluster'
+      // Draw event-level heat circles in exact location, matching red dot location precisely
+      heatmapData.forEach(point => {
+        const pointRadius = 150 + (point.occupancy * 2);
+        L.circle([point.location.lat, point.location.lng], {
+          radius: pointRadius,
+          color: colorizeIntensity(point.intensity),
+          opacity: 0.3,
+          weight: 0,
+          fillColor: colorizeIntensity(point.intensity),
+          fillOpacity: 0.18 + (point.intensity * 0.35),
+          interactive: false,
+          className: 'heatmap-point'
         }).addTo(map);
       });
-      console.log('✅ 🔥 Visitor density visualization complete - ' + clusters.length + ' areas (Leaflet-based)');
+      console.log('✅ 🔥 Visitor density visualization complete (event-accurate heat circles):', heatmapData.length, 'events');
     } else {
       handleNoHeatmapData();
     }
