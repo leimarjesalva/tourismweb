@@ -274,6 +274,13 @@
           <p style="color: white; font-size: 1.1rem; font-weight: 600; margin: 0 0 16px 0;">Live Event Map</p>
         <div style="width: 100%; height: 500px; border-radius: 16px; background: linear-gradient(135deg, rgba(102,126,234,0.12), rgba(118,75,162,0.08)); border: 1px solid rgba(102,126,234,0.25); box-shadow: 0 20px 60px rgba(0,0,0,0.3); position: relative;">
             <div id="eventsMapContainer" style="width: 100%; height: 100%; position: relative; border-radius: 16px; overflow: hidden;"></div>
+            <div id="selectedEventCard" style="display:none; position:absolute; bottom: 16px; left: 16px; width: 300px; max-height: 260px; background: rgba(15, 23, 42, 0.92); border: 1px solid rgba(255,255,255,0.2); border-radius: 14px; padding: 10px; z-index: 1200; overflow: hidden; box-shadow: 0 12px 32px rgba(0,0,0,0.45);">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 8px;">
+                <strong style="color:#fff; font-size:0.95rem;">Selected Event</strong>
+                <button id="closeSelectedEventCard" style="background: rgba(255,255,255,.12); border: 0; color:#fff; border-radius: 4px; padding: 2px 6px; cursor:pointer;" onclick="document.getElementById('selectedEventCard').style.display='none'">✕</button>
+              </div>
+              <div id="selectedEventCardContent" style="font-size:0.83rem; color:#e5e7eb; line-height:1.3;"></div>
+            </div>
             <div id="heatmapWarning" style="display:none; position:absolute; top: 12px; left: 12px; background: rgba(222, 68, 68, 0.92); color: #fff; padding: 8px 12px; border-radius: 8px; font-size: 0.82rem; z-index: 1100;">⚠️ No heatmap data available</div>
             <div id="eventRiskLegend" style="position:absolute; top: 12px; right: 12px; background: rgba(15, 23, 42, 0.84); border: 1px solid rgba(255,255,255,0.18); color: #fff; padding: 12px; border-radius: 10px; font-size: 0.78rem; z-index: 1100;">
               <strong>Risk Levels</strong>
@@ -682,6 +689,28 @@ function getRiskLevelForOccupancy(occupancy) {
   return { riskCode:'LOW', riskLabel:'Low Risk', riskColor: '#4caf50', riskEmoji: '🟢' };
 }
 
+// Render a movable selected event card pane in the Live Map
+function showSelectedEventCard(ev, occupancy, visitors, waste, riskLabel) {
+  const card = document.getElementById('selectedEventCard');
+  const content = document.getElementById('selectedEventCardContent');
+  if (!card || !content) return;
+
+  const imageUrl = ev.image || 'https://via.placeholder.com/600x340?text=No+Image';
+  content.innerHTML = `
+    <div style="height:110px; overflow:hidden; border-radius:10px; margin-bottom:8px; border:1px solid rgba(255,255,255,0.12);">
+      <img src="${imageUrl}" alt="${(ev.title||'Event').replace(/\"/g,'')}" style="width:100%; height:100%; object-fit:cover; display:block;" onerror="this.onerror=null;this.src='https://via.placeholder.com/600x340?text=No+Image';" />
+    </div>
+    <div style="font-weight:700; color:#fff; margin-bottom:4px;">${ev.title || 'Untitled Event'}</div>
+    <div style="color:#cbd5e1; font-size:0.83rem; margin-bottom:3px;">📍 ${ev.location || 'Legazpi City'}</div>
+    <div style="color:#cbd5e1; font-size:0.83rem; margin-bottom:3px;">⚠️ ${riskLabel} • ${occupancy}%</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:4px;">
+      <span style="font-size:0.78rem; background: rgba(255,255,255,.08); padding:4px 6px; border-radius:5px;">👥 ${Number(visitors).toLocaleString()}</span>
+      <span style="font-size:0.78rem; background: rgba(255,255,255,.08); padding:4px 6px; border-radius:5px;">🗑️ ${Number(waste).toLocaleString()} kg</span>
+    </div>
+  `;
+  card.style.display = 'block';
+}
+
 // ======================== LEAFLET EVENT MAP INITIALIZATION ========================
 
 function initializeEventsMap(events) {
@@ -707,6 +736,12 @@ function initializeEventsMap(events) {
 
   const map = window.map;
   console.log('✅ Leaflet Map initialized');
+
+  // Clicking blank space hides the selected event card
+  map.on('click', () => {
+    const selected = document.getElementById('selectedEventCard');
+    if (selected) selected.style.display = 'none';
+  });
 
   function coordsForEvent(ev) {
     let lat = 13.1448;
@@ -819,6 +854,16 @@ function initializeEventsMap(events) {
           [nextCoords.lat, nextCoords.lng]
         ];
         
+        // Visual route with heat effect
+        const routeHeat = L.polyline(latlngs, {
+          color: routeColor,
+          weight: 16,
+          opacity: 0.20,
+          lineCap: 'round',
+          lineJoin: 'round',
+          interactive: false
+        }).addTo(map);
+
         const routeLine = L.polyline(latlngs, {
           color: routeColor,
           weight: 6,
@@ -828,26 +873,27 @@ function initializeEventsMap(events) {
           lineJoin: 'round'
         }).addTo(map);
         
-        // Add popup on click
-        routeLine.bindPopup(`
-          <div style="padding: 8px; font-size: 13px;">
-            <strong>📍 Tour Route</strong><br>
-            <div style="margin-top: 8px;">
-              <strong>From:</strong> ${current.title}<br>
-              <strong>To:</strong> ${next.title}
-            </div>
-          </div>
-        `);
-        
-        // Add hover effect
+        // Mouse interactions are not needed for route path in this use-case
         routeLine.on('mouseover', function() {
           this.setStyle({ weight: 8, opacity: 1.0 });
         });
         routeLine.on('mouseout', function() {
           this.setStyle({ weight: 6, opacity: 1.0 });
         });
-        
-        console.log('🎯 LEAFLET POLYLINE CREATED:');
+
+        // add per-route endpoint heat circles (visual route heatmap anchors)
+        [currentCoords, nextCoords].forEach(coord => {
+          L.circle([coord.lat, coord.lng], {
+            radius: 110,
+            color: routeColor,
+            fillColor: routeColor,
+            fillOpacity: 0.22,
+            weight: 0,
+            interactive: false
+          }).addTo(map);
+        });
+
+        console.log('🎯 LEAFLET POLYLINE CREATED:' );
         console.log('   From:', current.title, currentCoords);
         console.log('   To:', next.title, nextCoords);
         console.log('   Color:', routeColor);
@@ -916,33 +962,15 @@ function initializeEventsMap(events) {
       const waste = ev.prediction && ev.prediction.waste_prediction ? Math.round(ev.prediction.waste_prediction) : Math.round((visitors / 50000) * 2900);
       const trafficHours = Math.min(10, Math.max(1, Math.round(occupancy / 10))); // Estimate traffic peak hours based on occupancy
       
+      // Make event risk-zone circle non-interactive so marker clicks are always received
       const circle = L.circle([lat, lng], {
         color: riskColor,
         fillColor: riskColor,
         fillOpacity: 0.25,
         weight: 3,
-        radius: markerRadius
-      }).addTo(map)
-        .bindPopup(`
-          <div style="padding: 12px; border-radius: 6px; font-size: 13px;">
-            <strong style="display: block; margin-bottom: 8px;">${ev.title}</strong>
-            <div style="margin-bottom: 6px;">
-              <strong>⚠️ Risk:</strong> ${riskLabel} ${occupancy}%
-            </div>
-            <div style="margin-bottom: 6px;">
-              <strong>👥 Visitors:</strong> ${Number(visitors).toLocaleString()}
-            </div>
-            <div style="margin-bottom: 6px;">
-              <strong>🗑️ Waste (kg):</strong> ${Number(waste).toLocaleString()}
-            </div>
-            <div style="margin-bottom: 6px;">
-              <strong>⏱️ Traffic peak (hrs):</strong> ${trafficHours}
-            </div>
-            <div>
-              <strong>📍 Location:</strong> ${ev.location || 'Legazpi City'}
-            </div>
-          </div>
-        `);
+        radius: markerRadius,
+        interactive: false
+      }).addTo(map);
       
       // === CREATE LEAFLET MARKER WITH EMOJI ===
       try {
@@ -953,35 +981,36 @@ function initializeEventsMap(events) {
           weight: 1,
           opacity: 1,
           fillOpacity: 1
-        }).addTo(map);
-        
+        }).addTo(map);        
         // Add emoji tooltip
         marker.bindTooltip(riskEmoji, {
           permanent: true,
           direction: 'center'
         });
+
+        // Add location heat glow around event marker (indicates density on place)
+        L.circle([lat, lng], {
+          radius: Math.max(120, 70 + occupancy * 2),
+          color: riskColor,
+          fillColor: riskColor,
+          fillOpacity: 0.16,
+          weight: 0,
+          interactive: false
+        }).addTo(map);
         
-        // Add popup with event details
-        marker.bindPopup(`
-          <div style="padding: 12px; font-size: 13px;">
-            <strong>${ev.title}</strong><br>
-            ⚠️ Risk: ${riskLabel} ${occupancy}%<br>
-            👥 ${Number(visitors).toLocaleString()} visitors<br>
-            🗑️ Waste: ${Number(waste).toLocaleString()} kg<br>
-            ⏱️ Traffic peak (hrs): ${trafficHours}<br>
-            📍 ${ev.location || 'Legazpi City'}
-          </div>
-        `);
-        
-        // Hover effects
-        marker.on('mouseover', () => {
+        // Click effects (no hover). Use selected card only; remove default Leaflet popup border line.
+        marker.on('click', (e) => {
+          if (e && e.originalEvent) {
+            L.DomEvent.stopPropagation(e);
+          }
           circle.setStyle({ fillOpacity: 0.4, weight: 4 });
-          marker.openPopup();
+          marker.bringToFront();
+          showSelectedEventCard(ev, occupancy, visitors, waste, riskLabel);
         });
-        
-        marker.on('mouseout', () => {
+
+        marker.on('popupclose', () => {
           circle.setStyle({ fillOpacity: 0.25, weight: 2 });
-          marker.closePopup();
+          // optional: keep selected event card visible until map click
         });
         
         console.log('📌 Leaflet marker added:', ev.title);
@@ -1004,45 +1033,9 @@ function initializeEventsMap(events) {
     };
 
     if (heatmapData.length > 0) {
-      console.log('🔥 Creating visitor density visualization with', heatmapData.length, 'data points via Leaflet');
-    
-      // Cluster nearby points to visualize visitor concentration areas
-      const radiusKm = 2;
-      const clusters = [];
-      
-      heatmapData.forEach(point => {
-        let foundCluster = false;
-        for (let cluster of clusters) {
-          // Simple distance calculation: sqrt((lat2-lat1)^2 + (lng2-lng1)^2) * 111 (km per degree)
-          const latDiff = cluster.center.lat - point.location.lat;
-          const lngDiff = cluster.center.lng - point.location.lng;
-          const distance = Math.sqrt(latDiff*latDiff + lngDiff*lngDiff) * 111;
-          if (distance < radiusKm) {
-            cluster.points.push(point);
-            foundCluster = true;
-            break;
-          }
-        }
-        if (!foundCluster) {
-          clusters.push({ center: point.location, points: [point] });
-        }
-      });
-      
-      // Draw event-level heat circles in exact location, matching red dot location precisely
-      heatmapData.forEach(point => {
-        const pointRadius = 150 + (point.occupancy * 2);
-        L.circle([point.location.lat, point.location.lng], {
-          radius: pointRadius,
-          color: colorizeIntensity(point.intensity),
-          opacity: 0.3,
-          weight: 0,
-          fillColor: colorizeIntensity(point.intensity),
-          fillOpacity: 0.18 + (point.intensity * 0.35),
-          interactive: false,
-          className: 'heatmap-point'
-        }).addTo(map);
-      });
-      console.log('✅ 🔥 Visitor density visualization complete (event-accurate heat circles):', heatmapData.length, 'events');
+      console.log('🔥 Event route+location heat view active; skipping legacy heatmap layer.');
+      // Route and location heat are already rendered inline during event + route plotting.
+      // Keep this block for debug and analytics only.
     } else {
       handleNoHeatmapData();
     }
