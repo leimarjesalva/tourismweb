@@ -903,9 +903,7 @@ function initializeEventsMap(events) {
     
     // === LOAD GEOJSON BOUNDARY ===
     console.log('📍 Loading Legazpi City boundary...');
-    const geojsonPath = window.location.pathname.includes('/frontend/') 
-      ? './legazpi_boundary.geojson' 
-      : './frontend/legazpi_boundary.geojson';
+    const geojsonPath = '/legazpi_boundary.geojson';
     
     fetch(geojsonPath)
       .then(response => response.json())
