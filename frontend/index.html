@@ -156,22 +156,50 @@
 <body>
 
 <!-- =================== NAVBAR =================== -->
+<div id="navBackdrop" class="nav-backdrop" onclick="closeMobileNav()"></div>
 <nav class="navbar modern">
   <div class="nav-container">
     <div class="nav-left">
       <img src="assets/logo.png" class="site-logo" alt="Legazpi Explorer logo" style="height:96px;" />
     </div>
 
-    <ul class="nav-links">
-      <li><a href="#home" data-track="nav:home">Home</a></li>
-      <li><a href="#destinations" data-track="nav:destinations">Destinations</a></li>
-      <li><a href="#experiences" data-track="nav:experiences">Experiences</a></li>
-      <li><a href="#festivals" data-track="nav:festivals">Festivals</a></li>
-      <li><a href="#shop" data-track="nav:shop">Shop</a></li>
-      <li><a href="#itineraries" data-track="nav:create_itinerary">Itinerary</a></li>
+    <button id="mobileMenuToggle" class="mobile-menu-toggle" aria-label="Toggle navigation menu" onclick="toggleMobileNav()">☰</button>
+
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#home" data-track="nav:home" onclick="closeMobileNav()">Home</a></li>
+      <li><a href="#destinations" data-track="nav:destinations" onclick="closeMobileNav()">Destinations</a></li>
+      <li><a href="#experiences" data-track="nav:experiences" onclick="closeMobileNav()">Experiences</a></li>
+      <li><a href="#festivals" data-track="nav:festivals" onclick="closeMobileNav()">Festivals</a></li>
+      <li><a href="#shop" data-track="nav:shop" onclick="closeMobileNav()">Shop</a></li>
+      <li><a href="#itineraries" data-track="nav:create_itinerary" onclick="closeMobileNav()">Itinerary</a></li>
     </ul>
   </div>
 </nav>
+
+<script>
+// Mobile nav toggle functions
+function toggleMobileNav() {
+  const navLinks = document.getElementById('navLinks');
+  const backdrop = document.getElementById('navBackdrop');
+  if (navLinks) navLinks.classList.toggle('active');
+  if (backdrop) backdrop.classList.toggle('active');
+}
+
+function closeMobileNav() {
+  const navLinks = document.getElementById('navLinks');
+  const backdrop = document.getElementById('navBackdrop');
+  if (navLinks) navLinks.classList.remove('active');
+  if (backdrop) backdrop.classList.remove('active');
+}
+
+// Close nav when clicking on a link
+document.addEventListener('DOMContentLoaded', () => {
+  const navLinks = document.querySelectorAll('.nav-links a');
+  navLinks.forEach(link => {
+    link.addEventListener('click', closeMobileNav);
+  });
+});
+</script>
 
 <!-- =================== HERO =================== -->
 <section id="home" class="parallax-container">

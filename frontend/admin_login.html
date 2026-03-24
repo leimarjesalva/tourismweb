@@ -63,8 +63,17 @@
       display: flex;
       flex-direction: column;
       gap: 20px;
+      width: 100%;
+      max-width: 100%;
     }
     
+    .site-logo {
+      width: 100%;
+      max-width: 150px;
+      height: auto;
+      object-fit: contain;
+    }
+
     .login-branding h1 {
       font-size: 3.2rem;
       font-weight: 900;
@@ -247,10 +256,18 @@
       .login-container {
         grid-template-columns: 1fr;
         gap: 40px;
+        max-width: 100%;
+        width: 100%;
       }
       
       .login-branding {
         text-align: center;
+        padding: 0 4px;
+      }
+
+      .site-logo {
+        max-width: 120px;
+        margin: 0 auto;
       }
       
       .login-branding h1 {
@@ -283,11 +300,19 @@
     
     @media (max-width: 480px) {
       body {
-        padding: 15px;
+        padding: 12px;
       }
       
       .login-container {
-        gap: 30px;
+        gap: 24px;
+      }
+
+      .login-branding {
+        padding: 0 6px;
+      }
+
+      .login-features {
+        display: none; /* simplify for small screens */
       }
       
       .login-branding h1 {
