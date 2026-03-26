@@ -34,7 +34,7 @@ function require_admin(){
         ob_end_clean();
         http_response_code(401);
         header('Content-Type: application/json');
-        echo json_encode(['error'=>'unauthorized']);
+        echo json_encode(['error'=>'unauthorized', 'session_data' => $_SESSION]);
         exit;
     }
 }

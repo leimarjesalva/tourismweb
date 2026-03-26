@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once __DIR__ . '/db.php';
 header('Content-Type: application/json');
 
@@ -1642,7 +1643,7 @@ if ($action === 'get_experiences_stats'){
 }
 
 // Admin: event alerts - upcoming events and overcrowding risks
-if ($action === 'get_event_alerts'){
+if ($action === 'get_event_alerts_summary'){
     require_admin();
     $db = get_db();
     $daysAhead = intval($_GET['days'] ?? 7);
@@ -1770,14 +1771,23 @@ if ($action === 'get_event_predictions'){
     j(['success'=>true, 'predictions'=>$preds]);
 }
 
+// Get all events (for admin dropdowns)
+if ($action === 'get_events'){
+    require_admin();
+    $db = get_db();
+    $res = $db->query("SELECT id, title, datetime, location FROM events ORDER BY datetime DESC");
+    $events = []; while($r=$res->fetch_assoc()) $events[]=$r;
+    j(['success'=>true, 'events'=>$events]);
+}
+
 // Get event alerts (DO/DO NOT, BRING/DO NOT BRING)
 if ($action === 'get_event_alerts'){
     $event_id = intval($_GET['event_id'] ?? 0);
     $db = get_db();
     if ($event_id){
-        $res = $db->query("SELECT * FROM event_alerts WHERE event_id=".$event_id." ORDER BY alert_type ASC");
+        $res = $db->query("SELECT a.*, e.title AS event_title FROM event_alerts a LEFT JOIN events e ON a.event_id=e.id WHERE a.event_id=0 OR a.event_id=".$event_id." ORDER BY a.event_id, a.alert_type ASC");
     } else {
-        $res = $db->query("SELECT * FROM event_alerts ORDER BY event_id, alert_type ASC");
+        $res = $db->query("SELECT a.*, e.title AS event_title FROM event_alerts a LEFT JOIN events e ON a.event_id=e.id ORDER BY a.event_id, a.alert_type ASC");
     }
     $alerts = []; while($r=$res->fetch_assoc()) $alerts[]=$r;
     j(['alerts'=>$alerts]);
@@ -1797,11 +1807,31 @@ if ($action === 'list_logs'){
 if ($action === 'add_event_alert'){
     require_admin();
     $d = json_input();
+
+    $event_id = intval($d['event_id'] ?? 0);
+    $alert_type = trim($d['alert_type'] ?? '');
+    $content = trim($d['content'] ?? '');
+
+    $allowed = ['do','dont','bring','dont_bring'];
+    if ($event_id < 0) j(['success'=>false, 'error'=>'invalid_event_id']);
+    if (!in_array($alert_type, $allowed)) j(['success'=>false, 'error'=>'invalid_alert_type']);
+    if ($content === '') j(['success'=>false, 'error'=>'content_required']);
+
     $db = get_db();
+
+    // Check event exists except global alerts
+    if ($event_id !== 0) {
+        $res = $db->query("SELECT id FROM events WHERE id=".$event_id." LIMIT 1");
+        if (!$res || $res->num_rows === 0) j(['success'=>false, 'error'=>'event_not_found']);
+    }
+
     $stmt = $db->prepare("INSERT INTO event_alerts (event_id, alert_type, content) VALUES (?, ?, ?)");
-    $stmt->bind_param('iss', $d['event_id'], $d['alert_type'], $d['content']);
-    if ($stmt->execute()) j(['success'=>true, 'id'=>$db->insert_id]);
-    j(['success'=>false, 'error'=>$stmt->error]);
+    $stmt->bind_param('iss', $event_id, $alert_type, $content);
+    if ($stmt->execute()) {
+        j(['success'=>true, 'id'=>$db->insert_id]);
+    } else {
+        j(['success'=>false, 'error'=>$stmt->error]);
+    }
 }
 
 // Delete event alert (admin)
@@ -1822,9 +1852,24 @@ if ($action === 'edit_alert'){
     $d = json_input();
     $id = intval($d['id'] ?? 0);
     $event_id = intval($d['event_id'] ?? 0);
-    $alert_type = $d['alert_type'] ?? '';
-    $content = $d['content'] ?? '';
+    $alert_type = trim($d['alert_type'] ?? '');
+    $content = trim($d['content'] ?? '');
+
+    $allowed = ['do','dont','bring','dont_bring'];
+    if ($id <= 0) j(['success'=>false, 'error'=>'invalid_id']);
+    if ($event_id < 0) j(['success'=>false, 'error'=>'invalid_event_id']);
+    if (!in_array($alert_type, $allowed)) j(['success'=>false, 'error'=>'invalid_alert_type']);
+    if ($content === '') j(['success'=>false, 'error'=>'content_required']);
+
     $db = get_db();
+
+    // Validate alert exists
+    $res = $db->query("SELECT id FROM event_alerts WHERE id=".$id." LIMIT 1");
+    if (!$res || $res->num_rows === 0) j(['success'=>false, 'error'=>'alert_not_found']);
+    // Validate event exists
+    $res2 = $db->query("SELECT id FROM events WHERE id=".$event_id." LIMIT 1");
+    if (!$res2 || $res2->num_rows === 0) j(['success'=>false, 'error'=>'event_not_found']);
+
     $stmt = $db->prepare("UPDATE event_alerts SET event_id=?, alert_type=?, content=? WHERE id=?");
     $stmt->bind_param('issi', $event_id, $alert_type, $content, $id);
     if ($stmt->execute()) j(['success'=>true]);

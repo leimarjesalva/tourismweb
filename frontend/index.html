@@ -320,6 +320,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         </div>
 
+        <!-- Event Alerts Notification Overlay -->
+        <div id="eventAlertsOverlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:1500; align-items:center; justify-content:center;">
+          <div id="eventAlertsModal" style="background: linear-gradient(135deg, #1a237e 0%, #283593 100%); color:#fff; border-radius:16px; padding:24px; max-width:500px; width:90%; max-height:80vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.5); position:relative;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+              <h3 style="margin:0; color:#fff; font-size:1.3rem;">🚨 Event Alerts</h3>
+              <button id="closeEventAlertsBtn" style="background:rgba(255,255,255,0.2); border:0; color:#fff; border-radius:50%; width:32px; height:32px; cursor:pointer; font-size:16px;">✕</button>
+            </div>
+            <div id="eventAlertsContent" style="line-height:1.5;">
+              <!-- Alerts will be loaded here -->
+            </div>
+          </div>
+        </div>
+
         <!-- Events feed below map in a responsive grid -->
         <div>
           <div style="margin-bottom: 32px; display:flex; align-items:center; justify-content:space-between;">
@@ -541,6 +554,7 @@ async function loadCommunityEvents(){
             <div style="font-size:0.9rem; margin-bottom:6px;">Est. visitors: <span style="color:${occupancy>85?'#e74c3c':'#4caf50'}; font-weight:700;">${Number(visitors).toLocaleString()}</span></div>
             <div style="font-size:0.8rem;">Capacity: ${Number(capacity).toLocaleString()} &middot; Waste: ${Number(waste).toLocaleString()} kg</div>
             <div style="position:absolute; top:8px; right:8px; background:${riskColor}; color:#111; padding:2px 6px; border-radius:4px; font-size:0.75rem; font-weight:700;">${riskLabel}</div>
+            <button onclick="showEventAlerts(${ev.id})" style="position:absolute; bottom:8px; right:8px; background:#ff7a18; color:#fff; border:0; border-radius:6px; padding:6px 10px; font-size:0.75rem; cursor:pointer; font-weight:700;">🚨 Alerts</button>
           </div>
         </div>
       `;
@@ -5311,6 +5325,106 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+});
+
+// Event Alerts Functions
+async function showEventAlerts(eventId) {
+  try {
+    console.log('showEventAlerts called for eventId', eventId);
+    const response = await fetch(`../backend/api.php?action=get_event_alerts&event_id=${eventId}`);
+    const data = await response.json();
+    console.log('showEventAlerts response', data);
+
+    if (data.alerts && data.alerts.length > 0) {
+      const alertsContent = document.getElementById('eventAlertsContent');
+      alertsContent.innerHTML = '';
+
+      data.alerts.forEach((alert, idx) => {
+        const seqId = String(idx).padStart(2, '0');
+        const alertDiv = document.createElement('div');
+        alertDiv.style.cssText = `
+          background: rgba(255,255,255,0.1);
+          border-radius: 8px;
+          padding: 12px;
+          margin-bottom: 12px;
+          border-left: 4px solid ${getAlertColor(alert.alert_type)};
+        `;
+
+        let emoji = '';
+        switch(alert.alert_type) {
+          case 'do': emoji = '✅'; break;
+          case 'dont': emoji = '❌'; break;
+          case 'bring': emoji = '🎒'; break;
+          case 'dont_bring': emoji = '🚫'; break;
+          default: emoji = 'ℹ️';
+        }
+
+        alertDiv.innerHTML = `
+          <div style="display:flex; align-items:flex-start; gap:8px;">
+            <span style="font-size:1.2rem;">${emoji}</span>
+            <div style="flex:1;">
+              <strong style="color:#fff; text-transform:capitalize;">[${seqId}] ${alert.alert_type.replace('_', ' ')}</strong>
+              <span style="color:#ddd; margin-left:8px; font-size:0.8rem;">${alert.event_title ? alert.event_title : 'Event ' + alert.event_id}</span>
+              ${alert.item_name ? `<br><em style="color:#ccc;">${alert.item_name}</em>` : ''}
+              <p style="margin:4px 0 0 0; color:#fff;">${alert.content}</p>
+            </div>
+          </div>
+        `;
+
+        alertsContent.appendChild(alertDiv);
+      });
+
+      document.getElementById('eventAlertsOverlay').style.display = 'flex';
+      document.getElementById('eventAlertsOverlay').style.alignItems = 'center';
+      document.getElementById('eventAlertsOverlay').style.justifyContent = 'center';
+    } else {
+      // No alerts for this event
+      const alertsContent = document.getElementById('eventAlertsContent');
+      alertsContent.innerHTML = `
+        <div style="text-align:center; color:#ccc; padding:20px;">
+          <span style="font-size:2rem;">ℹ️</span>
+          <p style="margin:10px 0 0 0;">No alerts available for this event.</p>
+        </div>
+      `;
+      document.getElementById('eventAlertsOverlay').style.display = 'flex';
+      document.getElementById('eventAlertsOverlay').style.alignItems = 'center';
+      document.getElementById('eventAlertsOverlay').style.justifyContent = 'center';
+    }
+  } catch (error) {
+    console.error('Error loading event alerts:', error);
+    const alertsContent = document.getElementById('eventAlertsContent');
+    alertsContent.innerHTML = `
+      <div style="text-align:center; color:#ff6b6b; padding:20px;">
+        <span style="font-size:2rem;">⚠️</span>
+        <p style="margin:10px 0 0 0;">Failed to load alerts. Please try again.</p>
+      </div>
+    `;
+    document.getElementById('eventAlertsOverlay').style.display = 'flex';
+    document.getElementById('eventAlertsOverlay').style.alignItems = 'center';
+    document.getElementById('eventAlertsOverlay').style.justifyContent = 'center';
+  }
+}
+
+function getAlertColor(alertType) {
+  switch(alertType) {
+    case 'do': return '#4CAF50';
+    case 'dont': return '#f44336';
+    case 'bring': return '#2196F3';
+    case 'dont_bring': return '#FF9800';
+    default: return '#9C27B0';
+  }
+}
+
+// Close Event Alerts Modal
+document.getElementById('closeEventAlertsBtn').addEventListener('click', function() {
+  document.getElementById('eventAlertsOverlay').style.display = 'none';
+});
+
+// Close modal when clicking outside
+document.getElementById('eventAlertsOverlay').addEventListener('click', function(e) {
+  if (e.target === this) {
+    this.style.display = 'none';
+  }
 });
 </script>
 

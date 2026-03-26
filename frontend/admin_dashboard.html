@@ -809,7 +809,9 @@
         <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
           <h3>📝 Add New Alert</h3>
           <form id="alertForm" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-            <div class="form-group"><label>Event ID *</label><input name="event_id" type="number" required /></div>
+            <div class="form-group"><label>Event *</label><select name="event_id" required>
+              <option value="">-- Loading events... --</option>
+            </select></div>
             <div class="form-group"><label>Alert Type *</label><select name="alert_type" required>
               <option value="">-- Select Type --</option>
               <option value="do">✅ DO</option>
@@ -817,7 +819,8 @@
               <option value="bring">🎒 BRING</option>
               <option value="dont_bring">🚫 DO NOT BRING</option>
             </select></div>
-            <div class="form-group" style="grid-column: 1/-1;"><label>Message *</label><textarea name="content" rows="3" required></textarea></div>
+            <div class="form-group" style="grid-column: 1/-1;"><label><input type="checkbox" id="globalAlertToggle" style="margin-right:6px;" /> Global alert (applies to all events)</label></div>
+          <div class="form-group" style="grid-column: 1/-1;"><label>Message *</label><textarea name="content" rows="3" required></textarea></div>
             <div style="grid-column: 1/-1;"><button type="submit" class="btn btn-primary">➕ Add Alert</button></div>
           </form>
         </div>
@@ -2781,34 +2784,92 @@ async function loadProducts(){
   }
 }
 
+async function loadEventsForAlerts(){
+  try {
+    const r = await getJSON('../backend/api.php?action=get_events');
+    const select = document.querySelector('#alertForm select[name="event_id"]');
+    select.innerHTML = '<option value="0">Global alert (All events)</option>';
+    if (r.events && r.events.length > 0) {
+      select.innerHTML += r.events.map(ev => `<option value="${ev.id}">${ev.title} (ID: ${ev.id})</option>`).join('');
+    } else {
+      select.innerHTML += '<option value="" disabled>No specific events available</option>';
+    }
+  } catch (error) {
+    console.error('Error loading events:', error);
+    const select = document.querySelector('#alertForm select[name="event_id"]');
+    select.innerHTML = '<option value="0">Global alert (All events)</option><option value="" disabled>Error loading events</option>';
+  }
+}
+
 async function loadAlerts(){ 
   const r = await getJSON('../backend/api.php?action=get_event_alerts'); 
+  console.log('loadAlerts: raw API response', r);
   const out = document.getElementById('alertsList'); 
   out.innerHTML = ''; 
-  (r.alerts||[]).forEach(a=>{ 
-    const div = document.createElement('div'); 
-    div.className = 'list-item';
-    div.style.flexDirection = 'column';
-    div.innerHTML = `
-      <div style="width:100%; margin-bottom:8px;">
-        <strong>${a.alert_type.toUpperCase()}</strong><br/>
-        <small style="color:#666;">Event ID: ${a.event_id}</small><br/>
-        <small style="color:#999; display:block; margin-top:6px;">${a.content}</small>
-      </div>
-      <div class="list-item-actions" style="width:100%; gap:6px;">
-        <button class="btn btn-primary" onclick="editAlert(${a.id})" style="flex:1; background:#3498db;">✏️ Edit</button>
-        <button class="btn btn-danger" onclick="deleteAlert(${a.id})" style="flex:1;">🗑️ Delete</button>
-      </div>
-    `; 
-    out.appendChild(div); 
-  }); 
+  const alerts = (r.alerts||[]).slice(); 
+  if (!alerts.length){
+    out.innerHTML = '<div style="text-align:center; color:#777; padding:20px;">No active alerts yet. Create one above to see it here.</div>';
+    return;
+  }
+
+  // Sort by event ID & alert type
+  alerts.sort((a,b)=>{
+    if (a.event_id !== b.event_id) return (a.event_id||0) - (b.event_id||0);
+    return (a.alert_type||'').localeCompare(b.alert_type||'');
+  });
+
+  let grouped = {};
+  alerts.forEach(a=>{
+    const key = a.event_id || 0;
+    if (!grouped[key]) grouped[key] = {event_id: a.event_id, event_title: a.event_title || ('Event '+a.event_id), items: []};
+    grouped[key].items.push(a);
+  });
+
+  Object.values(grouped).forEach(group => {
+    const header = document.createElement('div');
+    header.style.margin = '12px 0 6px';
+    header.style.fontWeight = '700';
+    header.style.color = '#1a237e';
+    header.textContent = `${group.event_title} (ID ${group.event_id}) - ${group.items.length} alert${group.items.length===1?'':'s'}`;
+    out.appendChild(header);
+
+    group.items.forEach((a, idx) => {
+      const rowId = String(idx).padStart(2,'0');
+      const div = document.createElement('div'); 
+      div.className = 'list-item';
+      div.style.flexDirection = 'column';
+      div.innerHTML = `
+        <div style="width:100%; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;">
+          <small style="font-weight:700; color:#2f4f4f;">#${rowId}</small>
+          <small style="color:#666;">DB ID:${a.id}</small>
+        </div>
+        <div style="width:100%; margin-bottom:8px;">
+          <strong>${a.alert_type.toUpperCase()}</strong>
+          <span style="font-size:0.85rem; color:#444; margin-left:8px;">${a.event_title ? a.event_title : 'Event ' + a.event_id}</span><br/>
+          <small style="color:#666;">Event ID: ${a.event_id}</small><br/>
+          <small style="color:#999; display:block; margin-top:6px;">${a.content}</small>
+        </div>
+        <div class="list-item-actions" style="width:100%; gap:6px; margin-bottom:10px;">
+          <button class="btn btn-primary" onclick="editAlert(${a.id})" style="flex:1; background:#3498db;">✏️ Edit</button>
+          <button class="btn btn-danger" onclick="deleteAlert(${a.id})" style="flex:1;">🗑️ Delete</button>
+        </div>
+      `; 
+      out.appendChild(div); 
+    });
+  });
 }
 
 async function deleteAlert(id){ 
   if(!confirm('Delete this alert?')) return;
   const r = await postJSON('../backend/api.php?action=delete_alert', {id}); 
-  if(r.success) { showSnackbar('Alert deleted', 'success'); loadAlerts(); } 
-  else showSnackbar('Error deleting alert', 'error'); 
+  if(r.success) { 
+    showSnackbar('Alert deleted', 'success'); 
+    loadAlerts(); 
+  } else {
+    const errorMsg = r.error || 'Unknown error';
+    showSnackbar('Delete error: ' + errorMsg, 'error');
+    console.error('Alert delete error:', r);
+  }
 }
 
 async function editAlert(id){ 
@@ -2816,6 +2877,10 @@ async function editAlert(id){
   const alert = (r.alerts||[]).find(a=>a.id==id);
   if(!alert) return showSnackbar('Alert not found', 'error');
   const f = document.getElementById('alertForm');
+  const globalToggle = document.getElementById('globalAlertToggle');
+  if (globalToggle){
+    globalToggle.checked = (alert.event_id === 0);
+  }
   f.event_id.value = alert.event_id;
   f.alert_type.value = alert.alert_type;
   f.content.value = alert.content;
@@ -2825,7 +2890,9 @@ async function editAlert(id){
 document.getElementById('alertForm')?.addEventListener('submit', async (e)=>{ 
   e.preventDefault(); 
   const f = e.target; 
-  const data = {event_id:parseInt(f.event_id.value), alert_type:f.alert_type.value, content:f.content.value};
+  const isGlobal = document.getElementById('globalAlertToggle')?.checked;
+  const selectedEventId = isGlobal ? 0 : parseInt(f.event_id.value);
+  const data = {event_id:selectedEventId, alert_type:f.alert_type.value, content:f.content.value};
   let res;
   if(f.dataset.editingId){
     data.id = parseInt(f.dataset.editingId);
@@ -2838,7 +2905,11 @@ document.getElementById('alertForm')?.addEventListener('submit', async (e)=>{
     f.reset();
     delete f.dataset.editingId;
     loadAlerts(); 
-  } else showSnackbar('Error', 'error'); 
+  } else {
+    const errorMsg = res.error || 'Unknown error';
+    showSnackbar('Error: ' + errorMsg, 'error');
+    console.error('Alert save error:', res);
+  } 
 });
 
 async function loadPlaceAnalytics(){ const r = await getJSON('../backend/api.php?action=most_viewed_places'); const out = document.getElementById('placesList'); out.innerHTML = ''; (r.places||[]).forEach(p=>{ const div = document.createElement('div'); div.className = 'list-item'; div.innerHTML = `<div><strong>${p.place_name}</strong><br/><small>👁️ ${p.view_count} views</small></div>`; out.appendChild(div); }); }
@@ -3115,7 +3186,10 @@ function showTab(tab){
   }
   if(tab === 'experiences' && typeof loadExperiences === 'function') loadExperiences();
   if(tab === 'festivals' && typeof loadFestivals === 'function') loadFestivals();
-  if(tab === 'alerts' && typeof loadAlerts === 'function') loadAlerts();
+  if(tab === 'alerts') { 
+    if(typeof loadEventsForAlerts === 'function') loadEventsForAlerts();
+    if(typeof loadAlerts === 'function') loadAlerts();
+  }
   // itineraries are shown in metrics; no separate tab loading
   if(tab === 'predictions' && typeof loadPredictions === 'function') loadPredictions();
   if(tab === 'logs' && typeof loadGuestLogs === 'function') loadGuestLogs();
