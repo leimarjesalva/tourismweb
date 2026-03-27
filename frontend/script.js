@@ -713,7 +713,7 @@ function filterDestinations(category) {
 // ===== MODAL FUNCTIONS (SINGLE SOURCE) =====
 
 // Card Modal
-function openCardModal(title, image, description) {
+function openCardModal(title, image, description, date_start, date_end) {
   const isVideo = image && image.endsWith('.mp4');
   
   if (isVideo) {
@@ -726,6 +726,17 @@ function openCardModal(title, image, description) {
     }
     const video = document.getElementById('festivalVideo');
     document.getElementById('festivalTitle').textContent = title;
+    let dateStr = '';
+    if (date_start && date_start !== '0000-00-00') {
+      const startDate = new Date(date_start).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
+      if (date_end && date_end !== '0000-00-00') {
+        const endDate = new Date(date_end).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
+        dateStr = startDate + ' - ' + endDate;
+      } else {
+        dateStr = startDate;
+      }
+    }
+    document.getElementById('festivalDate').textContent = dateStr;
     document.getElementById('festivalDescription').textContent = description;
     video.src = image;
     try {
@@ -1869,7 +1880,7 @@ function displayDestinationsByFilter(destinations, categoryId) {
         </div>
         <div class="card-content">
           <h3 style="word-wrap:break-word; overflow-wrap:break-word; white-space:normal;">${d.name}</h3>
-          <p style="margin:0; color:#666; word-wrap:break-word; overflow-wrap:break-word;">${d.location ? '📍 ' + d.location : ''}</p>
+          <p style="margin:0; color:#666; word-wrap:break-word; overflow-wrap:break-word;">${d.location ? ' ' + d.location : ''}</p>
         </div>
       </div>
     `;
@@ -1993,17 +2004,13 @@ async function loadFestivalsFromBackend(){
       }
       
       html += `
-        <div class="festival-card" data-card-index="${idx}" data-title="${f.name}" data-image="${mediaUrl}" data-description="${f.description || ''}" style="cursor: pointer; transition: all 0.3s ease; border-radius: 16px; overflow: hidden; background: linear-gradient(135deg, rgba(255,122,24,0.08), rgba(255,106,136,0.05)); border: 2px solid rgba(255,122,24,0.25); display: flex; flex-direction: column; height: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.2);" onmouseover="this.style.transform='translateY(-8px)'; this.style.borderColor='rgba(255,122,24,0.6)'; this.style.boxShadow='0 20px 50px rgba(255,122,24,0.25)'" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(255,122,24,0.25)'; this.style.boxShadow='0 10px 30px rgba(0,0,0,0.2)'">
+        <div class="festival-card" data-card-index="${idx}" data-title="${f.name}" data-image="${mediaUrl}" data-description="${f.description || ''}" data-date_start="${f.date_start || ''}" data-date_end="${f.date_end || ''}" style="cursor: pointer; transition: all 0.3s ease; border-radius: 16px; overflow: hidden; background: linear-gradient(135deg, rgba(255,122,24,0.08), rgba(255,106,136,0.05)); border: 2px solid rgba(255,122,24,0.25); display: flex; flex-direction: column; height: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.2);" onmouseover="this.style.transform='translateY(-8px)'; this.style.borderColor='rgba(255,122,24,0.6)'; this.style.boxShadow='0 20px 50px rgba(255,122,24,0.25)'" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(255,122,24,0.25)'; this.style.boxShadow='0 10px 30px rgba(0,0,0,0.2)'">
           <div style="position: relative; height: 240px; overflow: hidden; background: linear-gradient(135deg, #ff7a18, #ff6a88); flex-shrink: 0;">
             ${mediaHtml}
             <div style="position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,122,24,0.2), transparent); pointer-events: none;"></div>
           </div>
-          <div style="flex: 1; padding: 20px; display: flex; flex-direction: column; justify-content: space-between;">
-            <div>
-              <h3 class="text-heading" style="color: white; font-weight: 700; font-size: 1.1rem; margin: 0 0 8px 0; word-wrap: break-word; overflow-wrap: break-word; animation-delay: 0.2s; opacity: 0;">${f.name}</h3>
-              <p style="color: #ff7a18; font-size: 0.85rem; margin: 0; font-weight: 600;">🎉 Cultural Celebration</p>
-            </div>
-            <p class="text-paragraph" style="color: #cbd5e1; font-size: 0.9rem; margin: 12px 0 0 0; line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word; animation-delay: 0.3s; opacity: 0;">${f.description ? f.description.substring(0, 100) + (f.description.length > 100 ? '...' : '') : 'Join us for this vibrant celebration'}</p>
+          <div style="flex: 1; padding: 20px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+            <h3 class="text-heading" style="color: white; font-weight: 700; font-size: 1.1rem; margin: 0; word-wrap: break-word; overflow-wrap: break-word; animation-delay: 0.2s; opacity: 0; text-align: center;">${f.name}</h3>
           </div>
         </div>
       `;
@@ -2017,7 +2024,9 @@ async function loadFestivalsFromBackend(){
         const title = this.dataset.title;
         const image = this.dataset.image;
         const description = this.dataset.description;
-        openCardModal(title, image, description);
+        const date_start = this.dataset.date_start;
+        const date_end = this.dataset.date_end;
+        openCardModal(title, image, description, date_start, date_end);
       });
     });
   } catch (e) {

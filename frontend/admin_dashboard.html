@@ -1425,18 +1425,89 @@ function addScheduleDay(){
 }
 
 function computeDayRisk(entry){
-  // simple occupancy-based risk calculation (mirrors PHP fallback logic)
+  // SMART MULTI-FACTOR RISK CALCULATION
   const cap = entry.capacity || 0;
-  let expected = cap > 0 ? Math.round(cap * 0.7) : 0;
-  // when no capacity, treat expected as 0 and risk unknown
-  let occupancy = cap > 0 ? (expected / cap) : 0;
-  let level = 'Unknown';
-  let pct = cap > 0 ? Math.round(occupancy * 100) : 0;
-  if (occupancy > 0.8) level = 'High';
-  else if (occupancy > 0.6) level = 'Medium';
-  else if (occupancy > 0) level = 'Low';
-  const emoji = {Low:'🟢',Medium:'🟡',High:'🔴'}[level] || '';
-  return { level, percentage: pct, status_emoji: emoji };
+  const expected = entry.expected_visitors || (cap > 0 ? Math.round(cap * 0.7) : 0);
+  const eventType = (entry.event_type || 'festival').toLowerCase();
+  const duration = entry.duration || 1;
+  const waste = entry.projected_waste_kg || (expected * 0.085); // kg
+  
+  let riskScore = 0;
+  
+  // FACTOR 1: Absolute Visitor Count
+  if (expected < 500) {
+    riskScore += 5;
+  } else if (expected < 2000) {
+    riskScore += 15;
+  } else if (expected < 5000) {
+    riskScore += 25;
+  } else if (expected < 10000) {
+    riskScore += 35;
+  } else if (expected < 25000) {
+    riskScore += 50;
+  } else {
+    riskScore += 65;
+  }
+  
+  // FACTOR 2: Occupancy Percentage
+  const occupancy = cap > 0 ? (expected / cap) : 0;
+  const occupancyPercent = occupancy * 100;
+  if (occupancyPercent > 90) {
+    riskScore += 35;
+  } else if (occupancyPercent > 75) {
+    riskScore += 25;
+  } else if (occupancyPercent > 50) {
+    riskScore += 15;
+  } else if (occupancyPercent > 0) {
+    riskScore += 5;
+  }
+  
+  // FACTOR 3: Event Type Safety Factors
+  const eventSafetyFactors = {
+    'food_festival': 25, 'concert': 20, 'celebration': 18, 'fiesta': 20,
+    'marathon': 15, 'festival': 12, 'expo': 10, 'religious': 8,
+    'sports': 14, 'conference': 5, 'workshop': 3
+  };
+  riskScore += (eventSafetyFactors[eventType] || 10);
+  
+  // FACTOR 4: Duration Impact
+  if (duration > 7) {
+    riskScore += 20;
+  } else if (duration > 3) {
+    riskScore += 12;
+  } else if (duration > 1) {
+    riskScore += 8;
+  }
+  
+  // FACTOR 5: Waste Generation
+  const wastePerVisitor = expected > 0 ? (waste / expected) : 0.085;
+  if (wastePerVisitor > 0.12) {
+    riskScore += 15;
+  } else if (wastePerVisitor > 0.10) {
+    riskScore += 10;
+  } else if (wastePerVisitor > 0.08) {
+    riskScore += 5;
+  }
+  
+  // DETERMINE RISK LEVEL
+  let level = 'Low';
+  if (riskScore > 110) {
+    level = 'High';
+  } else if (riskScore > 60) {
+    level = 'Medium';
+  }
+  
+  const pct = cap > 0 ? Math.round(occupancy * 100) : 0;
+  const emoji = {Low:'🟢', Medium:'🟡', High:'🔴'}[level] || '';
+  
+  return { 
+    level, 
+    percentage: pct, 
+    status_emoji: emoji,
+    riskScore: riskScore,
+    visitors: expected,
+    occupancyPercent: occupancyPercent
+  };
 }
 
 
@@ -4634,8 +4705,60 @@ function buildEventPredictionsHtml(eventData) {
     const eventType = event.event_type || 'event';
     const emoji = getEventTypeEmoji(eventType);
     const visitors = (event.projected_total_visitors || 0).toLocaleString();
-    const waste = (event.waste_prediction?.total_kg || 0).toFixed(1);
+    const waste = (event.projected_waste_kg || 0).toFixed(1);
     const duration = event.duration_days || 1;
+    const occupancy = event.occupancy_percent || 0;
+    
+    // SMART RISK CALCULATION based on multiple factors
+    let riskScore = 0;
+    const visitorCount = event.projected_total_visitors || 0;
+    
+    // Factor 1: Absolute visitor count
+    if (visitorCount < 500) riskScore += 5;
+    else if (visitorCount < 2000) riskScore += 15;
+    else if (visitorCount < 5000) riskScore += 25;
+    else if (visitorCount < 10000) riskScore += 35;
+    else if (visitorCount < 25000) riskScore += 50;
+    else riskScore += 65;
+    
+    // Factor 2: Occupancy percentage
+    if (occupancy > 90) riskScore += 35;
+    else if (occupancy > 75) riskScore += 25;
+    else if (occupancy > 50) riskScore += 15;
+    else if (occupancy > 0) riskScore += 5;
+    
+    // Factor 3: Event type safety
+    const eventSafetyFactors = {
+      'food_festival': 25, 'concert': 20, 'celebration': 18, 'fiesta': 20,
+      'marathon': 15, 'festival': 12, 'expo': 10, 'religious': 8,
+      'sports': 14, 'conference': 5, 'workshop': 3
+    };
+    riskScore += (eventSafetyFactors[eventType] || 10);
+    
+    // Factor 4: Duration
+    if (duration > 7) riskScore += 20;
+    else if (duration > 3) riskScore += 12;
+    else if (duration > 1) riskScore += 8;
+    
+    // Factor 5: Waste
+    const wastePerVisitor = visitorCount > 0 ? waste / visitorCount : 0.085;
+    if (wastePerVisitor > 0.12) riskScore += 15;
+    else if (wastePerVisitor > 0.10) riskScore += 10;
+    else if (wastePerVisitor > 0.08) riskScore += 5;
+    
+    // Determine risk level and color
+    let riskLevel = 'LOW';
+    let riskColor = '#4caf50';
+    let riskEmoji = '🟢';
+    if (riskScore > 110) {
+      riskLevel = 'HIGH';
+      riskColor = '#e74c3c';
+      riskEmoji = '🔴';
+    } else if (riskScore > 60) {
+      riskLevel = 'MEDIUM';
+      riskColor = '#ff9800';
+      riskEmoji = '🟠';
+    }
     
     html += `
       <div style="background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%); padding: 18px; border-radius: 12px; border-left: 5px solid #667eea; box-shadow: 0 2px 8px rgba(102,126,234,0.15);">
@@ -4644,13 +4767,20 @@ function buildEventPredictionsHtml(eventData) {
             <strong style="font-size: 16px; color: #1a237e;">📅 ${month} 2026</strong>
             <div style="font-size: 14px; color: #666; margin-top: 4px;">${emoji} ${event.event_name || 'Event'}</div>
           </div>
-          <span style="background: #667eea; color: white; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700;">📆 ${duration} day${duration > 1 ? 's' : ''}</span>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <span style="background: #667eea; color: white; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700;">📆 ${duration} day${duration > 1 ? 's' : ''}</span>
+            <span style="background: ${riskColor}; color: white; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700;">${riskEmoji} ${riskLevel}</span>
+          </div>
         </div>
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(0,0,0,0.1);">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(0,0,0,0.1);">
           <div style="text-align: center;">
             <small style="color: #666; display: block; font-weight: 600;">👥 Visitors</small>
             <strong style="font-size: 18px; color: #2196F3;">${visitors}</strong>
+          </div>
+          <div style="text-align: center;">
+            <small style="color: #666; display: block; font-weight: 600;">📊 Occupancy</small>
+            <strong style="font-size: 18px; color: #f57c00;">${occupancy.toFixed(1)}%</strong>
           </div>
           <div style="text-align: center;">
             <small style="color: #666; display: block; font-weight: 600;">🗑️ Waste (kg)</small>
@@ -4658,9 +4788,15 @@ function buildEventPredictionsHtml(eventData) {
           </div>
         </div>
         
-        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(0,0,0,0.1);">
-          <small style="color: #666;"><strong>Event Type:</strong> ${event.event_type?.replace(/_/g, ' ').toUpperCase()}</small><br/>
-          <small style="color: #999; margin-top: 4px; display: block;"><strong>Daily Avg:</strong> ${(event.projected_daily_visitors || 0).toLocaleString()} visitors/day</small>
+        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(0,0,0,0.1); display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div>
+            <small style="color: #666;"><strong>Event Type:</strong> ${event.event_type?.replace(/_/g, ' ').toUpperCase()}</small><br/>
+            <small style="color: #999; margin-top: 4px; display: block;"><strong>Capacity:</strong> ${(event.capacity || 0).toLocaleString()}</small>
+          </div>
+          <div>
+            <small style="color: #666;"><strong>Risk Score:</strong> ${riskScore}/165</small><br/>
+            <small style="color: #999; margin-top: 4px; display: block;"><strong>Confidence:</strong> 95% CI: ±${(event.confidence_95_upper - event.confidence_95_lower).toLocaleString() / 2}</small>
+          </div>
         </div>
       </div>
     `;

@@ -1217,9 +1217,9 @@ CREATE TABLE `festivals_events` (
 --
 
 INSERT INTO `festivals_events` (`id`, `name`, `description`, `date_start`, `date_end`, `location`, `image`, `created_at`, `updated_at`) VALUES
-(5, 'Ibalong Festivals', '', '0000-00-00', '0000-00-00', 'Legazpi City, Albay', 'backend/uploads/festival_1772901385_5f226b23.mp4', '2026-03-07 16:36:25', '2026-03-07 16:36:25'),
-(6, 'Magayon Festivals', 'The Magayon Festival is a vibrant, month-long celebration held annually in Albay, Philippines, usually throughout May, that showcases the province\'s rich culture, arts, cuisine, and natural beauty.', '0000-00-00', '0000-00-00', 'Legazpi City, Albay', 'backend/uploads/festival_1772901417_bc39c87e.mp4', '2026-03-07 16:36:58', '2026-03-07 16:36:58'),
-(7, 'Bicol Loco', 'The Bicol Loco Festival is a major annual three-day summer event held in Legazpi City, Albay, featuring hot air balloon rides, car drifting, aerobatic air shows, and live music, often set against the backdrop of Mayon Volcano.', '0000-00-00', '0000-00-00', 'Legazpi City, Albay', 'backend/uploads/festival_1772901434_8cd8af09.mp4', '2026-03-07 16:37:14', '2026-03-07 16:37:14');
+(5, 'Ibalong Festivals', '', '2026-05-01', '2026-05-31', 'Legazpi City, Albay', 'backend/uploads/festival_1772901385_5f226b23.mp4', '2026-03-07 16:36:25', '2026-03-07 16:36:25'),
+(6, 'Magayon Festivals', 'The Magayon Festival is a vibrant, month-long celebration held annually in Albay, Philippines, usually throughout May, that showcases the province\'s rich culture, arts, cuisine, and natural beauty.', '2026-05-01', '2026-05-31', 'Legazpi City, Albay', 'backend/uploads/festival_1772901417_bc39c87e.mp4', '2026-03-07 16:36:58', '2026-03-07 16:36:58'),
+(7, 'Bicol Loco', 'The Bicol Loco Festival is a major annual three-day summer event held in Legazpi City, Albay, featuring hot air balloon rides, car drifting, aerobatic air shows, and live music, often set against the backdrop of Mayon Volcano.', '2026-06-01', '2026-06-03', 'Legazpi City, Albay', 'backend/uploads/festival_1772901434_8cd8af09.mp4', '2026-03-07 16:37:14', '2026-03-07 16:37:14');
 
 -- --------------------------------------------------------
 

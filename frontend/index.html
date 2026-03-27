@@ -287,7 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <h3 class="events-subtitle text-paragraph" style="margin-top:8px; text-align:center; color:#e6eef8; font-size:clamp(1.2rem,2.4vw,1.6rem); font-weight:500; max-width:900px;">
           Discover upcoming festivals, celebrations, and community gatherings happening throughout Legazpi City. Stay informed with real-time event information, predictions, and planning tools.
         </h3>
-        <div style="margin-top:16px; display:flex; gap:12px;">
+        <div style="margin-top:16px; display:flex; gap:12px; justify-content:center;">
           <button id="mapTabBtn" onclick="toggleEventTab('map')" style="padding:8px 16px;background:#667eea;color:#fff;border:none;border-radius:6px;cursor:pointer;">Live Map</button>
           <button id="chartsTabBtn" onclick="toggleEventTab('charts')" style="padding:8px 16px;background:#444;color:#ccc;border:none;border-radius:6px;cursor:pointer;">Data Charts</button>
         </div>
@@ -346,7 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <!-- Event Predictions Grid - Each event has its own separate forecasts -->
       <div id="chartsTab" style="display: none;">
         <div style="margin-bottom: 24px;">
-          <p style="color: white; font-size: 1.1rem; font-weight: 600; margin: 0;">📊 Event Predictions & Forecasts</p>
+          <p style="color: white; font-size: 1.1rem; font-weight: 600; margin: 0;">Event Predictions & Forecasts</p>
           <p style="color: #aaa; font-size: 0.9rem; margin: 8px 0 0 0;">Each event has distinct predictions based on its capacity, type, date, and location</p>
         </div>
         <div id="eventPredictionsContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 24px; width: 100%;"></div>
@@ -513,8 +513,14 @@ async function loadCommunityEvents(){
       
       const occupancy = Math.round((visitors / capacity) * 100);
       
-      // Use unified risk helper for consistent thresholds and colors
-      const { riskLabel, riskColor } = getRiskLevelForOccupancy(occupancy);
+      // Use unified risk helper for consistent thresholds and colors (SMART algorithm)
+      const { riskLabel, riskColor } = getRiskLevelForOccupancy(occupancy, {
+        visitors: visitors,
+        capacity: capacity,
+        eventType: ev.event_type,
+        duration: ev.duration || 1,
+        waste: waste
+      });
       
       // ML Model Accuracy Badge
       const accuracyBadge = `<div style="display:inline-block; background:#e8f5e9; color:#2e7d32; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:700; margin-left:8px;">✓ 92.75% Accuracy</div>`;
@@ -725,10 +731,97 @@ function clearDirections() {
   if (endInput) endInput.value = '';
 }
 
-function getRiskLevelForOccupancy(occupancy) {
-  if (occupancy > 85) return { riskCode:'HIGH', riskLabel:'High Risk', riskColor: '#e74c3c', riskEmoji: '🔴' };
-  if (occupancy > 60) return { riskCode:'MEDIUM', riskLabel:'Medium Risk', riskColor: '#ff9800', riskEmoji: '🟠' };
-  return { riskCode:'LOW', riskLabel:'Low Risk', riskColor: '#4caf50', riskEmoji: '🟢' };
+// SMART RISK LEVEL CALCULATION - Multi-factor algorithm for accurate risk assessment
+function getRiskLevelForOccupancy(occupancy, eventData = {}) {
+  // If no event data provided, use occupancy-only calculation (fallback)
+  if (!eventData.visitors && !eventData.capacity) {
+    if (occupancy > 85) return { riskCode:'HIGH', riskLabel:'High Risk', riskColor: '#e74c3c', riskEmoji: '🔴' };
+    if (occupancy > 60) return { riskCode:'MEDIUM', riskLabel:'Medium Risk', riskColor: '#ff9800', riskEmoji: '🟠' };
+    return { riskCode:'LOW', riskLabel:'Low Risk', riskColor: '#4caf50', riskEmoji: '🟢' };
+  }
+  
+  // SMART ALGORITHM - Multi-factor risk assessment
+  const visitors = eventData.visitors || 0;
+  const capacity = eventData.capacity || 50000;
+  const eventType = (eventData.eventType || '').toLowerCase();
+  const duration = eventData.duration || 1;
+  const waste = eventData.waste || 0;
+  
+  let riskScore = 0;
+  
+  // FACTOR 1: Absolute Visitor Count (baseline risk)
+  // Low visitors = inherently low risk to manage
+  if (visitors < 500) {
+    riskScore += 5; // Very safe
+  } else if (visitors < 2000) {
+    riskScore += 15; // Safe
+  } else if (visitors < 5000) {
+    riskScore += 25; // Moderate
+  } else if (visitors < 10000) {
+    riskScore += 35; // Medium-High
+  } else if (visitors < 25000) {
+    riskScore += 50; // High
+  } else {
+    riskScore += 65; // Very High
+  }
+  
+  // FACTOR 2: Occupancy Percentage (capacity utilization)
+  const occupancyPercent = capacity > 0 ? (visitors / capacity) * 100 : 0;
+  if (occupancyPercent > 90) {
+    riskScore += 35; // Critical occupancy
+  } else if (occupancyPercent > 75) {
+    riskScore += 25; // High occupancy
+  } else if (occupancyPercent > 50) {
+    riskScore += 15; // Moderate occupancy
+  } else if (occupancyPercent > 0) {
+    riskScore += 5;  // Low occupancy
+  }
+  
+  // FACTOR 3: Event Type Safety Characteristics
+  const eventSafetyFactors = {
+    'food_festival': 25,  // High risk - food handling, waste
+    'concert': 20,        // Medium-High - large crowds
+    'celebration': 18,    // Medium-High
+    'fiesta': 20,         // Medium-High
+    'marathon': 15,       // Medium - spread out
+    'festival': 12,       // Moderate
+    'expo': 10,           // Moderate
+    'religious': 8,       // Low-Moderate
+    'sports': 14,         // Medium
+    'conference': 5,      // Low - controlled
+    'workshop': 3         // Very low - small groups
+  };
+  riskScore += (eventSafetyFactors[eventType] || 10);
+  
+  // FACTOR 4: Duration Impact (longer events = more stress on infrastructure)
+  if (duration > 7) {
+    riskScore += 20;      // Extended event - more infrastructure needed
+  } else if (duration > 3) {
+    riskScore += 12;      // Multi-day event
+  } else if (duration > 1) {
+    riskScore += 8;       // 2-3 hours
+  }
+  // Single day/short event adds 0
+  
+  // FACTOR 5: Waste Generation Potential
+  const wastePerVisitor = waste > 0 ? (waste / visitors) : 0.085; // Default: 85g/visitor
+  if (wastePerVisitor > 0.12) {
+    riskScore += 15;      // High waste - infrastructure stress
+  } else if (wastePerVisitor > 0.10) {
+    riskScore += 10;      // Moderate waste
+  } else if (wastePerVisitor > 0.08) {
+    riskScore += 5;       // Standard waste
+  }
+  
+  // FINAL RISK DETERMINATION based on cumulative score
+  // Score range: 5 (minimum) to ~165 (maximum)
+  if (riskScore > 110) {
+    return { riskCode:'HIGH', riskLabel:'High Risk', riskColor: '#e74c3c', riskEmoji: '🔴', score: riskScore };
+  } else if (riskScore > 60) {
+    return { riskCode:'MEDIUM', riskLabel:'Medium Risk', riskColor: '#ff9800', riskEmoji: '🟠', score: riskScore };
+  } else {
+    return { riskCode:'LOW', riskLabel:'Low Risk', riskColor: '#4caf50', riskEmoji: '🟢', score: riskScore };
+  }
 }
 
 // Render a movable selected event card pane in the Live Map
@@ -743,8 +836,8 @@ function showSelectedEventCard(ev, occupancy, visitors, waste, riskLabel) {
       <img src="${imageUrl}" alt="${(ev.title||'Event').replace(/\"/g,'')}" style="width:100%; height:100%; object-fit:cover; display:block;" onerror="this.onerror=null;this.src='https://via.placeholder.com/600x340?text=No+Image';" />
     </div>
     <div style="font-weight:700; color:#fff; margin-bottom:4px;">${ev.title || 'Untitled Event'}</div>
-    <div style="color:#cbd5e1; font-size:0.83rem; margin-bottom:3px;">📍 ${ev.location || 'Legazpi City'}</div>
-    <div style="color:#cbd5e1; font-size:0.83rem; margin-bottom:3px;">⚠️ ${riskLabel} • ${occupancy}%</div>
+    <div style="color:#cbd5e1; font-size:0.83rem; margin-bottom:3px;">${ev.location || 'Legazpi City'}</div>
+    <div style="color:#cbd5e1; font-size:0.83rem; margin-bottom:3px;">${riskLabel} • ${occupancy}%</div>
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:4px;">
       <span style="font-size:0.78rem; background: rgba(255,255,255,.08); padding:4px 6px; border-radius:5px;">👥 ${Number(visitors).toLocaleString()}</span>
       <span style="font-size:0.78rem; background: rgba(255,255,255,.08); padding:4px 6px; border-radius:5px;">🗑️ ${Number(waste).toLocaleString()} kg</span>
@@ -888,58 +981,18 @@ function initializeEventsMap(events) {
         const currCapacity = current.capacity || 50000;
         const currOccupancy = Math.round((currVisitors / currCapacity) * 100);
         
-        const { riskColor: routeColor } = getRiskLevelForOccupancy(currOccupancy);
-        
-        // Draw polyline (route) using Leaflet
-        const latlngs = [
-          [currentCoords.lat, currentCoords.lng],
-          [nextCoords.lat, nextCoords.lng]
-        ];
-        
-        // Visual route with heat effect
-        const routeHeat = L.polyline(latlngs, {
-          color: routeColor,
-          weight: 16,
-          opacity: 0.20,
-          lineCap: 'round',
-          lineJoin: 'round',
-          interactive: false
-        }).addTo(map);
-
-        const routeLine = L.polyline(latlngs, {
-          color: routeColor,
-          weight: 6,
-          opacity: 1.0,
-          dashArray: '',
-          lineCap: 'round',
-          lineJoin: 'round'
-        }).addTo(map);
-        
-        // Mouse interactions are not needed for route path in this use-case
-        routeLine.on('mouseover', function() {
-          this.setStyle({ weight: 8, opacity: 1.0 });
+        const { riskColor: routeColor } = getRiskLevelForOccupancy(currOccupancy, {
+          visitors: currVisitors,
+          capacity: currCapacity,
+          eventType: current.event_type,
+          duration: current.duration || 1,
+          waste: current.prediction?.waste_prediction || currVisitors * 0.085
         });
-        routeLine.on('mouseout', function() {
-          this.setStyle({ weight: 6, opacity: 1.0 });
-        });
-
-        // add per-route endpoint heat circles (visual route heatmap anchors)
-        [currentCoords, nextCoords].forEach(coord => {
-          L.circle([coord.lat, coord.lng], {
-            radius: 110,
-            color: routeColor,
-            fillColor: routeColor,
-            fillOpacity: 0.22,
-            weight: 0,
-            interactive: false
-          }).addTo(map);
-        });
-
-        console.log('🎯 LEAFLET POLYLINE CREATED:' );
-        console.log('   From:', current.title, currentCoords);
-        console.log('   To:', next.title, nextCoords);
-        console.log('   Color:', routeColor);
-        console.log('✅ Route drawn:', current.title, '→', next.title);
+        
+        // POLYLINES DISABLED - Only showing circle heatmap at event locations
+        // (Removed route polylines for cleaner map visualization)
+        
+        console.log('✅ Route data available:', current.title, '→', next.title);
       }
     }
     
@@ -981,10 +1034,16 @@ function initializeEventsMap(events) {
       const { lat, lng } = coordsForEvent(ev);
       console.log('📌 Creating marker for:', ev.title, '- Coords:', lat, lng);
 
-      // === RISK LEVEL CALCULATION ===
+      // === RISK LEVEL CALCULATION (SMART ALGORITHM) ===
       const capacity = ev.capacity || 50000;
       const occupancy = Math.round((visitors / capacity) * 100);
-      const { riskCode, riskLabel, riskColor, riskEmoji } = getRiskLevelForOccupancy(occupancy);
+      const { riskCode, riskLabel, riskColor, riskEmoji } = getRiskLevelForOccupancy(occupancy, {
+        visitors: visitors,
+        capacity: capacity,
+        eventType: ev.event_type,
+        duration: ev.duration || 1,
+        waste: ev.prediction?.waste_prediction || visitors * 0.085
+      });
       let markerRadius = riskCode === 'HIGH' ? 450 : riskCode === 'MEDIUM' ? 360 : 300;
       
       // === CREATE HEATMAP SOURCE ENTRY ===
@@ -1155,9 +1214,9 @@ function initializeEventsMap(events) {
       .then(r => r.json())
       .then(j => {
         if (j && j.events) {
-          console.log('✅✅✅ API RESPONSE RECEIVED ✅✅✅');
-          console.log('📊 Total events:', j.events.length);
-          console.log('🗺️ ALL EVENT COORDINATES FROM API:');
+          console.log('API RESPONSE RECEIVED ✅');
+          console.log('Total events:', j.events.length);
+          console.log('ALL EVENT COORDINATES FROM API:');
           j.events.forEach((e, i) => {
             console.log(`   [${i}] "${e.title}": START(${e.start_lat}, ${e.start_lng}) END(${e.end_lat}, ${e.end_lng})`);
           });
@@ -1223,12 +1282,21 @@ function renderCommunityCharts(events, mlPredData) {
     const eventCapacity = Number(event.capacity) || 50000;
     const occupancy = Math.round((eventVisitors / eventCapacity) * 100);
     
-    // Determine risk level specific to this event
-    const { riskLabel, riskEmoji, riskColor } = getRiskLevelForOccupancy(occupancy);
+    // Determine risk level specific to this event (SMART ALGORITHM)
+    const { riskLabel, riskEmoji, riskColor } = getRiskLevelForOccupancy(occupancy, {
+      visitors: eventVisitors,
+      capacity: eventCapacity,
+      eventType: event.event_type,
+      duration: event.duration || 1,
+      waste: eventWaste
+    });
     
     // Get event date for display
     let eventDateStr = 'TBA';
-    if (event.event_date) {
+    if (event.datetime) {
+      const dateObj = new Date(event.datetime);
+      eventDateStr = dateObj.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+    } else if (event.event_date) {
       const dateObj = new Date(event.event_date);
       eventDateStr = dateObj.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
     } else if (event.DATETIME) {
@@ -1257,9 +1325,9 @@ function renderCommunityCharts(events, mlPredData) {
       
       <!-- Event Header -->
       <div style="margin-bottom: 18px; padding-right: 80px;">
-        <h3 style="margin: 0 0 8px 0; color: #667eea; font-size: 1.15rem; font-weight: 700;">📅 ${event.title || 'Event'}</h3>
+        <h3 style="margin: 0 0 8px 0; color: #667eea; font-size: 1.15rem; font-weight: 700;">${event.title || 'Event'}</h3>
         <div style="font-size: 0.9rem; color: #bbb;">${eventDateStr} • ${event.event_type ? event.event_type.replace(/_/g, ' ') : 'General'}</div>
-        <div style="font-size: 0.85rem; color: #999;">📍 ${event.location || 'Legazpi City'}</div>
+        <div style="font-size: 0.85rem; color: #999;">${event.location || 'Legazpi City'}</div>
       </div>
       
       <!-- Prediction Stats Grid -->
@@ -1301,23 +1369,19 @@ function renderCommunityCharts(events, mlPredData) {
           <button id="routeToggleBtn-${index}" class="route-toggle-btn" type="button">Hide directions</button>
         </div>
         <div id="eventRouteMap-${index}" style="width: 100%; height: 420px; min-height: 420px; border-radius: 10px; background: #1a1a2e; border: 1px solid rgba(102,126,234,0.3); position: relative; overflow: hidden;"></div>
-        <div style="margin-top: 8px; font-size: 0.75rem; color: #999;">
-          <div>🏁 Start: ${event.start_lat && event.start_lng && !isNaN(parseFloat(event.start_lat)) && !isNaN(parseFloat(event.start_lng)) ? `${parseFloat(event.start_lat).toFixed(4)}°N, ${parseFloat(event.start_lng).toFixed(4)}°E` : `<span style="color: #e74c3c;">Not set</span>`}</div>
-          <div>🏁 End: ${event.end_lat && event.end_lng && !isNaN(parseFloat(event.end_lat)) && !isNaN(parseFloat(event.end_lng)) ? `${parseFloat(event.end_lat).toFixed(4)}°N, ${parseFloat(event.end_lng).toFixed(4)}°E` : `<span style="color: #e74c3c;">Not set</span>`}</div>
-        </div>
       </div>
       
       <!-- Charts Section -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px;">
         <!-- Hourly Visitors Line Chart -->
-        <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
-          <h4 style="margin: 0 0 8px 0; font-size: 0.8rem; color: #aaa; text-transform: uppercase;">⏱ Hourly Visitors</h4>
+        <div style="background: linear-gradient(135deg, rgba(102,126,234,0.12), rgba(118,75,162,0.08)); padding: 18px; border-radius: 12px; border: 1px solid rgba(102,126,234,0.25); box-shadow: 0 8px 24px rgba(102,126,234,0.1);">
+          <h4 style="margin: 0 0 14px 0; font-size: 0.85rem; color: #667eea; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">⏱ Hourly Visitors</h4>
           <canvas id="visitorChart-${index}" style="max-height: 200px;"></canvas>
         </div>
         
         <!-- Waste Breakdown Stacked Bar Chart -->
-        <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
-          <h4 style="margin: 0 0 8px 0; font-size: 0.8rem; color: #aaa; text-transform: uppercase;">🗑️ Waste Breakdown</h4>
+        <div style="background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(239,68,68,0.08)); padding: 18px; border-radius: 12px; border: 1px solid rgba(245,158,11,0.25); box-shadow: 0 8px 24px rgba(239,68,68,0.1);">
+          <h4 style="margin: 0 0 14px 0; font-size: 0.85rem; color: #f59e0b; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">🗑️ Waste Breakdown</h4>
           <canvas id="wasteChart-${index}" style="max-height: 200px;"></canvas>
         </div>
       </div>
@@ -1498,26 +1562,17 @@ function renderCommunityCharts(events, mlPredData) {
             toggleBtn.style.display = 'none';
           }
         } else if (hasStartCoords && hasEndCoords) {
-          console.log('🔵 POLYLINE FALLBACK: Drawing straight line for', event.title);
-          const polylinePath = [
-            [parseFloat(startLat), parseFloat(startLng)],
-            [parseFloat(endLat), parseFloat(endLng)]
-          ];
-          const routeLine = L.polyline(polylinePath, {
-            color: '#FF4444',
-            opacity: 1.0,
-            weight: 4,
-            className: 'event-route-polyline'
-          }).addTo(eventRouteMap);
-
+          // POLYLINE DISABLED - Only showing circle heatmap visualization
+          // (Removed route polylines for cleaner event detail maps)
+          console.log('✅ Route coordinates available for', event.title);
+          
           bounds.extend([startLat, startLng]);
           bounds.extend([endLat, endLng]);
-          console.log('✅ Fallback polyline rendered:', polylinePath);
         } else {
           console.log('⏭️ SKIPPING ROUTE - Coords missing:', {hasStartCoords, hasEndCoords});
         }
         
-        // Fit map bounds to show all markers AND polyline (Leaflet)
+        // Fit map bounds to show all markers (Leaflet)
         if (bounds.isValid()) {
           console.log('📍 Fitting bounds via Leaflet');
           eventRouteMap.fitBounds(bounds, {padding: [50, 50]});
@@ -1558,10 +1613,19 @@ function renderCommunityCharts(events, mlPredData) {
       visitorsByHour.push(Math.round(eventVisitors * hourFactor));
     }
     
-    // Create line chart for hourly visitors
+    // Create line chart for hourly visitors with color variation
     const visitorCanvasId = `visitorChart-${index}`;
     const visitorCanvas = document.getElementById(visitorCanvasId);
     if (visitorCanvas) {
+      // Alternate colors based on event index for visual variety
+      const colorSchemes = [
+        { border: '#667eea', bg: 'rgba(102,126,234,0.15)', point: '#667eea' },
+        { border: '#ff7a18', bg: 'rgba(255,122,24,0.15)', point: '#ff7a18' },
+        { border: '#00d4ff', bg: 'rgba(0,212,255,0.15)', point: '#00d4ff' },
+        { border: '#7c3aed', bg: 'rgba(124,58,237,0.15)', point: '#7c3aed' }
+      ];
+      const colors = colorSchemes[index % colorSchemes.length];
+      
       new Chart(visitorCanvas, {
         type: 'line',
         data: {
@@ -1569,25 +1633,53 @@ function renderCommunityCharts(events, mlPredData) {
           datasets: [{
             label: 'Predicted Visitors',
             data: visitorsByHour,
-            borderColor: '#667eea',
-            backgroundColor: 'rgba(102,126,234,0.1)',
-            borderWidth: 2,
+            borderColor: colors.border,
+            backgroundColor: colors.bg,
+            borderWidth: 3,
             fill: true,
-            tension: 0.3,
-            pointRadius: 2,
-            pointBackgroundColor: '#667eea'
+            tension: 0.4,
+            pointRadius: 4,
+            pointBackgroundColor: colors.point,
+            pointBorderColor: '#1a1a2e',
+            pointBorderWidth: 2,
+            pointHoverRadius: 6,
+            hoverBackgroundColor: colors.point
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: true,
+          interaction: { mode: 'index', intersect: false },
           plugins: {
-            legend: { display: true, labels: { color: '#ddd', font: { size: 10 } } },
-            tooltip: { backgroundColor: 'rgba(0,0,0,0.7)', titleColor: '#667eea', bodyColor: '#ddd' }
+            legend: { 
+              display: true, 
+              labels: { color: '#ddd', font: { size: 11, weight: '600' }, padding: 12 },
+              backgroundColor: 'rgba(0,0,0,0.1)',
+              borderRadius: 6,
+              usePointStyle: true,
+              pointStyle: 'circle'
+            },
+            tooltip: { 
+              backgroundColor: 'rgba(0,0,0,0.85)', 
+              titleColor: colors.border, 
+              bodyColor: '#fff',
+              borderColor: colors.border,
+              borderWidth: 1,
+              padding: 12,
+              titleFont: { size: 12, weight: 'bold' },
+              bodyFont: { size: 11 },
+              displayColors: true,
+              boxPadding: 8
+            }
           },
           scales: {
-            y: { beginAtZero: true, ticks: { color: '#999', font: { size: 8 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
-            x: { ticks: { color: '#999', font: { size: 8 } }, grid: { color: 'rgba(255,255,255,0.05)' } }
+            y: { 
+              beginAtZero: true, 
+              ticks: { color: '#999', font: { size: 9 }, stepSize: Math.max(1, Math.round(Math.max(...visitorsByHour) / 5)) }, 
+              grid: { color: 'rgba(255,255,255,0.08)' },
+              position: 'right'
+            },
+            x: { ticks: { color: '#999', font: { size: 8 } }, grid: { display: false } }
           }
         }
       });
@@ -1602,42 +1694,46 @@ function renderCommunityCharts(events, mlPredData) {
       'General': Math.round(eventWaste * 0.10)
     };
     
-    // Create stacked bar chart for waste
+    // Create stacked bar chart for waste with enhanced styling
     const wasteCanvasId = `wasteChart-${index}`;
     const wasteCanvas = document.getElementById(wasteCanvasId);
     if (wasteCanvas) {
       new Chart(wasteCanvas, {
         type: 'bar',
         data: {
-          labels: ['Waste (kg)'],
+          labels: ['Total Waste (kg)'],
           datasets: [
             {
-              label: 'Organic',
+              label: '♻️ Organic',
               data: [wasteBreakdown.Organic],
-              backgroundColor: '#4caf50',
-              borderColor: '#45a049',
-              borderWidth: 1
+              backgroundColor: '#10b981',
+              borderColor: '#059669',
+              borderWidth: 2,
+              borderRadius: 6
             },
             {
-              label: 'Recyclable',
+              label: '📦 Recyclable',
               data: [wasteBreakdown.Recyclable],
-              backgroundColor: '#2196f3',
-              borderColor: '#1976d2',
-              borderWidth: 1
+              backgroundColor: '#3b82f6',
+              borderColor: '#1d4ed8',
+              borderWidth: 2,
+              borderRadius: 6
             },
             {
-              label: 'Hazardous',
+              label: '⚠️ Hazardous',
               data: [wasteBreakdown.Hazardous],
-              backgroundColor: '#f44336',
-              borderColor: '#da190b',
-              borderWidth: 1
+              backgroundColor: '#ef4444',
+              borderColor: '#b91c1c',
+              borderWidth: 2,
+              borderRadius: 6
             },
             {
-              label: 'General',
+              label: '🗑️ General',
               data: [wasteBreakdown.General],
-              backgroundColor: '#ff9800',
-              borderColor: '#e65100',
-              borderWidth: 1
+              backgroundColor: '#f59e0b',
+              borderColor: '#d97706',
+              borderWidth: 2,
+              borderRadius: 6
             }
           ]
         },
@@ -1645,17 +1741,41 @@ function renderCommunityCharts(events, mlPredData) {
           indexAxis: 'y',
           responsive: true,
           maintainAspectRatio: true,
+          barThickness: 32,
+          interaction: { mode: 'index', intersect: false },
           plugins: {
-            legend: { display: true, labels: { color: '#ddd', font: { size: 8 } }, position: 'bottom' },
-            tooltip: { backgroundColor: 'rgba(0,0,0,0.7)', bodyColor: '#ddd' }
+            legend: { 
+              display: true, 
+              labels: { color: '#ddd', font: { size: 10, weight: '600' }, padding: 16 },
+              backgroundColor: 'rgba(0,0,0,0.1)',
+              borderRadius: 6,
+              position: 'bottom',
+              usePointStyle: true,
+              pointStyle: 'rect'
+            },
+            tooltip: { 
+              backgroundColor: 'rgba(0,0,0,0.85)', 
+              bodyColor: '#fff',
+              borderColor: '#667eea',
+              borderWidth: 1,
+              padding: 12,
+              titleFont: { size: 12, weight: 'bold' },
+              bodyFont: { size: 11 },
+              displayColors: true,
+              callbacks: {
+                label: function(context) {
+                  return context.dataset.label + ': ' + context.parsed.x.toFixed(0) + ' kg';
+                }
+              }
+            }
           },
           scales: {
             x: { 
               stacked: true, 
-              ticks: { color: '#999', font: { size: 8 } }, 
-              grid: { color: 'rgba(255,255,255,0.05)' } 
+              ticks: { color: '#999', font: { size: 9 } }, 
+              grid: { color: 'rgba(255,255,255,0.08)' } 
             },
-            y: { stacked: true, ticks: { color: '#999' }, grid: { display: false } }
+            y: { stacked: true, ticks: { color: '#999', font: { size: 10, weight: '600' } }, grid: { display: false } }
           }
         }
       });
@@ -2000,7 +2120,7 @@ function openEventDetailModal(ev) {
       </div>
       <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
         <div style="background: white; padding: 16px; border-radius: 10px; border-left: 4px solid #667eea;">
-          <p style="font-size: 0.8rem; color: #718096; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">📊 Expected Visitors</p>
+          <p style="font-size: 0.8rem; color: #718096; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Expected Visitors</p>
           <p id="predVisitors-${predId}" style="font-size: 1.8rem; font-weight: 700; color: #94a3b8; margin: 0;">Loading...</p>
           <p id="predUtilization-${predId}" style="font-size: 0.85rem; color: #a0aec0; margin: 6px 0 0 0;">—</p>
         </div>
@@ -2044,7 +2164,7 @@ function openEventDetailModal(ev) {
         <!-- Event Details Grid -->
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; padding-bottom: 30px; border-bottom: 2px solid #e2e8f0;">
           <div>
-            <p style="font-size: 0.75rem; color: #718096; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">📅 Date</p>
+            <p style="font-size: 0.75rem; color: #718096; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">Date</p>
             <p style="font-size: 1.1rem; font-weight: 700; color: #1a202c; margin: 0; line-height: 1.4;">${dateStr}</p>
             ${timeStr ? `<p style="font-size: 0.95rem; color: #718096; margin: 6px 0 0 0;">${timeStr}</p>` : ''}
           </div>
@@ -2683,6 +2803,7 @@ function renderModalPredictionCharts(ev) {
       <div class="festival-info-side">
         <button class="festival-modal-close" onclick="closeFestivalModal()">&times;</button>
         <h3 id="festivalTitle"></h3>
+        <p id="festivalDate" style="color: #ff7a18; font-weight: 600; margin: 8px 0;"></p>
         <p id="festivalDescription"></p>
       </div>
     </div>
@@ -5451,7 +5572,7 @@ document.getElementById('eventAlertsOverlay').addEventListener('click', function
               <path d="M23.953 4.57a10 10 0 002.856-3.915 10 10 0 01-2.856.973 5 5 0 00-8.625-4.28 5 5 0 00-1.61 5.1A14 14 0 012.7 4.33a5 5 0 001.55 6.68c-.92-.03-1.79-.2-2.581-.62a5 5 0 004.04 4.95c-.73.2-1.5.2-2.28.1a5 5 0 004.66 3.46A10 10 0 010 19.54 14 14 0 007.29 21c9.625 0 14.883-7.957 14.883-14.882 0-.226 0-.45-.015-.673A10.65 10.65 0 0024 4.59z"/>
             </svg>
           </a>
-          <a href="#" class="social-link" aria-label="Instagram">
+          <a href="https://www.instagram.com/legazpi.explorer?igsh=Y2VraHo2ejFzeWRu&fbclid=IwY2xjawQy6etleHRuA2FlbQIxMABicmlkETF1WlFhUEVoNW51VzZqNUZPc3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHo7igzedeztEr7EB6a6eTJmyTVt-ehRvLQ6ofTZ7rRL4fek585NplWHmVMsk_aem_BW1KGyHchb1HUdnaZK-Dsw" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Instagram">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="none" stroke="currentColor" stroke-width="2"/>
               <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" fill="none" stroke="currentColor" stroke-width="2"/>
