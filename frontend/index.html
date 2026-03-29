@@ -3034,7 +3034,7 @@ function renderModalPredictionCharts(ev) {
             <ul style="text-align: left; color: #666; margin-top: 15px;">
               <li>🏨 Best hotels with prices & ratings</li>
               <li>📅 Day-by-day activities & timing</li>
-              <li>🚗 Smart transportation with fares</li>
+              <li>�️ Live route map from your location to the destination</li>
               <li>🌡️ Weather forecast for your dates</li>
             </ul>
           </div>
@@ -3055,10 +3055,22 @@ function renderModalPredictionCharts(ev) {
               <div id="dayByDayActivities" style="display: flex; flex-direction: column; gap: 12px;"></div>
             </div>
 
-            <!-- Transportation -->
-            <div style="background: linear-gradient(135deg, rgba(102,126,234,0.1), rgba(118,75,162,0.08)); border: 2px solid rgba(102,126,234,0.2); border-radius: 12px; padding: 20px;">
-              <h4 style="color: white; font-weight: 700; margin: 0 0 15px 0;">🚗 Transportation & Routes</h4>
-              <div id="transportList" style="display: grid; grid-template-columns: 1fr; gap: 12px;"></div>
+            <!-- Route -->
+            <div id="routePanel" style="background: linear-gradient(135deg, rgba(102,126,234,0.1), rgba(118,75,162,0.08)); border: 2px solid rgba(102,126,234,0.2); border-radius: 12px; padding: 20px;">
+              <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;">
+                  <div>
+                    <h4 style="color: white; font-weight: 700; margin: 0 0 8px 0;">🗺️ Route Map</h4>
+                    <p id="routeInfo" style="color: #a0aec0; font-size: 0.95rem; margin: 0;">Route from your current location to the selected destination will appear here.</p>
+                  </div>
+                  <div id="locationStatus" style="color: #a0aec0; font-size: 0.9rem; text-align: right;">📍 Detecting your location...</div>
+                </div>
+                <div id="routeTargetButtons" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                  <button id="routeToDestinationBtn" type="button" onclick="setItineraryRouteTarget('destination')" style="border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.08); color: white; padding: 10px 16px; border-radius: 10px; cursor: pointer;">Route to destination</button>
+                  <button id="routeToHotelBtn" type="button" onclick="setItineraryRouteTarget('hotel')" style="border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.08); color: white; padding: 10px 16px; border-radius: 10px; cursor: pointer; opacity: 0.6;" disabled>Route to selected hotel</button>
+                </div>
+              </div>
+              <div id="itineraryRouteMap" style="width: 100%; height: 360px; border-radius: 12px; background: #1a1a2e; overflow: hidden;"></div>
             </div>
 
             <!-- Weather -->
@@ -3159,6 +3171,7 @@ let currentDestination = null;
 let selectedDays = 0;
 let selectedDestinationCard = null;
 let selectedAccommodation = null;
+let itineraryRouteTarget = 'destination';
 
 // Comprehensive accommodation data with detailed transport options
 const accommodationData = {
@@ -3349,12 +3362,23 @@ const destinationData = {
 };
 
 const itineraryDestinationCoords = {
-  'Lignon Hill': { lat: 13.1520, lon: 123.7390 },
-  'Embarcadero de Legazpi': { lat: 13.1340, lon: 123.7520 },
-  'Albay Park & Wildlife': { lat: 13.1500, lon: 123.7400 },
-  'Highlands Park Legazpi City': { lat: 13.1610, lon: 123.7240 },
-  'Nuestra Senora de Salvacion': { lat: 13.1300, lon: 123.7200 },
-  'SEVENTY-SIX Farm': { lat: 13.1200, lon: 123.7400 }
+  'Lignon Hill': { lat: 13.16081640252388, lon: 123.7292096150791 },
+  'Embarcadero de Legazpi': { lat: 13.14345194112868, lon: 123.75833941401655 },
+  'Albay Park & Wildlife': { lat: 13.157535272415089, lon: 123.73059634136769 },
+  'Highlands Park Legazpi City': { lat: 13.125073701377465, lon: 123.72626957999765 },
+  'Nuestra Senora de Salvacion': { lat: 13.170457987403083, lon: 123.73923162079285 },
+  'SEVENTY-SIX Farm': { lat: 13.197240233396542, lon: 123.74841596650562 }
+};
+
+const itineraryHotelCoords = {
+  'Alicia Hotel': { lat: 13.152780718853775, lon: 123.73437812208905 },
+  'Lotus Blu Hotel': { lat: 13.146185824893816, lon: 123.74580013558219 },
+  'Hotel Venezia': { lat: 13.15188202481467, lon: 123.73643644907538 },
+  'The Marison Hotel': { lat: 13.155945057732085, lon: 123.74210796441778 },
+  'Hotel Sentro Legazpi': { lat: 13.146615967469781, lon: 123.75093855092464 },
+  'Hotel St. Ellis': { lat: 13.148336147120188, lon: 123.75451716256852 },
+  'Proxy by The Oriental Albay': { lat: 13.154395870049788, lon: 123.75177922023975 },
+  'Emerald Boutique Hotel': { lat: 13.13736197712241, lon: 123.7353493644178 }
 };
 
 function getItineraryWeatherCondition(code) {
@@ -3724,18 +3748,13 @@ async function populateItineraryResults() {
     });
   });
   
-  // Transportation
-  document.getElementById('transportList').innerHTML = `
-    <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; border-left: 4px solid #667eea;">
-      <div style="color: white; font-weight: 600;">🚕 Taxi</div>
-      <div style="color: #a0aec0; font-size: 0.9rem;">Airport to Hotel: ₱450-600 (30 mins)</div>
-    </div>
-    <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; border-left: 4px solid #667eea;">
-      <div style="color: white; font-weight: 600;">🚌 Bus</div>
-      <div style="color: #a0aec0; font-size: 0.9rem;">City tours: ₱2,000 (full day)</div>
-    </div>
-  `;
-  
+  // Route
+  itineraryRouteTarget = 'destination';
+  updateRouteButtons();
+  document.getElementById('routeInfo').textContent = 'Rendering your route, please wait...';
+  document.getElementById('routePanel').style.display = 'block';
+  await renderItineraryRoute('destination');
+
   document.getElementById('weatherList').innerHTML = `
     <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; border-left: 4px solid #667eea; display: flex; align-items: center; justify-content: center; min-height: 70px;">
       <div style="color: #a0aec0; font-size: 0.95rem;">Loading live weather for ${currentDestination}...</div>
@@ -3808,6 +3827,11 @@ function resetItineraryFlow() {
   document.getElementById('resultsContainer').style.display = 'none';
   document.getElementById('resultsPlaceholder').style.display = 'flex';
   document.getElementById('actionButtons').style.display = 'none';
+  document.getElementById('routePanel').style.display = 'none';
+  document.getElementById('routeInfo').textContent = 'Route from your current location to the selected destination will appear here.';
+  if (typeof clearItineraryRouteMap === 'function') {
+    clearItineraryRouteMap();
+  }
   
   // Scroll back to carousel
   setTimeout(() => {
@@ -3827,6 +3851,17 @@ function selectAccommodation(hotelName, hotelLocation) {
   const hotelImgEl = document.getElementById('summaryHotelImage');
   if (hotelImgEl) hotelImgEl.src = getHotelImage(hotelName);
   
+  // Route to selected hotel if the itinerary results are shown
+  itineraryRouteTarget = 'hotel';
+  updateRouteButtons();
+  const routeInfoEl = document.getElementById('routeInfo');
+  if (document.getElementById('routePanel')?.style.display === 'block') {
+    if (routeInfoEl) {
+      routeInfoEl.innerHTML = `Updating route to <strong>${hotelName}</strong>... <span style="opacity:0.75;">Loading</span>`;
+    }
+    renderItineraryRoute('hotel').catch(err => console.warn('Hotel route update failed', err));
+  }
+
   // Refresh hotel display to show selection state
   const hotels = accommodationData[currentDestination] || [];
   document.getElementById('hotelsList').innerHTML = hotels.map((h, idx) => {
@@ -4408,47 +4443,84 @@ document.addEventListener('DOMContentLoaded', () => {
 // ========== ENHANCED ITINERARY BUILDER FUNCTIONALITY ==========
 let currentItinerary = null;
 let currentSuggestions = null;
-let userLocation = { lat: null, lon: null, accuracy: null };
+let userLocation = { lat: null, lon: null, accuracy: null, fromDefault: true };
+let userLocationWatchId = null;
+let itineraryRouteMap = null;
+let itineraryRouteLayer = null;
+let itineraryRouteMarkers = [];
 
-// Geolocation - Auto-detect user's location
-function initializeGeolocation() {
-  if (!navigator.geolocation) {
-    updateLocationStatus('Geolocation not available');
-    userLocation = { lat: 13.112621547653507, lon: 123.75351323035586, accuracy: 0, fromDefault: true };
-    document.getElementById('locationStatus').innerHTML = '📍 Using Legazpi City center as default';
-    return;
-  }
+function setUserLocation(lat, lon, accuracy = 0, fromDefault = false) {
+  userLocation = { lat, lon, accuracy, fromDefault };
+  const accuracyMeters = accuracy != null ? `${Math.round(accuracy)} m` : 'unknown accuracy';
+  updateLocationStatus(`📍 Location: ${lat.toFixed(5)}, ${lon.toFixed(5)} (${accuracyMeters})${fromDefault ? ' — using fallback' : ''}`);
+}
 
-  navigator.geolocation.getCurrentPosition(
+function refreshUserLocation(timeout = 30000) {
+  return new Promise(resolve => {
+    if (!navigator.geolocation) {
+      updateLocationStatus('📍 Geolocation not available — using Legazpi fallback');
+      setUserLocation(13.112621547653507, 123.75351323035586, 0, true);
+      return resolve(userLocation);
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      function(position) {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        const accuracy = position.coords.accuracy;
+        setUserLocation(lat, lon, accuracy, false);
+        resolve(userLocation);
+      },
+      function(error) {
+        console.warn('Geolocation refresh error:', error.message, 'code:', error.code);
+        setUserLocation(13.112621547653507, 123.75351323035586, 0, true);
+        if (error.code === 1) {
+          updateLocationStatus('📍 Location denied — using Legazpi fallback');
+        } else if (error.code === 3) {
+          updateLocationStatus('📍 Location timeout — using Legazpi fallback');
+        } else {
+          updateLocationStatus('📍 Using Legazpi fallback location');
+        }
+        resolve(userLocation);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout,
+        maximumAge: 0
+      }
+    );
+  });
+}
+
+function startUserLocationWatch() {
+  if (!navigator.geolocation || userLocationWatchId !== null) return;
+
+  userLocationWatchId = navigator.geolocation.watchPosition(
     function(position) {
       const lat = position.coords.latitude;
       const lon = position.coords.longitude;
       const accuracy = position.coords.accuracy;
-      userLocation = { lat, lon, accuracy, fromDefault: false };
-      
-      const accuracyKm = (accuracy / 1000).toFixed(1);
-      updateLocationStatus(`📍 Location found (${accuracyKm} km accuracy)`);
-    },
-    function(error) {
-      console.warn('Geolocation error:', error.message, 'code:', error.code);
-      // Use Legazpi City center as default
-      userLocation = { lat: 13.112621547653507, lon: 123.75351323035586, accuracy: 0, fromDefault: true };
-      
-      // Provide specific feedback based on error type
-      if (error.code === 1) { // PERMISSION_DENIED
-        updateLocationStatus('📍 Location access denied - using Legazpi City center');
-      } else if (error.code === 3) { // TIMEOUT
-        updateLocationStatus('📍 Location timeout - using Legazpi City center');
-      } else {
-        updateLocationStatus('📍 Using Legazpi City center as default');
+      setUserLocation(lat, lon, accuracy, false);
+
+      if (document.getElementById('routePanel')?.style.display === 'block') {
+        renderItineraryRoute(itineraryRouteTarget).catch(err => console.warn('Auto-update route failed', err));
       }
     },
+    function(error) {
+      console.warn('Geolocation watch error:', error.message, 'code:', error.code);
+    },
     {
-      enableHighAccuracy: false,
+      enableHighAccuracy: true,
       timeout: 30000,
-      maximumAge: 300000
+      maximumAge: 0
     }
   );
+}
+
+// Geolocation - Auto-detect user's location
+function initializeGeolocation() {
+  refreshUserLocation();
+  startUserLocationWatch();
 }
 
 function updateLocationStatus(message) {
@@ -4533,6 +4605,125 @@ function generateTransportationRoutes(startLocation, destinations) {
   return routes;
 }
 
+function clearItineraryRouteMap() {
+  if (itineraryRouteLayer) {
+    itineraryRouteMap.removeLayer(itineraryRouteLayer);
+    itineraryRouteLayer = null;
+  }
+  if (itineraryRouteMarkers.length) {
+    itineraryRouteMarkers.forEach(marker => itineraryRouteMap.removeLayer(marker));
+    itineraryRouteMarkers = [];
+  }
+  if (itineraryRouteMap) {
+    itineraryRouteMap.invalidateSize(true);
+  }
+}
+
+function waitForUserLocation(timeout = 12000) {
+  return new Promise(resolve => {
+    const start = Date.now();
+    const check = () => {
+      if (userLocation.lat && userLocation.lon && !userLocation.fromDefault) {
+        return resolve(userLocation);
+      }
+      if (Date.now() - start >= timeout) {
+        return resolve(userLocation);
+      }
+      setTimeout(check, 200);
+    };
+    check();
+  });
+}
+
+function formatDistanceKM(meters) {
+  if (meters == null) return 'N/A';
+  const km = meters / 1000;
+  return km < 1 ? `${Math.round(meters)} m` : `${km.toFixed(1)} km`;
+}
+
+function formatDurationMin(seconds) {
+  if (seconds == null) return 'N/A';
+  const mins = Math.round(seconds / 60);
+  return mins < 60 ? `${mins} min` : `${Math.floor(mins / 60)}h ${mins % 60}m`;
+}
+
+async function renderItineraryRoute(target = 'destination') {
+  const routeInfoEl = document.getElementById('routeInfo');
+  const mapContainer = document.getElementById('itineraryRouteMap');
+  if (!routeInfoEl || !mapContainer) return;
+
+  const loc = await refreshUserLocation();
+  const origin = loc.lat && loc.lon ? loc : { lat: 13.112621547653507, lon: 123.75351323035586 };
+  const originName = getLocationName(origin.lat, origin.lon) || (origin.fromDefault ? 'Legazpi City' : 'Your Location');
+
+  itineraryRouteTarget = target;
+  updateRouteButtons();
+
+  let destinationName = currentDestination;
+  let destCoords = itineraryDestinationCoords[currentDestination];
+
+  if (target === 'hotel' && selectedAccommodation && itineraryHotelCoords[selectedAccommodation.name]) {
+    destinationName = selectedAccommodation.name;
+    destCoords = itineraryHotelCoords[selectedAccommodation.name];
+  }
+
+  if (!destCoords) {
+    routeInfoEl.textContent = 'Route target coordinates unavailable.';
+    return;
+  }
+
+  if (!itineraryRouteMap) {
+    itineraryRouteMap = L.map(mapContainer, { zoomControl: true, attributionControl: false }).setView([origin.lat, origin.lon], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(itineraryRouteMap);
+  }
+
+  clearItineraryRouteMap();
+  console.log('renderItineraryRoute target:', destinationName, 'coords:', destCoords, 'origin:', origin, 'mode:', target);
+  routeInfoEl.textContent = `Calculating route from ${originName} to ${destinationName}...`;
+
+  const serviceUrl = `https://router.project-osrm.org/route/v1/driving/${origin.lon},${origin.lat};${destCoords.lon},${destCoords.lat}?overview=full&geometries=geojson`;
+
+  try {
+    const res = await fetch(serviceUrl);
+    const data = await res.json();
+    if (!data || data.code !== 'Ok' || !data.routes || !data.routes.length) {
+      routeInfoEl.textContent = 'Could not calculate route for the selected destination.';
+      return;
+    }
+
+    const route = data.routes[0];
+    const coords = route.geometry.coordinates.map(pt => [pt[1], pt[0]]);
+    itineraryRouteLayer = L.polyline(coords, { color: '#ff7a18', weight: 6, opacity: 0.9 }).addTo(itineraryRouteMap);
+
+    const originMarker = L.circleMarker([origin.lat, origin.lon], {
+      radius: 8,
+      fillColor: '#3498db',
+      color: '#fff',
+      weight: 2,
+      fillOpacity: 1
+    }).addTo(itineraryRouteMap).bindPopup(`<strong>${originName}</strong>`);
+    const destMarker = L.circleMarker([destCoords.lat, destCoords.lon], {
+      radius: 8,
+      fillColor: '#ff7a18',
+      color: '#fff',
+      weight: 2,
+      fillOpacity: 1
+    }).addTo(itineraryRouteMap).bindPopup(`<strong>${destinationName}</strong>`);
+
+    itineraryRouteMarkers.push(originMarker, destMarker);
+    const bounds = itineraryRouteLayer.getBounds();
+    itineraryRouteMap.fitBounds(bounds, { padding: [40, 40] });
+
+    routeInfoEl.innerHTML = `Route from <strong>${originName}</strong> to <strong>${destinationName}</strong>: ${formatDistanceKM(route.distance)} • ${formatDurationMin(route.duration)}`;
+  } catch (err) {
+    console.warn('Itinerary route fetch failed:', err);
+    routeInfoEl.textContent = 'Route calculation failed. Please try again later.';
+  }
+}
+
 // Initialize geolocation on page load
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initializeGeolocation);
@@ -4540,23 +4731,44 @@ if (document.readyState === 'loading') {
   initializeGeolocation();
 }
 
-// Update destination display when dropdown changes
-const dd = document.getElementById('destinationsDropdown');
-if (dd) {
-  dd.addEventListener('change', function() {
-    const display = document.getElementById('selectedDestinationsDisplay');
-    const selected = Array.from(this.selectedOptions).map(opt => opt.value);
-    
-    if (display) {
-      display.innerHTML = selected.map(dest => `
-        <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">
-          ${dest}
-          <span style="margin-left: 6px; cursor: pointer;" onclick="removeDestination('${dest}')">✕</span>
-        </span>
-      `).join('');
-    }
-  });
+function updateRouteButtons() {
+  const destBtn = document.getElementById('routeToDestinationBtn');
+  const hotelBtn = document.getElementById('routeToHotelBtn');
+  if (!destBtn || !hotelBtn) return;
+
+  destBtn.disabled = false;
+  destBtn.style.opacity = itineraryRouteTarget === 'destination' ? '1' : '0.8';
+  destBtn.style.fontWeight = itineraryRouteTarget === 'destination' ? '700' : '500';
+
+  const hotelRouteAvailable = selectedAccommodation && itineraryHotelCoords[selectedAccommodation.name];
+  hotelBtn.disabled = !hotelRouteAvailable;
+  hotelBtn.style.opacity = hotelRouteAvailable ? (itineraryRouteTarget === 'hotel' ? '1' : '0.8') : '0.45';
+  hotelBtn.style.fontWeight = itineraryRouteTarget === 'hotel' ? '700' : '500';
+  hotelBtn.textContent = hotelRouteAvailable ? `Route to hotel (${selectedAccommodation.name})` : 'Route to selected hotel';
 }
+
+function setItineraryRouteTarget(target) {
+  itineraryRouteTarget = target;
+  updateRouteButtons();
+  if (target === 'hotel' && (!selectedAccommodation || !itineraryHotelCoords[selectedAccommodation.name])) {
+    return;
+  }
+  renderItineraryRoute(target).catch(err => console.warn('Route update failed', err));
+}
+
+document.getElementById('destinationsDropdown')?.addEventListener('change', function() {
+  const display = document.getElementById('selectedDestinationsDisplay');
+  const selected = Array.from(this.selectedOptions).map(opt => opt.value);
+
+  if (display) {
+    display.innerHTML = selected.map(dest => `
+      <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">
+        ${dest}
+        <span style="margin-left: 6px; cursor: pointer;" onclick="removeDestination('${dest}')">✕</span>
+      </span>
+    `).join('');
+  }
+});
 
 function removeDestination(destName) {
   const dropdown = document.getElementById('destinationsDropdown');
