@@ -3,6 +3,12 @@ error_reporting(0);
 ini_set('display_errors', '0');
 ini_set('log_errors', '1');
 
+// Fix session persistence on Railway
+ini_set('session.cookie_samesite', 'None');
+ini_set('session.cookie_secure', '1');
+ini_set('session.cookie_httponly', '1');
+ini_set('session.use_strict_mode', '1');
+
 session_start();
 
 define('DB_HOST', getenv('MYSQLHOST') ?: '127.0.0.1');
