@@ -3065,12 +3065,13 @@ function renderModalPredictionCharts(ev) {
                   </div>
                   <div id="locationStatus" style="color: #a0aec0; font-size: 0.9rem; text-align: right;">📍 Detecting your location...</div>
                 </div>
-                <div id="routeTargetButtons" style="display: flex; flex-wrap: wrap; gap: 10px;">
-                  <button id="routeToDestinationBtn" type="button" onclick="setItineraryRouteTarget('destination')" style="border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.08); color: white; padding: 10px 16px; border-radius: 10px; cursor: pointer;">Route to destination</button>
-                  <button id="routeToHotelBtn" type="button" onclick="setItineraryRouteTarget('hotel')" style="border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.08); color: white; padding: 10px 16px; border-radius: 10px; cursor: pointer; opacity: 0.6;" disabled>Route to selected hotel</button>
+                <div id="routeTargetButtons" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center;">
+                  <button id="routeToDestinationBtn" type="button" onclick="setItineraryRouteTarget('destination')" style="border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.08); color: white; padding: 10px 16px; border-radius: 10px; cursor: pointer; min-width: 220px;">Route to destination</button>
+                  <button id="routeToHotelBtn" type="button" onclick="setItineraryRouteTarget('hotel')" style="border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.08); color: white; padding: 10px 16px; border-radius: 10px; cursor: pointer; opacity: 0.6; min-width: 220px;" disabled>Route to selected hotel</button>
                 </div>
               </div>
               <div id="itineraryRouteMap" style="width: 100%; height: 360px; border-radius: 12px; background: #1a1a2e; overflow: hidden;"></div>
+              <div id="routeDetailsCard" style="display:none; margin-top: 18px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 18px; color: white; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);"></div>
             </div>
 
             <!-- Weather -->
@@ -3280,7 +3281,7 @@ const accommodationData = {
       name: 'Hotel St. Ellis',
       location: 'Rizal Street',
       distance: '~5.5 km',
-      transport: { tricycle: '12–15 mins, ₱100–150', jeepney: 'N/A', taxi: '15 mins, ₱150–200', car: '15 mins, ₱150–200', van: '15 mins, ₱150–200', motorcycle: '12 mins, ₱100–150', bike: '20–25 mins', bus: 'N/A' }
+      transport: { tricycle: '12–15 mins, ₱100–150', jeepney: '15 mins, ₱15–20', taxi: '15 mins, ₱150–200', car: '15 mins, ₱150–200', van: '15 mins, ₱150–200', motorcycle: '12 mins, ₱100–150', bike: '20–25 mins', bus: 'N/A' }
     },
     {
       name: 'The Marison Hotel',
@@ -3380,6 +3381,96 @@ const itineraryHotelCoords = {
   'Proxy by The Oriental Albay': { lat: 13.154395870049788, lon: 123.75177922023975 },
   'Emerald Boutique Hotel': { lat: 13.13736197712241, lon: 123.7353493644178 }
 };
+
+function getHotelImage(hotelName) {
+  const images = {
+    'Alicia Hotel': 'https://via.placeholder.com/400x240?text=Alicia+Hotel',
+    'Lotus Blu Hotel': 'https://via.placeholder.com/400x240?text=Lotus+Blu+Hotel',
+    'Hotel Venezia': 'https://via.placeholder.com/400x240?text=Hotel+Venezia',
+    'The Marison Hotel': 'https://via.placeholder.com/400x240?text=The+Marison+Hotel',
+    'Hotel Sentro Legazpi': 'https://via.placeholder.com/400x240?text=Hotel+Sentro+Legazpi',
+    'Hotel St. Ellis': 'https://via.placeholder.com/400x240?text=Hotel+St.+Ellis',
+    'Proxy by The Oriental Albay': 'https://via.placeholder.com/400x240?text=Proxy+by+The+Oriental+Albay',
+    'Emerald Boutique Hotel': 'https://via.placeholder.com/400x240?text=Emerald+Boutique+Hotel'
+  };
+  return images[hotelName] || 'https://via.placeholder.com/400x240?text=Hotel';
+}
+
+function getRouteItemImage(target, itemName) {
+  if (target === 'hotel') return getHotelImage(itemName);
+  return destinationData[itemName]?.image || 'https://via.placeholder.com/400x240?text=Destination';
+}
+
+function showRouteDetailsCard(target, itemName, details = {}) {
+  const card = document.getElementById('routeDetailsCard');
+  if (!card) return;
+
+  let html = '';
+  if (target === 'origin') {
+    const coords = details.lat && details.lon ? `${details.lat.toFixed(5)}, ${details.lon.toFixed(5)}` : 'Unknown';
+    const accuracy = details.accuracy != null ? `${Math.round(details.accuracy)} m` : 'unknown';
+    const routeName = details.routeName ? `towards ${details.routeName}` : 'for your route';
+
+    html = `
+      <div style="display:flex; flex-wrap:wrap; gap:16px; align-items:flex-start;">
+        <div style="flex:1; min-width:220px;">
+          <h4 style="margin:0 0 10px 0; color:#ffcc00;">📍 Your Current Location</h4>
+          <p style="margin:0 0 8px 0; color:#e2e8f0;">Coordinates: ${coords}</p>
+          <p style="margin:0 0 8px 0; color:#e2e8f0;">Accuracy: ${accuracy}</p>
+          <p style="margin:0 0 8px 0; color:#a0aec0;">This is the origin point ${routeName}.</p>
+        </div>
+        <div style="flex:1; min-width:220px; background: rgba(255,255,255,0.06); padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.12);">
+          <h5 style="margin:0 0 10px 0; color:#fff;">Route Overview</h5>
+          <p style="margin:0 0 6px 0; color:#e2e8f0;">Distance: ${details.distance ? formatDistanceKM(details.distance) : 'N/A'}</p>
+          <p style="margin:0 0 6px 0; color:#e2e8f0;">Duration: ${details.duration ? formatDurationMin(details.duration) : 'N/A'}</p>
+          ${details.fares ? `
+            <div style="margin-top:10px;">
+              <div style="font-size: 12px; color: #cbd5e1; margin-bottom: 6px;">Fair pricing estimate:</div>
+              <ul style="margin:0; padding-left:18px; color:#e2e8f0; font-size:13px; line-height:1.5;">
+                <li>🚜 Tricycle: ₱${details.fares.tricycle}</li>
+                <li>🚕 Taxi: ₱${details.fares.taxi}</li>
+                <li>🚐 Jeepney: ₱${details.fares.jeepney}</li>
+              </ul>
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  } else {
+    const isHotel = target === 'hotel';
+    const title = isHotel ? `Hotel: ${itemName}` : `Destination: ${itemName}`;
+    const description = isHotel
+      ? selectedAccommodation?.location || 'Selected hotel on your route.'
+      : destinationData[itemName]?.description || 'Selected destination on your route.';
+
+    html = `
+      <div style="display:flex; flex-wrap:wrap; gap:16px; align-items:center;">
+        <img src="${getRouteItemImage(target, itemName)}" alt="${title}" style="width: 260px; height: 160px; object-fit: cover; border-radius: 14px; border: 1px solid rgba(255,255,255,0.12);" />
+        <div style="flex:1; min-width:220px;">
+          <h4 style="margin:0 0 10px 0; color:#ffcc00;">${title}</h4>
+          <p style="margin:0 0 10px 0; color:#e2e8f0; line-height: 1.5;">${description}</p>
+          <div style="background: rgba(255,255,255,0.06); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.12);">
+            <p style="margin:0 0 6px 0; color:#e2e8f0;">Distance: ${details.distance ? formatDistanceKM(details.distance) : 'N/A'}</p>
+            <p style="margin:0 0 6px 0; color:#e2e8f0;">Duration: ${details.duration ? formatDurationMin(details.duration) : 'N/A'}</p>
+            ${details.fares ? `
+              <div style="margin-top:10px;">
+                <div style="font-size: 12px; color: #cbd5e1; margin-bottom: 6px;">Fair pricing estimate:</div>
+                <ul style="margin:0; padding-left:18px; color:#e2e8f0; font-size:13px; line-height:1.5;">
+                  <li>🚜 Tricycle: ₱${details.fares.tricycle}</li>
+                  <li>🚕 Taxi: ₱${details.fares.taxi}</li>
+                  <li>🚐 Jeepney: ₱${details.fares.jeepney}</li>
+                </ul>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  card.innerHTML = html;
+  card.style.display = 'block';
+}
 
 function getItineraryWeatherCondition(code) {
   if (code === 0) return { text: 'Clear', icon: '☀️', recommendation: 'Great day for outdoor activities.' };
@@ -3751,9 +3842,11 @@ async function populateItineraryResults() {
   // Route
   itineraryRouteTarget = 'destination';
   updateRouteButtons();
-  document.getElementById('routeInfo').textContent = 'Rendering your route, please wait...';
-  document.getElementById('routePanel').style.display = 'block';
-  await renderItineraryRoute('destination');
+  document.getElementById('routeInfo').textContent = 'Please select a hotel first to display your route.';
+  document.getElementById('routePanel').style.display = 'none';
+  if (typeof clearItineraryRouteMap === 'function') {
+    clearItineraryRouteMap();
+  }
 
   document.getElementById('weatherList').innerHTML = `
     <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; border-left: 4px solid #667eea; display: flex; align-items: center; justify-content: center; min-height: 70px;">
@@ -3851,16 +3944,15 @@ function selectAccommodation(hotelName, hotelLocation) {
   const hotelImgEl = document.getElementById('summaryHotelImage');
   if (hotelImgEl) hotelImgEl.src = getHotelImage(hotelName);
   
-  // Route to selected hotel if the itinerary results are shown
+  // Route to selected hotel
   itineraryRouteTarget = 'hotel';
-  updateRouteButtons();
   const routeInfoEl = document.getElementById('routeInfo');
-  if (document.getElementById('routePanel')?.style.display === 'block') {
-    if (routeInfoEl) {
-      routeInfoEl.innerHTML = `Updating route to <strong>${hotelName}</strong>... <span style="opacity:0.75;">Loading</span>`;
-    }
-    renderItineraryRoute('hotel').catch(err => console.warn('Hotel route update failed', err));
+  document.getElementById('routePanel').style.display = 'block';
+  if (routeInfoEl) {
+    routeInfoEl.innerHTML = `Rendering route to <strong>${hotelName}</strong>...`;
   }
+  updateRouteButtons();
+  renderItineraryRoute('hotel').catch(err => console.warn('Hotel route update failed', err));
 
   // Refresh hotel display to show selection state
   const hotels = accommodationData[currentDestination] || [];
@@ -4653,14 +4745,20 @@ async function renderItineraryRoute(target = 'destination') {
   if (!routeInfoEl || !mapContainer) return;
 
   const loc = await refreshUserLocation();
-  const origin = loc.lat && loc.lon ? loc : { lat: 13.112621547653507, lon: 123.75351323035586 };
-  const originName = getLocationName(origin.lat, origin.lon) || (origin.fromDefault ? 'Legazpi City' : 'Your Location');
+  const origin = loc.lat && loc.lon ? loc : { lat: 13.112621547653507, lon: 123.75351323035586, fromDefault: true };
+  const originName = origin.fromDefault ? 'Legazpi City' : 'Your Location';
 
   itineraryRouteTarget = target;
   updateRouteButtons();
 
   let destinationName = currentDestination;
   let destCoords = itineraryDestinationCoords[currentDestination];
+
+  const routeDetailsCard = document.getElementById('routeDetailsCard');
+  if (routeDetailsCard) {
+    routeDetailsCard.style.display = 'none';
+    routeDetailsCard.innerHTML = '';
+  }
 
   if (target === 'hotel' && selectedAccommodation && itineraryHotelCoords[selectedAccommodation.name]) {
     destinationName = selectedAccommodation.name;
@@ -4696,15 +4794,18 @@ async function renderItineraryRoute(target = 'destination') {
 
     const route = data.routes[0];
     const coords = route.geometry.coordinates.map(pt => [pt[1], pt[0]]);
+    const fares = calculateFare(route.distance / 1000);
     itineraryRouteLayer = L.polyline(coords, { color: '#ff7a18', weight: 6, opacity: 0.9 }).addTo(itineraryRouteMap);
 
     const originMarker = L.circleMarker([origin.lat, origin.lon], {
-      radius: 8,
+      radius: 10,
       fillColor: '#3498db',
       color: '#fff',
       weight: 2,
       fillOpacity: 1
-    }).addTo(itineraryRouteMap).bindPopup(`<strong>${originName}</strong>`);
+    }).addTo(itineraryRouteMap)
+      .bindPopup('<strong>Your Location</strong>')
+      .bindTooltip('Your Location', { permanent: true, direction: 'top', opacity: 0.85 });
     const destMarker = L.circleMarker([destCoords.lat, destCoords.lon], {
       radius: 8,
       fillColor: '#ff7a18',
@@ -4712,6 +4813,29 @@ async function renderItineraryRoute(target = 'destination') {
       weight: 2,
       fillOpacity: 1
     }).addTo(itineraryRouteMap).bindPopup(`<strong>${destinationName}</strong>`);
+
+    originMarker.on('click', () => {
+      if (routeDetailsCard) {
+        showRouteDetailsCard('origin', originName, {
+          lat: origin.lat,
+          lon: origin.lon,
+          accuracy: origin.accuracy,
+          routeName: destinationName,
+          distance: route.distance,
+          duration: route.duration,
+          fares
+        });
+      }
+      routeInfoEl.textContent = '📍 Your current location';
+      originMarker.openPopup();
+    });
+    destMarker.on('click', () => showRouteDetailsCard(target, destinationName, {
+      distance: route.distance,
+      duration: route.duration,
+      fares
+    }));
+
+    originMarker.openPopup();
 
     itineraryRouteMarkers.push(originMarker, destMarker);
     const bounds = itineraryRouteLayer.getBounds();
@@ -4731,16 +4855,35 @@ if (document.readyState === 'loading') {
   initializeGeolocation();
 }
 
+function setRouteButtonLoading(target, isLoading) {
+  const destBtn = document.getElementById('routeToDestinationBtn');
+  const hotelBtn = document.getElementById('routeToHotelBtn');
+  if (!destBtn || !hotelBtn) return;
+
+  const button = target === 'hotel' ? hotelBtn : destBtn;
+  if (isLoading) {
+    button.dataset.originalText = button.textContent;
+    button.textContent = 'Loading...';
+    button.disabled = true;
+    button.style.cursor = 'progress';
+    button.style.opacity = '0.9';
+  } else {
+    button.textContent = button.dataset.originalText || button.textContent;
+    button.style.cursor = 'pointer';
+    updateRouteButtons();
+  }
+}
+
 function updateRouteButtons() {
   const destBtn = document.getElementById('routeToDestinationBtn');
   const hotelBtn = document.getElementById('routeToHotelBtn');
   if (!destBtn || !hotelBtn) return;
 
-  destBtn.disabled = false;
-  destBtn.style.opacity = itineraryRouteTarget === 'destination' ? '1' : '0.8';
+  const hotelRouteAvailable = selectedAccommodation && itineraryHotelCoords[selectedAccommodation.name];
+  destBtn.disabled = !hotelRouteAvailable;
+  destBtn.style.opacity = hotelRouteAvailable ? (itineraryRouteTarget === 'destination' ? '1' : '0.8') : '0.45';
   destBtn.style.fontWeight = itineraryRouteTarget === 'destination' ? '700' : '500';
 
-  const hotelRouteAvailable = selectedAccommodation && itineraryHotelCoords[selectedAccommodation.name];
   hotelBtn.disabled = !hotelRouteAvailable;
   hotelBtn.style.opacity = hotelRouteAvailable ? (itineraryRouteTarget === 'hotel' ? '1' : '0.8') : '0.45';
   hotelBtn.style.fontWeight = itineraryRouteTarget === 'hotel' ? '700' : '500';
@@ -4748,12 +4891,16 @@ function updateRouteButtons() {
 }
 
 function setItineraryRouteTarget(target) {
-  itineraryRouteTarget = target;
-  updateRouteButtons();
   if (target === 'hotel' && (!selectedAccommodation || !itineraryHotelCoords[selectedAccommodation.name])) {
     return;
   }
-  renderItineraryRoute(target).catch(err => console.warn('Route update failed', err));
+
+  itineraryRouteTarget = target;
+  updateRouteButtons();
+  setRouteButtonLoading(target, true);
+  renderItineraryRoute(target)
+    .catch(err => console.warn('Route update failed', err))
+    .finally(() => setRouteButtonLoading(target, false));
 }
 
 document.getElementById('destinationsDropdown')?.addEventListener('change', function() {
