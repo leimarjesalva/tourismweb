@@ -309,7 +309,6 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
               <div id="selectedEventCardContent" style="font-size:0.83rem; color:#e5e7eb; line-height:1.3;"></div>
             </div>
-            <div id="heatmapWarning" style="display:none; position:absolute; top: 12px; left: 12px; background: rgba(222, 68, 68, 0.92); color: #fff; padding: 8px 12px; border-radius: 8px; font-size: 0.82rem; z-index: 1100;">⚠️ No heatmap data available</div>
             <div id="eventRiskLegend" style="position:absolute; top: 12px; right: 12px; background: rgba(15, 23, 42, 0.84); border: 1px solid rgba(255,255,255,0.18); color: #fff; padding: 12px; border-radius: 10px; font-size: 0.78rem; z-index: 1100;">
               <strong>Risk Levels</strong>
               <div style="display:flex; gap: 6px; align-items:center; margin-top:6px;"><span style="width:10px;height:10px;border-radius:50%;background:#4caf50;border: 0;box-shadow:none;filter:none;"></span>Low (≤60%)</div>
@@ -682,16 +681,6 @@ function saveRiskLevelToDatabase(level) {
     }
   })
   .catch(err => console.warn('⚠️ Database save error:', err));
-}
-
-function handleNoHeatmapData() {
-  const msg = '⚠️ No heatmap data available';
-  console.warn(msg);
-  const warningNode = document.getElementById('heatmapWarning');
-  if (warningNode) {
-    warningNode.textContent = msg;
-    warningNode.style.display = 'block';
-  }
 }
 
 // Initialize map showing all event locations
@@ -1135,8 +1124,6 @@ function initializeEventsMap(events) {
       console.log('🔥 Event route+location heat view active; skipping legacy heatmap layer.');
       // Route and location heat are already rendered inline during event + route plotting.
       // Keep this block for debug and analytics only.
-    } else {
-      handleNoHeatmapData();
     }
     
     console.log('✅ plotEvents complete: plotted', plotCount, 'out of', list.length, 'events');
