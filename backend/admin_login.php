@@ -28,8 +28,11 @@ try {
         exit;
     }
     
-    // Verify credentials against constants
-    if ($user === ADMIN_USER && $pass === ADMIN_PASS) {
+    // Verify credentials securely
+    $username_ok = hash_equals(ADMIN_USER, $user);
+    $password_ok = password_verify($pass, ADMIN_PASS_HASH);
+
+    if ($username_ok && $password_ok) {
         $_SESSION['is_admin'] = true;
         $_SESSION['admin_user'] = $user;
         http_response_code(200);

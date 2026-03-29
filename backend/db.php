@@ -18,8 +18,8 @@ define('DB_NAME', getenv('MYSQLDATABASE') ?: 'capstone_db');
 define('DB_PORT', getenv('MYSQLPORT') ?: 3306);
 
 
-define('ADMIN_USER', 'admin');
-define('ADMIN_PASS', 'admin123');
+define('ADMIN_USER', 'legazpiexploreradmin');
+define('ADMIN_PASS_HASH', '$2y$10$tV7PPVyJofffYvJIOMXYfO0.Regc1lr17RuRIi3fxplY2dUrNsrvO');
 
 
 define('GOOGLE_CLIENT_ID', '592851137026-ojducpgk2od9rvtob47sn5k5fktqvi6h.apps.googleusercontent.com');
