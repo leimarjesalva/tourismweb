@@ -3396,6 +3396,115 @@ async function fetchItineraryWeather(destination) {
   }];
 }
 
+const itineraryActivityTemplates = {
+  'Lignon Hill': {
+    clear: [
+      { title: 'Sunrise at the Viewpoint', details: 'Start early and capture the Mayon Volcano glow from Lignon Hill.' },
+      { title: 'Nature Walk & Photo Stops', details: 'Hike the park trails and enjoy scenic overlooks with local snacks.' },
+      { title: 'Lunch at a Garden Café', details: 'Relax at a nearby café with mountain views and fresh local food.' },
+      { title: 'Sunset Panorama', details: 'End the day with sunset views across the city and volcano.' }
+    ],
+    rainy: [
+      { title: 'Indoor Heritage Museum', details: 'Visit nearby indoor exhibits to learn local culture without getting wet.' },
+      { title: 'Local Café Experience', details: 'Try warm coffee and Filipino pastries at a cozy café.' },
+      { title: 'Craft Shopping', details: 'Browse local handicraft stores in the city center.' },
+      { title: 'Relax at the Hotel Lounge', details: 'Spend a slow afternoon planning the next dry day.' }
+    ]
+  },
+  'Embarcadero de Legazpi': {
+    clear: [
+      { title: 'Waterfront Walk', details: 'Stroll along the pier, watch boats, and soak in sea breeze.' },
+      { title: 'Boat Cruise', details: 'Take a short cruise around the harbor for coastal views.' },
+      { title: 'Seafood Lunch', details: 'Enjoy fresh seafood at a waterfront restaurant.' },
+      { title: 'Night Market Visit', details: 'Browse local stalls after sundown for snacks and souvenirs.' }
+    ],
+    rainy: [
+      { title: 'Indoor Mall & Dining', details: 'Explore nearby covered shopping and eat at the plaza.' },
+      { title: 'Gourmet Café Break', details: 'Relax inside with coffee and desserts.' },
+      { title: 'Aquarium or Art Space', details: 'Visit a local exhibition space or indoor attraction.' },
+      { title: 'Movie or Board Games', details: 'Choose a relaxed indoor activity if the rain persists.' }
+    ]
+  },
+  'Albay Park & Wildlife': {
+    clear: [
+      { title: 'Wildlife Viewing', details: 'Explore the animal park and bird watching areas.' },
+      { title: 'Eco Trail Walk', details: 'Walk the trails and learn about local flora and fauna.' },
+      { title: 'Picnic Lunch', details: 'Have lunch at a scenic spot inside the park.' },
+      { title: 'Nature Photography', details: 'Capture the green landscapes and animal exhibits.' }
+    ],
+    rainy: [
+      { title: 'Indoor Exhibit Halls', details: 'Visit the park’s indoor wildlife and conservation exhibits.' },
+      { title: 'Farm-to-Table Lunch', details: 'Enjoy fresh food at a sheltered restaurant nearby.' },
+      { title: 'Local Craft Workshops', details: 'Join a short indoor hands-on activity.' },
+      { title: 'Rest & Refresh', details: 'Spend a relaxing afternoon in a covered lounge area.' }
+    ]
+  },
+  'Highlands Park Legazpi City': {
+    clear: [
+      { title: 'Park Garden Tour', details: 'Wander the manicured gardens and lookout points.' },
+      { title: 'Relax at the Pavilion', details: 'Enjoy panoramic views from the elevated park terrace.' },
+      { title: 'Outdoor Picnic', details: 'Have lunch with scenic mountain vistas.' },
+      { title: 'Sunset Viewpoint', details: 'Finish with sunset photography and city lights.' }
+    ],
+    rainy: [
+      { title: 'Cultural Center Visit', details: 'Explore nearby indoor cultural exhibits and displays.' },
+      { title: 'Covered Café Time', details: 'Sip coffee while watching the rain outside.' },
+      { title: 'Shopping Arcade', details: 'Browse nearby covered shops and local boutiques.' },
+      { title: 'Spa or Massage', details: 'Treat yourself to a relaxing indoor spa experience.' }
+    ]
+  },
+  'Nuestra Senora de Salvacion': {
+    clear: [
+      { title: 'Heritage Church Tour', details: 'Visit the historic church and learn about its architecture.' },
+      { title: 'Old Town Walk', details: 'Walk the heritage streets near the church.' },
+      { title: 'Local Food Tasting', details: 'Try traditional snacks at nearby eateries.' },
+      { title: 'Cultural Photo Stops', details: 'Capture the church and surrounding landmarks in the afternoon light.' }
+    ],
+    rainy: [
+      { title: 'Church Interior Visit', details: 'Enjoy the peaceful atmosphere inside the historic church.' },
+      { title: 'Nearby Museum Stop', details: 'Visit a local museum or gallery if the weather turns bad.' },
+      { title: 'Warm Meal at a Café', details: 'Have comfort food at a nearby café.' },
+      { title: 'Indoor Heritage Talk', details: 'Learn local history through a guided indoor tour.' }
+    ]
+  },
+  'SEVENTY-SIX Farm': {
+    clear: [
+      { title: 'Farm Tour', details: 'Take a guided tour of the fields and gardens.' },
+      { title: 'Harvest Experience', details: 'Pick fresh produce and learn about farm life.' },
+      { title: 'Outdoor Lunch', details: 'Enjoy a farm-to-table meal in a garden setting.' },
+      { title: 'Animal Interaction', details: 'Meet farm animals and learn about local agriculture.' }
+    ],
+    rainy: [
+      { title: 'Farm Shop Visit', details: 'Explore indoor farm shops and local product displays.' },
+      { title: 'Cooking Demo', details: 'Join a covered cooking or food preparation demo.' },
+      { title: 'Local Craft Experience', details: 'Try a guided indoor craft or food workshop.' },
+      { title: 'Relaxing Farm Café', details: 'Spend the afternoon in a sheltered café with views of the farm.' }
+    ]
+  }
+};
+
+function getItineraryWeatherCategory(condition) {
+  const c = (condition || '').toLowerCase();
+  if (c.includes('rain') || c.includes('drizzle') || c.includes('thunder')) return 'rainy';
+  if (c.includes('cloud') || c.includes('fog') || c.includes('mist')) return 'cloudy';
+  return 'clear';
+}
+
+function getItineraryDayPlans(destination, category, days) {
+  const templates = itineraryActivityTemplates[destination] || itineraryActivityTemplates['Lignon Hill'];
+  const pool = templates[category] || templates.clear;
+  const plans = [];
+  for (let i = 0; i < days; i++) {
+    const activity = pool[i % pool.length];
+    plans.push({
+      day: i + 1,
+      title: activity.title,
+      details: activity.details
+    });
+  }
+  return plans;
+}
+
 // Initialize destination carousel
 function initDestinationCarousel() {
   const carousel = document.getElementById('destinationCarousel');
@@ -3590,16 +3699,23 @@ async function populateItineraryResults() {
   }).join('');
 
   
-  // Day-by-day activities
-  const activities = [];
-  for (let i = 1; i <= selectedDays; i++) {
-    activities.push(`
-      <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; cursor: pointer; border-left: 4px solid #667eea; transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
-        <div style="color: #ff7a18; font-weight: 700; margin-bottom: 4px;">Day ${i}</div>
-        <div style="color: #a0aec0; font-size: 0.9rem;">8:00 AM - Breakfast & Hotel checkout<br>9:00 AM - Visit ${currentDestination}</div>
-      </div>
-    `);;
+  // Day-by-day activities are generated after weather is fetched, so recommendations match current conditions.
+  let weatherData = null;
+  try {
+    weatherData = await fetchItineraryWeather(currentDestination);
+  } catch (e) {
+    console.warn('Day-by-day weather fetch failed:', e);
   }
+
+  const weatherCondition = weatherData?.[0]?.condition || 'Clear';
+  const weatherCategory = getItineraryWeatherCategory(weatherCondition);
+  const dayPlans = getItineraryDayPlans(currentDestination, weatherCategory, selectedDays);
+  const activities = dayPlans.map(plan => `
+    <div style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 10px; cursor: pointer; border-left: 4px solid #667eea; transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.05)';">
+      <div style="color: #ff7a18; font-weight: 700; margin-bottom: 8px;">Day ${plan.day}: ${plan.title}</div>
+      <div style="color: #a0aec0; font-size: 0.9rem; line-height: 1.6;">${plan.details}</div>
+    </div>
+  `);
   document.getElementById('dayByDayActivities').innerHTML = activities.join('');
   // make each day card clickable so the destination name/description can be viewed
   document.querySelectorAll('#dayByDayActivities > div').forEach(el => {
@@ -3627,7 +3743,9 @@ async function populateItineraryResults() {
   `;
 
   try {
-    const weatherData = await fetchItineraryWeather(currentDestination);
+    if (!weatherData) {
+      weatherData = await fetchItineraryWeather(currentDestination);
+    }
     if (weatherData && weatherData.length > 0) {
       const day = weatherData[0];
       const tempColor = day.currentTemp > 28 ? '#e74c3c' : (day.currentTemp > 20 ? '#f39c12' : '#3498db');
