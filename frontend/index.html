@@ -1046,58 +1046,39 @@ function initializeEventsMap(events) {
         intensity: Math.min(1, Math.max(0.05, occupancy / 100))
       });
 
-      // === CREATE RISK ZONE CIRCLE (LEAFLET) ===
       const waste = ev.prediction && ev.prediction.waste_prediction ? Math.round(ev.prediction.waste_prediction) : Math.round((visitors / 50000) * 2900);
       const trafficHours = Math.min(10, Math.max(1, Math.round(occupancy / 10))); // Estimate traffic peak hours based on occupancy
       
-      // Make event risk-zone circle non-interactive so marker clicks are always received
-      const circle = L.circle([lat, lng], {
-        color: riskColor,
-        fillColor: riskColor,
-        fillOpacity: 0.25,
-        weight: 3,
-        radius: markerRadius,
-        interactive: false
-      }).addTo(map);
+      // Create a single circle marker for the event.
+      const markerRadius = Math.max(10, Math.min(16, 8 + Math.round(occupancy / 15)));
       
-      // === CREATE LEAFLET MARKER WITH EMOJI ===
       try {
         const marker = L.circleMarker([lat, lng], {
-          radius: 10,
+          radius: markerRadius,
           fillColor: riskColor,
           color: riskColor,
           weight: 1,
           opacity: 1,
-          fillOpacity: 1
-        }).addTo(map);        
+          fillOpacity: 0.9
+        }).addTo(map);
         // Add emoji tooltip
         marker.bindTooltip(riskEmoji, {
           permanent: true,
           direction: 'center'
         });
-
-        // Add location heat glow around event marker (indicates density on place)
-        L.circle([lat, lng], {
-          radius: Math.max(120, 70 + occupancy * 2),
-          color: riskColor,
-          fillColor: riskColor,
-          fillOpacity: 0.16,
-          weight: 0,
-          interactive: false
-        }).addTo(map);
         
         // Click effects (no hover). Use selected card only; remove default Leaflet popup border line.
         marker.on('click', (e) => {
           if (e && e.originalEvent) {
             L.DomEvent.stopPropagation(e);
           }
-          circle.setStyle({ fillOpacity: 0.4, weight: 4 });
+          marker.setStyle({ fillOpacity: 0.4, weight: 4 });
           marker.bringToFront();
           showSelectedEventCard(ev, occupancy, visitors, waste, riskLabel);
         });
 
         marker.on('popupclose', () => {
-          circle.setStyle({ fillOpacity: 0.25, weight: 2 });
+          marker.setStyle({ fillOpacity: 0.9, weight: 1 });
           // optional: keep selected event card visible until map click
         });
         
