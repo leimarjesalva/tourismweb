@@ -1499,75 +1499,164 @@ function renderCommunityCharts(events, mlPredData) {
           bounds.extend([endLat, endLng]);
         }
         
-        // Draw route line if both points exist (OSRM routing)
-        if (hasStartCoords && hasEndCoords && typeof L.Routing !== 'undefined') {
-          console.log('🔵 ROUTE TRIGGER: Drawing OSRM route for', event.title);
-          const routeControl = L.Routing.control({
-            waypoints: [
-              L.latLng(parseFloat(startLat), parseFloat(startLng)),
-              L.latLng(parseFloat(endLat), parseFloat(endLng))
-            ],
-            routeWhileDragging: false,
-            router: L.Routing.osrmv1({
-              serviceUrl: 'https://router.project-osrm.org/route/v1'
-            }),
-            lineOptions: {
-              styles: [{ color: '#FF4444', weight: 4 }]
-            },
-            show: true,
-            addWaypoints: false,
-            fitSelectedRoutes: true,
-            createMarker: function(i, waypoint, n) {
-              const icon = L.divIcon({
-                html: i === 0 ? '🟢' : '🔴',
-                className: 'custom-marker'
+        // Draw route line if both points exist (OSRM routing with fallback)
+        if (hasStartCoords && hasEndCoords) {
+          if (typeof L.Routing !== 'undefined') {
+            console.log('🔵 ROUTE TRIGGER: Drawing OSRM route for', event.title);
+            let osrmFailed = false;
+            try {
+              const routeControl = L.Routing.control({
+                waypoints: [
+                  L.latLng(parseFloat(startLat), parseFloat(startLng)),
+                  L.latLng(parseFloat(endLat), parseFloat(endLng))
+                ],
+                routeWhileDragging: false,
+                router: L.Routing.osrmv1({
+                  serviceUrl: 'https://router.project-osrm.org/route/v1'
+                }),
+                lineOptions: {
+                  styles: [{ color: '#FF4444', weight: 4 }]
+                },
+                show: true,
+                addWaypoints: false,
+                fitSelectedRoutes: true,
+                createMarker: function(i, waypoint, n) {
+                  const icon = L.divIcon({
+                    html: i === 0 ? '🟢' : '🔴',
+                    className: 'custom-marker'
+                  });
+                  return L.marker(waypoint.latLng, { icon });
+                }
+              }).addTo(eventRouteMap);
+
+              // Add a close button and toggle control so users can show/hide routing instructions
+              const routingContainer = routeControl.getContainer && routeControl.getContainer();
+              const toggleBtn = document.getElementById(`routeToggleBtn-${index}`);
+
+              if (routingContainer) {
+                const closeBtn = document.createElement('button');
+                closeBtn.className = 'route-control-close';
+                closeBtn.type = 'button';
+                closeBtn.title = 'Close route instructions';
+                closeBtn.textContent = '×';
+
+                const setRoutingVisible = (visible) => {
+                  routingContainer.style.display = visible ? '' : 'none';
+                  if (toggleBtn) toggleBtn.textContent = visible ? 'Hide directions' : 'Show directions';
+                };
+
+                closeBtn.addEventListener('click', () => {
+                  setRoutingVisible(false);
+                });
+
+                if (toggleBtn) {
+                  toggleBtn.addEventListener('click', () => {
+                    const isHidden = routingContainer.style.display === 'none';
+                    setRoutingVisible(isHidden);
+                  });
+                }
+
+                routingContainer.appendChild(closeBtn);
+
+                // Start visible, but allow user to toggle
+                setRoutingVisible(true);
+              } else if (toggleBtn) {
+                // If routing container isn't available, hide the toggle button
+                toggleBtn.style.display = 'none';
+              }
+              // Listen for routing errors and fallback to polyline
+              routeControl.on('routingerror', function() {
+                if (!osrmFailed) {
+                  osrmFailed = true;
+                  eventRouteMap.eachLayer(function(layer) {
+                    if (layer instanceof L.Polyline || layer instanceof L.Marker) {
+                      eventRouteMap.removeLayer(layer);
+                    }
+                  });
+                  // Redraw start/end markers
+                  if (hasStartCoords) {
+                    L.circleMarker([startLat, startLng], {
+                      radius: 10,
+                      fillColor: '#4caf50',
+                      color: '#4caf50',
+                      weight: 0,
+                      opacity: 1,
+                      fillOpacity: 1
+                    })
+                    .bindTooltip('Event Start Point', {permanent: true, direction: 'center'})
+                    .bindPopup('🟢 Event Start Point')
+                    .addTo(eventRouteMap);
+                  }
+                  if (hasEndCoords) {
+                    L.circleMarker([endLat, endLng], {
+                      radius: 10,
+                      fillColor: '#e74c3c',
+                      color: '#e74c3c',
+                      weight: 0,
+                      opacity: 1,
+                      fillOpacity: 1
+                    })
+                    .bindTooltip('Event End Point', {permanent: true, direction: 'center'})
+                    .bindPopup('🔴 Event End Point')
+                    .addTo(eventRouteMap);
+                  }
+                  // Draw fallback polyline
+                  L.polyline([
+                    [startLat, startLng],
+                    [endLat, endLng]
+                  ], {
+                    color: '#FF4444',
+                    weight: 4,
+                    dashArray: '8, 8',
+                    opacity: 0.7
+                  }).addTo(eventRouteMap);
+                  eventRouteMap.fitBounds(L.latLngBounds([
+                    [startLat, startLng],
+                    [endLat, endLng]
+                  ]), {padding: [50, 50]});
+                  if (toggleBtn) toggleBtn.style.display = 'none';
+                  console.warn('⚠️ OSRM routing failed, fallback polyline drawn.');
+                }
               });
-              return L.marker(waypoint.latLng, { icon });
+            } catch (err) {
+              osrmFailed = true;
+              console.warn('⚠️ OSRM routing threw error, drawing fallback polyline:', err);
             }
-          }).addTo(eventRouteMap);
-
-          // Add a close button and toggle control so users can show/hide routing instructions
-          const routingContainer = routeControl.getContainer && routeControl.getContainer();
-          const toggleBtn = document.getElementById(`routeToggleBtn-${index}`);
-
-          if (routingContainer) {
-            const closeBtn = document.createElement('button');
-            closeBtn.className = 'route-control-close';
-            closeBtn.type = 'button';
-            closeBtn.title = 'Close route instructions';
-            closeBtn.textContent = '×';
-
-            const setRoutingVisible = (visible) => {
-              routingContainer.style.display = visible ? '' : 'none';
-              if (toggleBtn) toggleBtn.textContent = visible ? 'Hide directions' : 'Show directions';
-            };
-
-            closeBtn.addEventListener('click', () => {
-              setRoutingVisible(false);
-            });
-
-            if (toggleBtn) {
-              toggleBtn.addEventListener('click', () => {
-                const isHidden = routingContainer.style.display === 'none';
-                setRoutingVisible(isHidden);
-              });
+            // If OSRM failed immediately, draw fallback polyline
+            if (osrmFailed) {
+              L.polyline([
+                [startLat, startLng],
+                [endLat, endLng]
+              ], {
+                color: '#FF4444',
+                weight: 4,
+                dashArray: '8, 8',
+                opacity: 0.7
+              }).addTo(eventRouteMap);
+              eventRouteMap.fitBounds(L.latLngBounds([
+                [startLat, startLng],
+                [endLat, endLng]
+              ]), {padding: [50, 50]});
             }
-
-            routingContainer.appendChild(closeBtn);
-
-            // Start visible, but allow user to toggle
-            setRoutingVisible(true);
-          } else if (toggleBtn) {
-            // If routing container isn't available, hide the toggle button
-            toggleBtn.style.display = 'none';
+          } else {
+            // If L.Routing is not available, fallback to polyline
+            L.polyline([
+              [startLat, startLng],
+              [endLat, endLng]
+            ], {
+              color: '#FF4444',
+              weight: 4,
+              dashArray: '8, 8',
+              opacity: 0.7
+            }).addTo(eventRouteMap);
+            eventRouteMap.fitBounds(L.latLngBounds([
+              [startLat, startLng],
+              [endLat, endLng]
+            ]), {padding: [50, 50]});
+            const toggleBtn = document.getElementById(`routeToggleBtn-${index}`);
+            if (toggleBtn) toggleBtn.style.display = 'none';
+            console.warn('⚠️ L.Routing not available, fallback polyline drawn.');
           }
-        } else if (hasStartCoords && hasEndCoords) {
-          // POLYLINE DISABLED - Only showing circle heatmap visualization
-          // (Removed route polylines for cleaner event detail maps)
-          console.log('✅ Route coordinates available for', event.title);
-          
-          bounds.extend([startLat, startLng]);
-          bounds.extend([endLat, endLng]);
         } else {
           console.log('⏭️ SKIPPING ROUTE - Coords missing:', {hasStartCoords, hasEndCoords});
         }
@@ -3281,19 +3370,19 @@ const accommodationData = {
       name: 'Hotel St. Ellis',
       location: 'Rizal Street',
       distance: '~5.5 km',
-      transport: { tricycle: '12–15 mins, ₱100–150', jeepney: '15 mins, ₱15–20', taxi: '15 mins, ₱150–200', car: '15 mins, ₱150–200', van: '15 mins, ₱150–200', motorcycle: '12 mins, ₱100–150', bike: '20–25 mins', bus: 'N/A' }
+      transport: { tricycle: '12–15 mins, ₱100–150', jeepney: '₱15–20', taxi: '15 mins, ₱150–200', car: '15 mins, ₱150–200', van: '15 mins, ₱150–200', motorcycle: '12 mins, ₱100–150', bike: '20–25 mins', bus: 'N/A' }
     },
     {
       name: 'The Marison Hotel',
       location: 'Yashano Mall Complex',
       distance: '~6 km',
-      transport: { tricycle: '15 mins, ₱100–150', jeepney: 'N/A', taxi: '15 mins, ₱150–200', car: '15 mins, ₱150–200', van: '15 mins, ₱150–200', motorcycle: '12–15 mins, ₱100–150', bike: '25 mins', bus: 'N/A' }
+      transport: { tricycle: '15 mins, ₱100–150', jeepney: '₱15–20', taxi: '15 mins, ₱150–200', car: '15 mins, ₱150–200', van: '15 mins, ₱150–200', motorcycle: '12–15 mins, ₱100–150', bike: '25 mins', bus: 'N/A' }
     },
     {
       name: 'Emerald Boutique Hotel',
       location: 'Rizal Street',
       distance: '~6.2 km',
-      transport: { tricycle: '15 mins, ₱120–150', jeepney: 'N/A', taxi: '15 mins, ₱150–200', car: '15 mins, ₱150–200', van: '15 mins, ₱150–200', motorcycle: '12–15 mins, ₱100–150', bike: '25–30 mins', bus: 'N/A' }
+      transport: { tricycle: '15 mins, ₱120–150', jeepney: '₱15–20', taxi: '15 mins, ₱150–200', car: '15 mins, ₱150–200', van: '15 mins, ₱150–200', motorcycle: '12–15 mins, ₱100–150', bike: '25–30 mins', bus: 'N/A' }
     }
   ]
 };
@@ -4879,11 +4968,14 @@ function updateRouteButtons() {
   const hotelBtn = document.getElementById('routeToHotelBtn');
   if (!destBtn || !hotelBtn) return;
 
-  const hotelRouteAvailable = selectedAccommodation && itineraryHotelCoords[selectedAccommodation.name];
-  destBtn.disabled = !hotelRouteAvailable;
-  destBtn.style.opacity = hotelRouteAvailable ? (itineraryRouteTarget === 'destination' ? '1' : '0.8') : '0.45';
+  // Always enable destination button if destination is set
+  const destinationRouteAvailable = currentDestination && itineraryDestinationCoords[currentDestination];
+  destBtn.disabled = !destinationRouteAvailable;
+  destBtn.style.opacity = destinationRouteAvailable ? (itineraryRouteTarget === 'destination' ? '1' : '0.8') : '0.45';
   destBtn.style.fontWeight = itineraryRouteTarget === 'destination' ? '700' : '500';
 
+  // Only enable hotel button if hotel is selected
+  const hotelRouteAvailable = selectedAccommodation && itineraryHotelCoords[selectedAccommodation.name];
   hotelBtn.disabled = !hotelRouteAvailable;
   hotelBtn.style.opacity = hotelRouteAvailable ? (itineraryRouteTarget === 'hotel' ? '1' : '0.8') : '0.45';
   hotelBtn.style.fontWeight = itineraryRouteTarget === 'hotel' ? '700' : '500';
