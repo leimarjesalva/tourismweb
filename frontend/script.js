@@ -417,65 +417,127 @@ function getWeatherForecast() {
   return forecast;
 }
 
-// Fetch real weather via OpenWeatherMap API for a given lat/lon (3-day summary)
+// Fetch real weather via OpenWeatherMap API for a given lat/lon
 // NOTE: Requires OpenWeatherMap API key - get one at https://openweathermap.org/api
 async function fetchWeatherForLatLon(lat, lon, days=1){
   try{
-    // Use OpenWeatherMap API with API key (you'll need to get a free API key from openweathermap.org)
-    const apiKey = 'c3c1662ef224ae5ba69897a6642ddbe2'; // OpenWeatherMap API key provided by user
-    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
+    const apiKey = 'c3c1662ef224ae5ba69897a6642ddbe2';
+
+    if (days === 1) {
+      const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
+      const r = await fetch(url);
+      if (!r.ok) {
+        console.warn('OpenWeatherMap current weather API failed, falling back to static data');
+        return getWeatherForecast().slice(0, 1);
+      }
+      const j = await r.json();
+
+      const weatherDesc = j.weather && j.weather.length > 0 ? j.weather[0].description : '';
+      const conditionText = weatherDesc.toLowerCase();
+      let condition = 'Clear';
+      let icon = '☀️';
+      if (conditionText.includes('rain') || conditionText.includes('drizzle')) {
+        condition = 'Rainy'; icon = '🌧️';
+      } else if (conditionText.includes('cloud')) {
+        condition = 'Cloudy'; icon = '☁️';
+      } else if (conditionText.includes('clear')) {
+        condition = 'Clear'; icon = '☀️';
+      } else if (conditionText.includes('storm') || conditionText.includes('thunder')) {
+        condition = 'Stormy'; icon = '⛈️';
+      } else if (conditionText.includes('snow')) {
+        condition = 'Snowy'; icon = '❄️';
+      } else {
+        condition = 'Partly Cloudy'; icon = '⛅';
+      }
+
+      const currentTemp = j.main ? Math.round(j.main.temp) : null;
+      const tempLow = j.main ? Math.round(j.main.temp_min) : currentTemp;
+      const tempHigh = j.main ? Math.round(j.main.temp_max) : currentTemp;
+      const humidity = j.main ? j.main.humidity : null;
+      const windspeed = j.wind ? Math.round(j.wind.speed) : null;
+      const precip = (j.rain && (j.rain['1h'] || j.rain['3h'])) || (j.snow && (j.snow['1h'] || j.snow['3h'])) || 0;
+      const precipProb = j.clouds ? Math.round(j.clouds.all) : (precip > 0 ? 70 : 10);
+      const recommendation = condition === 'Rainy' ? 'Bring umbrella / raincoat' : 'Good for outdoor activities';
+
+      return [{
+        date: new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+        condition,
+        tempLow,
+        tempHigh,
+        currentTemp,
+        humidity,
+        windspeed,
+        precip_mm: precip,
+        precip_prob: precipProb,
+        recommendation,
+        icon
+      }];
+    }
+
+    const url = `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&exclude=minutely,alerts&appid=${apiKey}&units=metric`;
     const r = await fetch(url);
     if (!r.ok) {
-      console.warn('OpenWeatherMap API failed, falling back to static data');
-      return getWeatherForecast().slice(0,1);
+      console.warn('OpenWeatherMap onecall API failed, falling back to static data');
+      return getWeatherForecast().slice(0, days);
     }
     const j = await r.json();
 
-    // Parse OpenWeatherMap response
-    const currentTemp = j.main ? Math.round(j.main.temp) : null;
-    const tempLow = j.main ? Math.round(j.main.temp_min) : currentTemp;
-    const tempHigh = j.main ? Math.round(j.main.temp_max) : currentTemp;
-    const humidity = j.main ? j.main.humidity : null;
-    const windSpeed = j.wind ? j.wind.speed : null;
-
-    // Determine condition from weather description
-    let condition = 'Clear';
-    let icon = '☀️';
-    if (j.weather && j.weather.length > 0) {
-      const desc = j.weather[0].description.toLowerCase();
-      if (desc.includes('rain') || desc.includes('drizzle')) {
-        condition = 'Rainy';
-        icon = '🌧️';
-      } else if (desc.includes('cloud')) {
-        condition = 'Cloudy';
-        icon = '☁️';
-      } else if (desc.includes('clear')) {
-        condition = 'Clear';
-        icon = '☀️';
+    const parseRecord = (data, isDaily = false) => {
+      const weatherDesc = data.weather && data.weather.length > 0 ? data.weather[0].description : '';
+      const conditionText = weatherDesc.toLowerCase();
+      let condition = 'Clear';
+      let icon = '☀️';
+      if (conditionText.includes('rain') || conditionText.includes('drizzle')) {
+        condition = 'Rainy'; icon = '🌧️';
+      } else if (conditionText.includes('cloud')) {
+        condition = 'Cloudy'; icon = '☁️';
+      } else if (conditionText.includes('clear')) {
+        condition = 'Clear'; icon = '☀️';
+      } else if (conditionText.includes('storm') || conditionText.includes('thunder')) {
+        condition = 'Stormy'; icon = '⛅';
+      } else if (conditionText.includes('snow')) {
+        condition = 'Snowy'; icon = '❄️';
       } else {
-        condition = 'Partly Cloudy';
-        icon = '⛅';
+        condition = 'Partly Cloudy'; icon = '⛅';
       }
+
+      const currentTemp = isDaily ? Math.round(data.temp.day) : (data.temp !== undefined ? Math.round(data.temp) : null);
+      const tempLow = isDaily ? Math.round(data.temp.min) : Math.round(data.temp_min ?? currentTemp ?? 0);
+      const tempHigh = isDaily ? Math.round(data.temp.max) : Math.round(data.temp_max ?? currentTemp ?? 0);
+      const humidity = data.humidity !== undefined ? data.humidity : null;
+      const windspeed = Math.round(data.wind_speed ?? data.wind?.speed ?? 0);
+      const precip = data.rain ?? data.snow ?? 0;
+      const precipProb = data.pop !== undefined ? Math.round(data.pop * 100) : (precip > 0 ? 70 : 10);
+      const recommendation = condition === 'Rainy' ? 'Bring umbrella / raincoat' : 'Good for outdoor activities';
+
+      return {
+        date: new Date((data.dt || Date.now()) * 1000).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+        condition,
+        tempLow,
+        tempHigh,
+        currentTemp,
+        humidity,
+        windspeed,
+        precip_mm: precip,
+        precip_prob: precipProb,
+        recommendation,
+        icon
+      };
+    };
+
+    const results = [];
+    if (j.daily && Array.isArray(j.daily) && j.daily.length > 0) {
+      j.daily.slice(0, days).forEach(entry => {
+        results.push(parseRecord(entry, true));
+      });
+    } else if (j.current) {
+      results.push(parseRecord(j.current, false));
     }
 
-    const recommendation = (condition === 'Rainy') ? 'Bring umbrella / raincoat' : 'Good for outdoor activities';
-
-    const out = [{
-      date: new Date().toLocaleDateString(),
-      condition,
-      tempLow,
-      tempHigh,
-      currentTemp,
-      humidity,
-      windspeed: windSpeed,
-      recommendation,
-      icon
-    }];
-
-    return out;
-  }catch(e){
+    return results.length ? results : getWeatherForecast().slice(0, days);
+  } catch (e) {
     console.warn('OpenWeatherMap fetch failed, using fallback:', e);
-    return getWeatherForecast().slice(0,1);
+    return getWeatherForecast().slice(0, days);
   }
 }
 
