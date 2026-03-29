@@ -309,6 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
               <div id="selectedEventCardContent" style="font-size:0.83rem; color:#e5e7eb; line-height:1.3;"></div>
             </div>
+            <div id="heatmapWarning" style="display:none; position:absolute; top: 12px; left: 12px; background: rgba(222, 68, 68, 0.92); color: #fff; padding: 8px 12px; border-radius: 8px; font-size: 0.82rem; z-index: 1100;">⚠️ No heatmap data available</div>
             <div id="eventRiskLegend" style="position:absolute; top: 12px; right: 12px; background: rgba(15, 23, 42, 0.84); border: 1px solid rgba(255,255,255,0.18); color: #fff; padding: 12px; border-radius: 10px; font-size: 0.78rem; z-index: 1100;">
               <strong>Risk Levels</strong>
               <div style="display:flex; gap: 6px; align-items:center; margin-top:6px;"><span style="width:10px;height:10px;border-radius:50%;background:#4caf50;border: 0;box-shadow:none;filter:none;"></span>Low (≤60%)</div>
@@ -683,6 +684,16 @@ function saveRiskLevelToDatabase(level) {
   .catch(err => console.warn('⚠️ Database save error:', err));
 }
 
+function handleNoHeatmapData() {
+  const msg = '⚠️ No heatmap data available';
+  console.warn(msg);
+  const warningNode = document.getElementById('heatmapWarning');
+  if (warningNode) {
+    warningNode.textContent = msg;
+    warningNode.style.display = 'block';
+  }
+}
+
 // Initialize map showing all event locations
 // ======================== DIRECTIONS SERVICE ========================
 // Directions service replaced with Leaflet routing
@@ -1046,39 +1057,58 @@ function initializeEventsMap(events) {
         intensity: Math.min(1, Math.max(0.05, occupancy / 100))
       });
 
+      // === CREATE RISK ZONE CIRCLE (LEAFLET) ===
       const waste = ev.prediction && ev.prediction.waste_prediction ? Math.round(ev.prediction.waste_prediction) : Math.round((visitors / 50000) * 2900);
       const trafficHours = Math.min(10, Math.max(1, Math.round(occupancy / 10))); // Estimate traffic peak hours based on occupancy
       
-      // Create a single circle marker for the event.
-      const markerRadius = Math.max(10, Math.min(16, 8 + Math.round(occupancy / 15)));
+      // Make event risk-zone circle non-interactive so marker clicks are always received
+      const circle = L.circle([lat, lng], {
+        color: riskColor,
+        fillColor: riskColor,
+        fillOpacity: 0.25,
+        weight: 3,
+        radius: markerRadius,
+        interactive: false
+      }).addTo(map);
       
+      // === CREATE LEAFLET MARKER WITH EMOJI ===
       try {
         const marker = L.circleMarker([lat, lng], {
-          radius: markerRadius,
+          radius: 10,
           fillColor: riskColor,
           color: riskColor,
           weight: 1,
           opacity: 1,
-          fillOpacity: 0.9
-        }).addTo(map);
+          fillOpacity: 1
+        }).addTo(map);        
         // Add emoji tooltip
         marker.bindTooltip(riskEmoji, {
           permanent: true,
           direction: 'center'
         });
+
+        // Add location heat glow around event marker (indicates density on place)
+        L.circle([lat, lng], {
+          radius: Math.max(120, 70 + occupancy * 2),
+          color: riskColor,
+          fillColor: riskColor,
+          fillOpacity: 0.16,
+          weight: 0,
+          interactive: false
+        }).addTo(map);
         
         // Click effects (no hover). Use selected card only; remove default Leaflet popup border line.
         marker.on('click', (e) => {
           if (e && e.originalEvent) {
             L.DomEvent.stopPropagation(e);
           }
-          marker.setStyle({ fillOpacity: 0.4, weight: 4 });
+          circle.setStyle({ fillOpacity: 0.4, weight: 4 });
           marker.bringToFront();
           showSelectedEventCard(ev, occupancy, visitors, waste, riskLabel);
         });
 
         marker.on('popupclose', () => {
-          marker.setStyle({ fillOpacity: 0.9, weight: 1 });
+          circle.setStyle({ fillOpacity: 0.25, weight: 2 });
           // optional: keep selected event card visible until map click
         });
         
@@ -1105,6 +1135,8 @@ function initializeEventsMap(events) {
       console.log('🔥 Event route+location heat view active; skipping legacy heatmap layer.');
       // Route and location heat are already rendered inline during event + route plotting.
       // Keep this block for debug and analytics only.
+    } else {
+      handleNoHeatmapData();
     }
     
     console.log('✅ plotEvents complete: plotted', plotCount, 'out of', list.length, 'events');
@@ -3135,19 +3167,19 @@ const accommodationData = {
       name: 'Alicia Hotel',
       location: 'F. Aquende Drive, Legazpi City',
       distance: '~1.1 km',
-      transport: { tricycle: '5 mins, ₱15–20', jeepney: '₱13–15 (airport route)', taxi: '5–7 mins, ₱76–90', car: '5–7 mins, ₱76–90', van: '5–7 mins, ₱76–90', motorcycle: '5 mins, ₱20–30', bike: '10–12 mins', bus: 'Not practical' }
+      transport: { tricycle: '5 mins, ₱20–30', jeepney: '₱15–20 (airport route)', taxi: '5–7 mins, ₱70–150', car: '5–7 mins, ₱70–150', van: '5–7 mins, ₱70–150', motorcycle: '5 mins, ₱50–70', bike: '10–12 mins', bus: 'Not practical' }
     },
     {
       name: 'The Marison Hotel',
       location: 'Yashano Mall Complex',
       distance: '~2.5 km',
-      transport: { tricycle: '10 mins, ₱21–25', jeepney: '₱13–17 (city route)', taxi: '10 mins, ₱121–130', car: '10 mins, ₱121–130', van: '10 mins, ₱121–130', motorcycle: '8–10 mins, ₱40–60', bike: '15–20 mins', bus: 'Not practical' }
+      transport: { tricycle: '10 mins, ₱50–70', jeepney: '₱15–20 (city route)', taxi: '10 mins, ₱100–150', car: '10 mins, ₱100–150', van: '10 mins, ₱100–150', motorcycle: '8–10 mins, ₱70–100', bike: '15–20 mins', bus: 'Not practical' }
     },
     {
       name: 'Proxy by The Oriental Albay',
       location: 'Rizal Street',
       distance: '~3 km',
-      transport: { tricycle: '12 mins, ₱21–30', jeepney: '₱13–19', taxi: '12 mins, ₱138–150', car: '12 mins, ₱138–150', van: '12 mins, ₱138–150', motorcycle: '10–12 mins, ₱50–70', bike: '20 mins', bus: 'Not practical' }
+      transport: { tricycle: '12 mins, ₱70–100', jeepney: '₱15–20', taxi: '12 mins, ₱120–150', car: '12 mins, ₱120–150', van: '12 mins, ₱120–150', motorcycle: '10–12 mins, ₱80–100', bike: '20 mins', bus: 'Not practical' }
     }
   ],
   'Embarcadero de Legazpi': [
@@ -3155,19 +3187,19 @@ const accommodationData = {
       name: 'Hotel St. Ellis',
       location: 'Rizal Street',
       distance: '~0.4 km',
-      transport: { walking: '5–7 mins', tricycle: '₱15 (minimum)', taxi: '5 mins, ₱53–60', car: '5 mins, ₱53–60', van: '5 mins, ₱53–60', bike: '5 mins', motorcycle: 'N/A', jeepney: 'N/A', bus: 'N/A' }
+      transport: { walking: '5–7 mins', tricycle: '₱20', taxi: '5 mins, ₱70–100', car: '5 mins, ₱70–100', van: '5 mins, ₱70–100', bike: '5 mins', motorcycle: 'N/A', jeepney: 'N/A', bus: 'N/A' }
     },
     {
       name: 'Hotel Sentro Legazpi',
       location: 'Quezon Avenue',
       distance: '~1 km',
-      transport: { tricycle: '5 mins, ₱15–20', jeepney: '₱13–15', taxi: '5–7 mins, ₱73–80', car: '5–7 mins, ₱73–80', van: '5–7 mins, ₱73–80', motorcycle: '5 mins, ₱20–30', bike: '7–10 mins', bus: 'Not practical' }
+      transport: { tricycle: '5 mins, ₱30–40', jeepney: '₱15–20', taxi: '5–7 mins, ₱80–120', car: '5–7 mins, ₱80–120', van: '5–7 mins, ₱80–120', motorcycle: '5 mins, ₱50–70', bike: '7–10 mins', bus: 'Not practical' }
     },
     {
       name: 'Proxy by The Oriental Albay',
       location: 'Rizal Street',
       distance: '~2 km',
-      transport: { tricycle: '10 mins, ₱18–22', jeepney: 'N/A', taxi: '10 mins, ₱105–115', car: '10 mins, ₱105–115', van: '10 mins, ₱105–115', motorcycle: '8–10 mins, ₱40–50', bike: '15 mins', bus: 'Not practical' }
+      transport: { tricycle: '10 mins, ₱70–100', jeepney: 'N/A', taxi: '10 mins, ₱100–150', car: '10 mins, ₱100–150', van: '10 mins, ₱100–150', motorcycle: '8–10 mins, ₱70–100', bike: '15 mins', bus: 'Not practical' }
     }
   ],
   'Albay Park & Wildlife': [
@@ -3175,19 +3207,19 @@ const accommodationData = {
       name: 'Alicia Hotel',
       location: 'F. Aquende Drive',
       distance: '~0.65 km',
-      transport: { tricycle: '5 mins, ₱15 (minimum)', jeepney: 'N/A', taxi: '5 mins, ₱61–70', car: '5 mins, ₱61–70', van: '5 mins, ₱61–70', motorcycle: 'N/A', bike: '8–10 mins', bus: 'N/A' }
+      transport: { tricycle: '5 mins, ₱20–30', jeepney: 'N/A', taxi: '5 mins, ₱70–100', car: '5 mins, ₱70–100', van: '5 mins, ₱70–100', motorcycle: 'N/A', bike: '8–10 mins', bus: 'N/A' }
     },
     {
       name: 'Lotus Blu Hotel',
       location: 'Imperial Court Subdivision',
       distance: '~1.2 km',
-      transport: { tricycle: '7 mins, ₱15–21', jeepney: 'N/A', taxi: '7 mins, ₱79–90', car: '7 mins, ₱79–90', van: '7 mins, ₱79–90', motorcycle: '5–7 mins, ₱25–35', bike: '10–12 mins', bus: 'N/A' }
+      transport: { tricycle: '7 mins, ₱30–50', jeepney: 'N/A', taxi: '7 mins, ₱80–120', car: '7 mins, ₱80–120', van: '7 mins, ₱80–120', motorcycle: '5–7 mins, ₱50–70', bike: '10–12 mins', bus: 'N/A' }
     },
     {
       name: 'Hotel Venezia',
       location: 'Washington Drive',
       distance: '~1.5 km',
-      transport: { tricycle: '10 mins, ₱17–22', jeepney: '₱13–15', taxi: '10 mins, ₱89–100', car: '10 mins, ₱89–100', van: '10 mins, ₱89–100', motorcycle: 'N/A', bike: '12–15 mins', bus: 'N/A' }
+      transport: { tricycle: '10 mins, ₱50–70', jeepney: '₱15–20', taxi: '10 mins, ₱100–150', car: '10 mins, ₱100–150', van: '10 mins, ₱100–150', motorcycle: 'N/A', bike: '12–15 mins', bus: 'N/A' }
     }
   ],
   'Highlands Park Legazpi City': [
@@ -3195,19 +3227,19 @@ const accommodationData = {
       name: 'The Marison Hotel',
       location: 'Yashano Mall Complex',
       distance: '~6.5 km',
-      transport: { tricycle: '15–20 mins, ₱30–50 (shared) / ₱80–100 (special)', jeepney: 'N/A', taxi: '15 mins, ₱211–225', car: '15 mins, ₱211–225', van: '15 mins, ₱211–225', motorcycle: '12–15 mins, ₱70–90', bike: '25–30 mins', bus: 'N/A' }
+      transport: { tricycle: '15–20 mins, ₱100–150', jeepney: 'N/A', taxi: '15 mins, ₱150–200', car: '15 mins, ₱150–200', van: '15 mins, ₱150–200', motorcycle: '12–15 mins, ₱100–150', bike: '25–30 mins', bus: 'N/A' }
     },
     {
       name: 'Emerald Boutique Hotel',
       location: 'Rizal Street',
       distance: '~7 km',
-      transport: { tricycle: '15–20 mins, ₱30–50 (shared) / ₱80–100 (special)', jeepney: 'N/A', taxi: '15 mins, ₱228–240', car: '15 mins, ₱228–240', van: '15 mins, ₱228–240', motorcycle: '12–15 mins, ₱70–90', bike: '30 mins', bus: 'N/A' }
+      transport: { tricycle: '15–20 mins, ₱120–150', jeepney: 'N/A', taxi: '15 mins, ₱150–200', car: '15 mins, ₱150–200', van: '15 mins, ₱150–200', motorcycle: '12–15 mins, ₱100–150', bike: '30 mins', bus: 'N/A' }
     },
     {
       name: 'Hotel Sentro Legazpi',
       location: 'Quezon Avenue',
       distance: '~7.2 km',
-      transport: { tricycle: '15–20 mins, ₱30–50 (shared) / ₱80–100 (special)', jeepney: 'N/A', taxi: '15 mins, ₱234–245', car: '15 mins, ₱234–245', van: '15 mins, ₱234–245', motorcycle: '12–15 mins, ₱70–90', bike: '30 mins', bus: 'N/A' }
+      transport: { tricycle: '15–20 mins, ₱120–150', jeepney: 'N/A', taxi: '15 mins, ₱150–200', car: '15 mins, ₱150–200', van: '15 mins, ₱150–200', motorcycle: '12–15 mins, ₱100–150', bike: '30 mins', bus: 'N/A' }
     }
   ],
   'Nuestra Senora de Salvacion': [
@@ -3215,19 +3247,19 @@ const accommodationData = {
       name: 'La Edley Resort & Hotel',
       location: 'San Fernando, Santo Domingo',
       distance: '~130 m',
-      transport: { walking: '2–3 mins', tricycle: '₱15 (minimum)', jeepney: 'N/A', taxi: 'N/A', car: 'N/A', van: 'N/A', motorcycle: 'N/A', bike: 'N/A', bus: 'N/A' }
+      transport: { walking: '2–3 mins', tricycle: '₱20 minimum', jeepney: 'N/A', taxi: 'N/A', car: 'N/A', van: 'N/A', motorcycle: 'N/A', bike: 'N/A', bus: 'N/A' }
     },
     {
       name: 'Daraga Guesthouses',
       location: 'Daraga town',
       distance: '~2–3 km',
-      transport: { tricycle: '10 mins, ₱18–24', jeepney: '₱13–17', taxi: '10 mins, ₱105–138', car: '10 mins, ₱105–138', van: '10 mins, ₱105–138', motorcycle: '8–10 mins, ₱40–60', bike: '15 mins', bus: 'N/A' }
+      transport: { tricycle: '10 mins, ₱30–50', jeepney: '₱15–20', taxi: '10 mins, ₱100–150', car: '10 mins, ₱100–150', van: '10 mins, ₱100–150', motorcycle: '8–10 mins, ₱70–100', bike: '15 mins', bus: 'N/A' }
     },
     {
       name: 'Hotel Venezia',
       location: 'Washington Drive, Legazpi',
       distance: '~6 km',
-      transport: { tricycle: '15 mins, ₱30–50 (shared) / ₱75–95 (special)', jeepney: 'N/A', taxi: '15 mins, ₱235–245', car: '15 mins, ₱235–245', van: '15 mins, ₱235–245', motorcycle: '12–15 mins, ₱70–90', bike: '20–25 mins', bus: 'N/A' }
+      transport: { tricycle: '15 mins, ₱100–150', jeepney: 'N/A', taxi: '15 mins, ₱150–200', car: '15 mins, ₱150–200', van: '15 mins, ₱150–200', motorcycle: '12–15 mins, ₱100–150', bike: '20–25 mins', bus: 'N/A' }
     }
   ],
   'SEVENTY-SIX Farm': [
@@ -3235,19 +3267,19 @@ const accommodationData = {
       name: 'Hotel St. Ellis',
       location: 'Rizal Street',
       distance: '~5.5 km',
-      transport: { tricycle: '12–15 mins, ₱30–50 (shared) / ₱70–90 (special)', jeepney: 'N/A', taxi: '15 mins, ₱219–230', car: '15 mins, ₱219–230', van: '15 mins, ₱219–230', motorcycle: '12 mins, ₱65–80', bike: '20–25 mins', bus: 'N/A' }
+      transport: { tricycle: '12–15 mins, ₱100–150', jeepney: 'N/A', taxi: '15 mins, ₱150–200', car: '15 mins, ₱150–200', van: '15 mins, ₱150–200', motorcycle: '12 mins, ₱100–150', bike: '20–25 mins', bus: 'N/A' }
     },
     {
       name: 'The Marison Hotel',
       location: 'Yashano Mall Complex',
       distance: '~6 km',
-      transport: { tricycle: '15 mins, ₱30–50 (shared) / ₱75–95 (special)', jeepney: 'N/A', taxi: '15 mins, ₱235–245', car: '15 mins, ₱235–245', van: '15 mins, ₱235–245', motorcycle: '12–15 mins, ₱70–90', bike: '25 mins', bus: 'N/A' }
+      transport: { tricycle: '15 mins, ₱100–150', jeepney: 'N/A', taxi: '15 mins, ₱150–200', car: '15 mins, ₱150–200', van: '15 mins, ₱150–200', motorcycle: '12–15 mins, ₱100–150', bike: '25 mins', bus: 'N/A' }
     },
     {
       name: 'Emerald Boutique Hotel',
       location: 'Rizal Street',
       distance: '~6.2 km',
-      transport: { tricycle: '15 mins, ₱30–50 (shared) / ₱75–95 (special)', jeepney: 'N/A', taxi: '15 mins, ₱242–252', car: '15 mins, ₱242–252', van: '15 mins, ₱242–252', motorcycle: '12–15 mins, ₱70–90', bike: '25–30 mins', bus: 'N/A' }
+      transport: { tricycle: '15 mins, ₱120–150', jeepney: 'N/A', taxi: '15 mins, ₱150–200', car: '15 mins, ₱150–200', van: '15 mins, ₱150–200', motorcycle: '12–15 mins, ₱100–150', bike: '25–30 mins', bus: 'N/A' }
     }
   ]
 };
@@ -5540,7 +5572,7 @@ document.getElementById('eventAlertsOverlay').addEventListener('click', function
               <path d="M23.953 4.57a10 10 0 002.856-3.915 10 10 0 01-2.856.973 5 5 0 00-8.625-4.28 5 5 0 00-1.61 5.1A14 14 0 012.7 4.33a5 5 0 001.55 6.68c-.92-.03-1.79-.2-2.581-.62a5 5 0 004.04 4.95c-.73.2-1.5.2-2.28.1a5 5 0 004.66 3.46A10 10 0 010 19.54 14 14 0 007.29 21c9.625 0 14.883-7.957 14.883-14.882 0-.226 0-.45-.015-.673A10.65 10.65 0 0024 4.59z"/>
             </svg>
           </a>
-          <a href="https://www.instagram.com/legazpi.explorer?igsh=Y2VraHo2ejFzeWRu&fbclid=IwY2xjawQy6etleHRuA2FlbQIxMABicmlkETF1WlFhUEVoNW51VzZqNUZPc3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHo7igzedeztEr7EB6a6eTJmyTVt-ehRvLQ6ofTZ7rRL4fek585NplWHmVMsk_aem_BW1KGyHchb1HUdnaZK-Dsw" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Instagram">
+          <a href="#" class="social-link" aria-label="Instagram">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="none" stroke="currentColor" stroke-width="2"/>
               <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" fill="none" stroke="currentColor" stroke-width="2"/>
