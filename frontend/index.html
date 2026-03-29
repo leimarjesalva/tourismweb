@@ -316,16 +316,6 @@ document.addEventListener('DOMContentLoaded', () => {
               <div style="display:flex; gap: 6px; align-items:center;"><span style="width:10px;height:10px;border-radius:50%;background:#ff9800;border: 0;box-shadow:none;filter:none;"></span>Medium (60-85%)</div>
               <div style="display:flex; gap: 6px; align-items:center;"><span style="width:10px;height:10px;border-radius:50%;background:#e74c3c;border: 0;box-shadow:none;filter:none;"></span>High (>85%)</div>
             </div>
-            <div id="hotelFinderControls" style="position:absolute; top: 12px; left: 12px; display:flex; flex-direction:column; gap:8px; z-index: 1100; max-width: 320px;">
-              <button id="clearHotelRouteBtn" onclick="clearHotelRoute()" style="background:rgba(255,255,255,0.12); color:#fff; border:0; padding:10px 14px; border-radius:10px; font-weight:700; cursor:pointer;">✕ Clear hotel route</button>
-            </div>
-            <div id="hotelRecommendationPanel" style="display:none; position:absolute; top: 92px; left: 12px; width: 320px; max-height: 420px; overflow-y:auto; background: rgba(15, 23, 42, 0.94); border: 1px solid rgba(255,255,255,0.16); border-radius: 16px; padding: 14px; z-index: 1100; box-shadow: 0 22px 60px rgba(0,0,0,0.35);">
-              <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:14px;">
-                <strong style="color:#fff; font-size:0.95rem;">Nearest Accommodations</strong>
-                <button onclick="document.getElementById('hotelRecommendationPanel').style.display='none'" style="background:rgba(255,255,255,0.12); border:0; color:#fff; border-radius:8px; width:28px; height:28px; cursor:pointer;">✕</button>
-              </div>
-              <div id="hotelRecommendationsList" style="display:grid; gap:12px; color:#e2e8f0; font-size:0.95rem;"></div>
-            </div>
           </div>
 
         </div>
@@ -1237,164 +1227,6 @@ function initializeEventsMap(events) {
       })
       .catch(e => console.error('❌ API fetch error:', e));
   }
-}
-
-function clearHotelRoute() {
-  if (window.hotelRouteLine) {
-    window.map.removeLayer(window.hotelRouteLine);
-    window.hotelRouteLine = null;
-  }
-  if (window.userLocationMarker) {
-    window.map.removeLayer(window.userLocationMarker);
-    window.userLocationMarker = null;
-  }
-  if (window.selectedHotelMarker) {
-    window.map.removeLayer(window.selectedHotelMarker);
-    window.selectedHotelMarker = null;
-  }
-  const panel = document.getElementById('hotelRecommendationPanel');
-  if (panel) panel.style.display = 'none';
-  const routeSummary = document.getElementById('itineraryRouteSummary');
-  if (routeSummary) routeSummary.style.display = 'none';
-}
-
-function haversineDistance(lat1, lng1, lat2, lng2) {
-  const toRad = x => x * Math.PI / 180;
-  const dLat = toRad(lat2 - lat1);
-  const dLng = toRad(lng2 - lng1);
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return 6371 * c; // kilometers
-}
-
-function calculateFare(km) {
-  const baseFare = 50;
-  const perKm = km > 10 ? 14 : 12;
-  const fare = baseFare + km * perKm;
-  return Math.max(65, Math.round(fare));
-}
-
-async function fetchHotelListings() {
-  try {
-    const response = await fetch('../backend/api.php?action=list_itinerary_hotels');
-    const data = await response.json();
-    return Array.isArray(data.hotels) ? data.hotels : [];
-  } catch (err) {
-    console.error('❌ Error fetching hotel listings:', err);
-    return [];
-  }
-}
-
-async function locateUserAndRecommendHotels() {
-  const panel = document.getElementById('hotelRecommendationPanel');
-  const list = document.getElementById('hotelRecommendationsList');
-  if (!panel || !list) return;
-
-  if (!navigator.geolocation) {
-    list.innerHTML = '<div style="color:#ffb703;">Geolocation is not supported by your browser.</div>';
-    panel.style.display = 'block';
-    return;
-  }
-
-  list.innerHTML = '<div style="color:#cbd5e1;">Locating your position…</div>';
-  panel.style.display = 'block';
-
-  navigator.geolocation.getCurrentPosition(async (pos) => {
-    const userLat = pos.coords.latitude;
-    const userLng = pos.coords.longitude;
-    window.currentUserCoords = { lat: userLat, lng: userLng };
-    console.log('📍 User location found:', userLat, userLng);
-
-    const hotels = await fetchHotelListings();
-    if (!hotels.length) {
-      list.innerHTML = '<div style="color:#ffb703;">No accommodations found in the current dataset.</div>';
-      return;
-    }
-
-    const enriched = hotels
-      .filter(h => h.latitude && h.longitude)
-      .map(h => {
-        const lat = Number(h.latitude);
-        const lng = Number(h.longitude);
-        const distance = haversineDistance(userLat, userLng, lat, lng);
-        return {
-          ...h,
-          distanceKm: distance,
-          fare: calculateFare(distance)
-        };
-      })
-      .sort((a, b) => a.distanceKm - b.distanceKm)
-      .slice(0, 5);
-
-    if (!enriched.length) {
-      list.innerHTML = '<div style="color:#ffb703;">No nearby accommodations available.</div>';
-      return;
-    }
-
-    list.innerHTML = enriched.map((hotel, idx) => {
-      const rating = hotel.rating ? `⭐ ${hotel.rating.toFixed ? hotel.rating.toFixed(1) : hotel.rating}` : 'No rating';
-      return `
-        <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 12px;">
-          <div style="display:flex; justify-content:space-between; gap:8px; align-items:start;">
-            <div>
-              <strong style="color:#fff; display:block; margin-bottom:4px;">${hotel.name || 'Unnamed Hotel'}</strong>
-              <div style="color:#cbd5e1; font-size:0.9rem; line-height:1.4;">${hotel.address || hotel.location || 'Address unavailable'}</div>
-            </div>
-            <span style="background: rgba(16, 185, 129, 0.15); color:#a7f3d0; padding:4px 8px; border-radius:8px; font-size:0.82rem;">${rating}</span>
-          </div>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; gap:8px; font-size:0.9rem; color:#e2e8f0;">
-            <span>📍 ${hotel.distanceKm.toFixed(1)} km</span>
-            <span>₱${hotel.fare}</span>
-          </div>
-          <button type="button" onclick="showHotelRoute(${idx}, ${userLat.toFixed(6)}, ${userLng.toFixed(6)})" style="width:100%; margin-top:10px; background:#667eea; color:#fff; border:0; padding:10px; border-radius:10px; cursor:pointer; font-weight:700;">Show route details</button>
-        </div>
-      `;
-    }).join('');
-
-    window.currentHotelRecommendations = enriched;
-    showHotelRoute(0, userLat, userLng);
-  }, (err) => {
-    list.innerHTML = `<div style="color:#ffb703;">Geolocation failed: ${err.message}</div>`;
-    console.error('❌ Geolocation error:', err);
-  }, {
-    enableHighAccuracy: true,
-    timeout: 15000,
-    maximumAge: 0
-  });
-}
-
-function showHotelRoute(index, userLat, userLng) {
-  const hotels = window.currentHotelRecommendations || [];
-  if (!hotels.length) return;
-
-  const hotel = hotels[index];
-  if (!hotel) return;
-
-  const lat = Number(hotel.latitude);
-  const lng = Number(hotel.longitude);
-  const coords = window.currentUserCoords || { lat: userLat, lng: userLng };
-  const currentUserLat = coords ? coords.lat : userLat;
-  const currentUserLng = coords ? coords.lng : userLng;
-
-  if (!currentUserLat || !currentUserLng) {
-    console.warn('No user coordinates available for hotel route');
-    return;
-  }
-
-  const distance = haversineDistance(currentUserLat, currentUserLng, lat, lng).toFixed(1);
-  const fare = calculateFare(Number(distance));
-  const routeSummary = document.getElementById('itineraryRouteSummary');
-  const routeSummaryContent = document.getElementById('itineraryRouteSummaryContent');
-  if (!routeSummary || !routeSummaryContent) return;
-
-  routeSummary.style.display = 'block';
-  routeSummaryContent.innerHTML = `
-    <strong style="display:block; margin-bottom:8px; color:#fff;">Route details for ${hotel.name || 'selected hotel'}</strong>
-    <div style="margin-bottom:8px;">📍 Distance from your location: <strong>${distance} km</strong></div>
-    <div style="margin-bottom:8px;">💰 Estimated fare: <strong>₱${fare}</strong></div>
-    <div style="margin-bottom:8px;">🗺️ Note: live map route overlays are disabled in this view.</div>
-    <div style="color:#cbd5e1; font-size:0.92rem;">Use local roads and signage to reach the hotel safely from your current position.</div>
-  `;
 }
 
 // Chart storage
@@ -3235,12 +3067,6 @@ function renderModalPredictionCharts(ev) {
               <div id="weatherList" style="display: grid; grid-template-columns: 1fr; gap: 12px;"></div>
             </div>
 
-            <!-- Route Summary -->
-            <div id="itineraryRouteSummary" style="display:none; background: linear-gradient(135deg, rgba(46, 204, 113, 0.12), rgba(52, 152, 219, 0.08)); border: 2px solid rgba(46, 204, 113, 0.25); border-radius: 12px; padding: 20px; color: #e2e8f0; font-size: 0.95rem; line-height: 1.6;">
-              <h4 style="color: #2ecc71; font-weight: 700; margin: 0 0 12px 0;">🧭 Route Details</h4>
-              <div id="itineraryRouteSummaryContent">Select a hotel to see simple route guidance and fare estimate in your itinerary.</div>
-            </div>
-
             <!-- Summary Card (Hidden Initially) -->
             <div id="summaryCard" style="display: none; background: linear-gradient(135deg, rgba(255,122,24,0.2), rgba(255,106,136,0.2)); border: 2px solid rgba(255,122,24,0.4); border-radius: 12px; padding: 20px;">
               <h4 style="color: #ff7a18; font-weight: 700; margin: 0 0 15px 0;">📋 Your Itinerary Summary</h4>
@@ -4656,13 +4482,10 @@ function displaySuggestions(data) {
     // Display Weather (single-day detailed summary)
     if (data.weather && data.weather.length > 0) {
       let html = '';
+      // we expect a single-day array
       const day = data.weather[0];
       const tempColor = day.currentTemp > 28 ? '#e74c3c' : (day.currentTemp > 20 ? '#f39c12' : '#3498db');
-      const weatherIcon = day.icon || (day.condition ? (day.condition.toLowerCase().includes('rain') ? '🌧️' : day.condition.toLowerCase().includes('cloud') ? '☁️' : '☀️') : '🌤️');
-      const precipAmount = day.precip_mm !== undefined ? `${day.precip_mm} mm` : (day.rain !== undefined ? `${day.rain} mm` : 'N/A');
-      const precipProbability = day.precip_prob !== undefined ? `${day.precip_prob}%` : (day.condition && day.condition.toLowerCase().includes('rain') ? '70%' : '10%');
-      const humidity = day.humidity !== undefined ? `${day.humidity}%` : 'N/A';
-      const windspeed = day.windspeed !== undefined ? `${day.windspeed} km/h` : 'N/A';
+      const weatherIcon = day.condition ? (day.condition.toLowerCase().includes('rain') ? '🌧️' : day.condition.toLowerCase().includes('cloud') ? '☁️' : '☀️') : '🌤️';
       
       html += `
         <div style="background: linear-gradient(135deg, ${tempColor}44 0%, ${tempColor}22 100%); border: 2px solid ${tempColor}; border-radius: 12px; padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
@@ -4681,17 +4504,12 @@ function displaySuggestions(data) {
             
             <div style="background: white; padding: 10px 15px; border-radius: 8px; border-left: 4px solid #2ecc71;">
               <div style="font-size: 12px; color: #999;">☔ Precipitation</div>
-              <div style="font-size: 16px; font-weight: bold; color: #333;">${precipAmount} (${precipProbability})</div>
+              <div style="font-size: 16px; font-weight: bold; color: #333;">${day.precip_mm !== undefined ? day.precip_mm + ' mm' : 'N/A'} (${day.precip_prob !== undefined ? day.precip_prob : '?'}%)</div>
             </div>
             
             <div style="background: white; padding: 10px 15px; border-radius: 8px; border-left: 4px solid #f39c12;">
-              <div style="font-size: 12px; color: #999;">💧 Humidity</div>
-              <div style="font-size: 16px; font-weight: bold; color: #333;">${humidity}</div>
-            </div>
-            
-            <div style="background: white; padding: 10px 15px; border-radius: 8px; border-left: 4px solid #8e44ad;">
               <div style="font-size: 12px; color: #999;">💨 Wind Speed</div>
-              <div style="font-size: 16px; font-weight: bold; color: #333;">${windspeed}</div>
+              <div style="font-size: 16px; font-weight: bold; color: #333;">${day.windspeed !== undefined ? day.windspeed + ' km/h' : 'N/A'}</div>
             </div>
           </div>
         </div>
