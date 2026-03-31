@@ -143,6 +143,49 @@
       margin: 0 !important;
     }
 
+    .leaflet-tooltip.destination-tooltip {
+      background: transparent !important;
+      border: 0 !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+      color: transparent !important;
+      font-size: 0 !important;
+    }
+
+    .leaflet-tooltip.destination-tooltip .destination-tooltip-card {
+      display: grid;
+      grid-template-columns: 88px 1fr;
+      gap: 10px;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      width: 320px;
+      min-width: 220px;
+      max-width: 320px;
+      box-sizing: border-box;
+      background: rgba(15,23,42,0.96);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 18px;
+      padding: 12px;
+      color: #fff;
+      box-shadow: 0 16px 45px rgba(0,0,0,0.28);
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      white-space: normal;
+    }
+
+    .leaflet-tooltip.destination-tooltip span {
+      color: inherit !important;
+    }
+
+    .leaflet-tooltip.destination-tooltip strong {
+      color: inherit !important;
+    }
+
+    .leaflet-tooltip.destination-tooltip:before,
+    .leaflet-tooltip.destination-tooltip:after {
+      display: none !important;
+    }
+
     /* Remove any default leaflets info box (whitecard) in route mini maps */
     .leaflet-control-layers, .leaflet-control-zoom, .leaflet-control-attribution {
       background: rgba(0, 0, 0, 0.4) !important;
@@ -3013,19 +3056,208 @@ function renderModalPredictionCharts(ev) {
       <p class="text-paragraph" style="color: #a0aec0; font-size: 1.05rem; line-height: 1.8; margin: 0; font-weight: 300; max-width: 700px; animation-delay: 0.3s;">Explore stunning destinations, select your preferences, and let us create a personalized itinerary with hotel recommendations, transportation routes, and day-by-day activities.</p>
     </div>
 
-    <!-- Step 1: Destination Selection Carousel -->
-    <div id="destinationCarouselStep" style="width: 100%;">
-      <h3 class="text-heading" style="color: white; font-size: 1.5rem; font-weight: 700; margin-bottom: 30px; text-align: center; animation-delay: 0.1s;">Select Your Destinations</h3>
-      
+    <!-- Step 1: Trip Preferences + Map -->
+    <div id="tripPreferencesStep" style="width: 100%; margin-bottom: 40px;">
+      <div class="itinerary-overview-grid" style="gap: 28px;">
+        <div class="itinerary-overview-panel" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; padding: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 18px;">
+            <div>
+              <span style="color: #ff7a18; font-size: 0.9rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;">Trip Preferences</span>
+              <h3 style="color: white; font-size: 1.7rem; font-weight: 800; margin: 10px 0 0 0;">Build your perfect itinerary</h3>
+            </div>
+            <span style="color: #a0aec0; font-size: 0.95rem; max-width: 220px;">Enter your travel dates, budget and traveler details first, then choose destinations that match your plan.</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; margin-bottom: 16px;">
+            <div>
+              <label style="display:block; color:#cbd5e1; margin-bottom: 8px; font-weight:700;">Travel Dates</label>
+              <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px;">
+                <input type="date" id="tripStartDate" class="itinerary-input" style="width:100%;" />
+                <input type="date" id="tripEndDate" class="itinerary-input" style="width:100%;" />
+              </div>
+            </div>
+            <div>
+              <label style="display:block; color:#cbd5e1; margin-bottom: 8px; font-weight:700;">Travelers</label>
+              <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px;">
+                <input type="number" id="tripAdults" class="itinerary-input" min="1" value="2" placeholder="Adults" />
+                <input type="number" id="tripKids" class="itinerary-input" min="0" value="0" placeholder="Kids" />
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 18px;">
+            <label style="display:block; color:#cbd5e1; margin-bottom: 8px; font-weight:700;">Budget per person</label>
+            <div style="display:flex; align-items:center; gap: 12px; margin-bottom: 10px;">
+              <strong id="budgetValueDisplay" style="color: white; font-size: 1rem;">₱5,000</strong>
+              <span style="color: #94a3b8; font-size: 0.9rem;">Budget range helps tailor hotels and activities.</span>
+            </div>
+            <input type="range" id="budgetRangeSlider" min="1000" max="30000" step="500" value="5000" style="width:100%;" />
+          </div>
+
+
+          <div style="margin-bottom: 18px;">
+            <label style="display:block; color:#cbd5e1; margin-bottom: 8px; font-weight:700;">Travel style</label>
+            <div id="styleChips" style="display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px;">
+              <button type="button" class="style-chip active" data-style="nature" onclick="setTravelStyle(event, 'nature')">Nature</button>
+              <button type="button" class="style-chip" data-style="beach" onclick="setTravelStyle(event, 'beach')">Beach</button>
+              <button type="button" class="style-chip" data-style="food" onclick="setTravelStyle(event, 'food')">Food</button>
+              <button type="button" class="style-chip" data-style="culture" onclick="setTravelStyle(event, 'culture')">Culture</button>
+              <button type="button" class="style-chip" data-style="adventure" onclick="setTravelStyle(event, 'adventure')">Adventure</button>
+              <button type="button" class="style-chip" data-style="mixed" onclick="setTravelStyle(event, 'mixed')">Mixed</button>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-wrap:wrap; gap: 12px; align-items:center; justify-content:space-between; margin-top: 8px;">
+            <button type="button" onclick="applyTripPreferences()" style="padding: 14px 20px; background: linear-gradient(135deg, #ff7a18, #ff6a88); color:white; border:none; border-radius: 12px; font-weight:700; cursor:pointer; min-width: 220px;">Find My Destinations</button>
+            <div style="background: rgba(255,255,255,0.06); padding: 14px 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; min-width: 220px;">
+              <div style="font-size: 0.9rem; margin-bottom: 6px;">Selected travel style</div>
+              <div id="selectedStyleLabel" style="font-weight: 700; color: #fff; text-transform: capitalize;">Nature</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="itineraryMapPanel" class="itinerary-overview-panel" style="position: relative; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; padding: 0; overflow: hidden; min-height: 420px;">
+          <div id="mapCrowdLevelLegend" style="position:absolute; top: 20px; right: 20px; z-index: 1100; width: 220px; background: rgba(15,23,42,0.94); border: 1px solid rgba(255,255,255,0.16); border-radius: 16px; padding: 14px; color: #fff; box-shadow: 0 20px 60px rgba(0,0,0,0.4); font-size: 0.85rem;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 10px;">
+              <span style="font-weight:700;">Crowd Level</span>
+              <span style="font-size: 0.75rem; color: #94a3b8;">Live view</span>
+            </div>
+            <div style="display:grid; gap: 8px;">
+              <div style="display:flex; align-items:center; gap: 10px;"><span style="width:10px;height:10px;border-radius:999px;background:#34d399;"></span>Not crowded</div>
+              <div style="display:flex; align-items:center; gap: 10px;"><span style="width:10px;height:10px;border-radius:999px;background:#fbbf24;"></span>Moderate</div>
+              <div style="display:flex; align-items:center; gap: 10px;"><span style="width:10px;height:10px;border-radius:999px;background:#f97316;"></span>Very busy</div>
+              <div style="display:flex; align-items:center; gap: 10px;"><span style="width:10px;height:10px;border-radius:999px;background:#ef4444;"></span>Fully packed</div>
+            </div>
+          </div>
+          <div id="mapInfoCard" style="display:none; position:absolute; top: 0; left: 0; height: 100%; width: 380px; max-width: 90vw; background: linear-gradient(180deg, rgba(8,12,23,0.98), rgba(10,16,28,0.98)); border-radius: 0 24px 24px 0; box-shadow: 0 30px 90px rgba(0,0,0,0.45); color: white; z-index: 9999; overflow-y: auto; overflow-x: hidden; border-right: 1px solid rgba(255,255,255,0.08);">
+
+            <div style="display:flex; align-items:flex-start; justify-content:space-between; gap: 12px; padding: 20px 18px 12px 18px;">
+              <div>
+                <div id="mapInfoTag" style="display:inline-block; font-size:0.72rem; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:#7ac7ff; margin-bottom:8px;">Destination</div>
+                <h4 id="mapInfoTitle" style="margin:0; font-size:1.65rem; line-height:1.1; letter-spacing:-0.03em;">Place Name</h4>
+              </div>
+              <button type="button" onclick="hideMapInfoCard()" style="width:34px; height:34px; border:none; border-radius:12px; background: rgba(255,255,255,0.1); color:#fff; cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center;">×</button>
+            </div>
+            <div id="mapInfoImage" style="width:100%; height:220px; background:#111; background-size:cover; background-position:center; border-bottom: 1px solid rgba(255,255,255,0.08);"></div>
+            <div style="padding: 18px 18px 18px 18px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; gap: 10px; margin-bottom: 12px;">
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <div style="display:flex; align-items:center; gap:8px; font-size:0.82rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.12em;">
+                  <span style="width:8px; height:8px; border-radius:50%; background:#7ac7ff; display:inline-block;"></span>
+                  <span id="mapInfoCategory">Culture</span>
+                </div>
+                <div id="mapInfoCrowdLabel" style="font-size:0.75rem; font-weight:700; padding:6px 10px; border-radius:999px; background: rgba(255,255,255,0.08); color:#fff;">Light crowd</div>
+              </div>
+              <div id="mapInfoRating" style="font-size:0.9rem; color:#ffd166; font-weight:700; letter-spacing:0.04em;"></div>
+              </div>
+              <div id="mapInfoReviewText" style="font-size:0.84rem; color:#9ca3af; margin-bottom:16px;">(4.8) 5,610 reviews</div>
+              <div id="mapInfoDescription" style="color:#d1d5db; font-size:0.95rem; line-height:1.75; margin-bottom:14px; overflow-wrap:anywhere; word-break:break-word;">Tap a marker or destination to see more details here.</div>
+              <div id="mapInfoStarRating" style="display:flex; align-items:center; gap:6px; font-size:1.1rem; margin-bottom:6px; color:#ffd166; cursor:pointer;"></div>
+              <div id="mapInfoRatingFeedback" style="font-size:0.85rem; color:#a0aec0; margin-bottom:18px; min-height:20px;">Tap a star to rate this destination.</div>
+              <div style="display:grid; gap:14px;">
+                <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 16px;">
+                  <div style="font-size:0.82rem; color:#94a3b8; margin-bottom:8px;">📍 Location</div>
+                  <div id="mapInfoAddress" style="font-size:0.95rem; color:#fff; font-weight:600;">Location details</div>
+                </div>
+                <div style="display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;">
+                  <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 16px;">
+                    <div style="font-size:0.82rem; color:#94a3b8; margin-bottom:8px;">⏰ Hours</div>
+                    <div id="mapInfoHours" style="font-size:0.95rem; color:#fff; font-weight:600;">Open now</div>
+                  </div>
+                  <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 16px;">
+                    <div style="font-size:0.82rem; color:#94a3b8; margin-bottom:8px;">💰 Fee</div>
+                    <div id="mapInfoFee" style="font-size:0.95rem; color:#fff; font-weight:600;">Free</div>
+                  </div>
+                </div>
+                <div style="padding: 16px; border-radius: 20px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);">
+                  <div style="display:flex; justify-content:space-between; font-size:0.83rem; color:#94a3b8; margin-bottom:10px;"><span>Current crowd level</span><span id="mapInfoCrowdPercent" style="color:#fff; font-weight:600;">55%</span></div>
+                  <div style="background: rgba(255,255,255,0.08); border-radius: 999px; height: 10px; overflow:hidden;">
+                    <div id="mapInfoCrowdBar" style="width: 55%; height: 100%; background: linear-gradient(135deg, #7ac7ff, #38bdf8);"></div>
+                  </div>
+                </div>
+              </div>
+              <div style="display:grid; gap:10px; margin-top:18px;">
+                <button onclick="navigateToDestinationWithCurrentLocation()" style="width:100%; padding:12px 0; border:none; border-radius:18px; background: rgba(255,255,255,0.08); color:#fff; font-weight:700; cursor:pointer;">Directions</button>
+                <button style="width:100%; padding:12px 0; border:none; border-radius:18px; background: linear-gradient(135deg, #1f2937, #111827); color:#fff; font-weight:700; cursor:pointer;">Save</button>
+                <div style="display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:10px;">
+                  <button style="padding:12px 0; border:none; border-radius:18px; background: rgba(255,255,255,0.08); color:#fff; font-weight:700; cursor:pointer;">Photos</button>
+                  <button style="padding:12px 0; border:none; border-radius:18px; background: rgba(255,255,255,0.08); color:#fff; font-weight:700; cursor:pointer;">Share</button>
+                </div>
+                <div id="mapInfoRouteSuggestion" style="display:none; margin-top:18px; padding:16px; border-radius:20px; background: rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); color:#d1d5db; font-size:0.95rem;"></div>
+              </div>
+            </div>
+          </div>
+          <div id="itineraryOverviewMap" style="width:100%; min-height: 360px; background:#0b1220;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="destinationSelectionToolbar" style="display:flex; flex-wrap:wrap; gap:18px; align-items:flex-start; justify-content:space-between; margin-top: 24px;">
+      <div style="flex:1 1 720px; min-width:280px;">
+        <span style="color:#ff7a18; font-size:0.85rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;">Select Destinations</span>
+        <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:12px;">
+          <button type="button" data-destination-category-button="Recommended" onclick="setDestinationCategory('Recommended')" style="padding: 12px 16px; border:none; border-radius: 999px; background: #667eea; color: #fff; cursor:pointer; font-weight:700; min-width:110px;">Recommended</button>
+          <button type="button" data-destination-category-button="All" onclick="setDestinationCategory('All')" style="padding: 12px 16px; border:none; border-radius: 999px; background: rgba(255,255,255,0.06); color:#cbd5e1; cursor:pointer; font-weight:700; min-width:80px;">All</button>
+          <button type="button" data-destination-category-button="Nature" onclick="setDestinationCategory('Nature')" style="padding: 12px 16px; border:none; border-radius: 999px; background: rgba(255,255,255,0.06); color:#cbd5e1; cursor:pointer; font-weight:700;">🌿 Nature</button>
+          <button type="button" data-destination-category-button="Beach" onclick="setDestinationCategory('Beach')" style="padding: 12px 16px; border:none; border-radius: 999px; background: rgba(255,255,255,0.06); color:#cbd5e1; cursor:pointer; font-weight:700;">🏖 Beach</button>
+          <button type="button" data-destination-category-button="Culture" onclick="setDestinationCategory('Culture')" style="padding: 12px 16px; border:none; border-radius: 999px; background: rgba(255,255,255,0.06); color:#cbd5e1; cursor:pointer; font-weight:700;">🏛 Culture</button>
+          <button type="button" data-destination-category-button="Food" onclick="setDestinationCategory('Food')" style="padding: 12px 16px; border:none; border-radius: 999px; background: rgba(255,255,255,0.06); color:#cbd5e1; cursor:pointer; font-weight:700;">🍽 Food</button>
+          <button type="button" data-destination-category-button="Adventure" onclick="setDestinationCategory('Adventure')" style="padding: 12px 16px; border:none; border-radius: 999px; background: rgba(255,255,255,0.06); color:#cbd5e1; cursor:pointer; font-weight:700;">🎡 Adventure</button>
+        </div>
+      </div>
+      <div style="flex:0 0 280px; min-width:220px; display:flex; flex-direction:column; gap:14px;">
+        <label for="destinationSortSelect" style="display:block; color:#a0aec0; font-size:0.85rem; margin-bottom:8px; font-weight:700;">Sort by</label>
+        <select id="destinationSortSelect" onchange="setDestinationSort(this.value)" style="width:100%; padding:12px 14px; border-radius:18px; border:1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.05); color:#fff; font-weight:700; outline:none; appearance:none; cursor:pointer;">
+          <option value="recommended">Recommended</option>
+          <option value="highest_rating">Highest Rating</option>
+          <option value="lowest_rating">Lowest Rating</option>
+          <option value="fits_budget">Fits Budget First</option>
+          <option value="lowest_cost">Lowest Cost</option>
+          <option value="highest_cost">Highest Cost</option>
+          <option value="least_crowded_first">Least Crowded First</option>
+        </select>
+      </div>
+      <div id="destinationBudgetSummary" style="display:none; background: rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius: 18px; padding: 18px; color:#fff; min-width:260px; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;">
+        <div style="text-align:left;">
+          <div style="color:#94a3b8; font-size:0.8rem; margin-bottom:6px;">Selected cost</div>
+          <div id="selectedCostValue" style="color:#fff; font-weight:700; font-size:1rem;">₱300</div>
+        </div>
+        <div style="text-align:left;">
+          <div style="color:#94a3b8; font-size:0.8rem; margin-bottom:6px;">Budget per person</div>
+          <div id="selectedTotalBudgetValue" style="color:#fff; font-weight:700; font-size:1rem;">₱10,000</div>
+        </div>
+        <div style="text-align:left;">
+          <div style="color:#94a3b8; font-size:0.8rem; margin-bottom:6px;">Remaining</div>
+          <div id="selectedRemainingValue" style="color:#fff; font-weight:700; font-size:1rem;">₱9,700</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="selectedDestinationSummary" style="display:none; width:100%; margin-top: 24px; padding: 18px 24px; background: rgba(15,23,42,0.95); border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; display:flex; align-items:center; justify-content:space-between; gap: 16px; flex-wrap:wrap;">
+      <div style="min-width:0; display:flex; flex-direction:column; gap:6px;">
+        <div id="selectedDestinationStatus" style="color:#e2e8f0; font-size:0.95rem; line-height:1.5;">Selected 0 destinations</div>
+        <div id="selectedDestinationNote" style="color:#fca5a5; font-size:0.82rem; line-height:1.4; display:none;">Over budget</div>
+      </div>
+      <button type="button" onclick="proceedToItineraryForm()" style="padding: 14px 22px; border:none; border-radius: 16px; background: linear-gradient(135deg, #34d399, #22c55e); color:#fff; font-weight:700; cursor:pointer; white-space:nowrap;">Build Itinerary →</button>
+    </div>
+
+    <!-- Recommended Destinations -->
+    <div id="destinationCarouselStep" style="width: 100%; display: block;">
+      <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;">
+        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+          <span style="color: #ff7a18; font-size: 0.85rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;">Recommended</span>
+          <h3 class="text-heading" style="color: white; font-size: 1.8rem; font-weight: 800; margin: 0;">Destinations matched to your trip</h3>
+        </div>
+        <p style="color: #a0aec0; font-size: 1rem; max-width: 850px; margin: 0;">Choose the best spots from the map and itinerary preferences below. The map updates live with recommended destinations for your selected travel style and budget.</p>
+      </div>
       <div style="position: relative; max-width: 1200px; margin: 0 auto; padding: 0 20px;">
-        <!-- Carousel Container -->
         <div id="destinationCarousel" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; width: 100%; perspective: 1000px;">
           <!-- Destination cards will be inserted here by JavaScript -->
         </div>
       </div>
     </div>
 
-    <!-- Step 2: Destination Detail Modal -->
+    <!-- Destination Detail Modal -->
     <div id="destinationModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 2000; backdrop-filter: blur(8px); flex-direction: column; align-items: center; justify-content: center; padding: 20px; overflow-y: auto;">
       <div style="background: white; border-radius: 20px; max-width: 800px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); position: relative;">
         <!-- Close Button -->
@@ -3045,173 +3277,13 @@ function renderModalPredictionCharts(ev) {
             <ul id="modalHighlights" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;"></ul>
           </div>
 
-          <!-- Calendar: Select Days -->
-          <div style="background: #fff5f0; border-radius: 12px; padding: 20px; margin-bottom: 30px; border-left: 4px solid #ff7a18;">
-            <h4 style="color: #ff7a18; font-weight: 700; margin: 0 0 15px 0;">📅 How many days do you have?</h4>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 12px;">
-              <button class="day-selector" data-days="1" onclick="selectDays(this, 1)" style="padding: 12px; border: 2px solid #ddd; border-radius: 8px; background: white; cursor: pointer; font-weight: 600; color: #666; transition: all 0.3s;">1 Day</button>
-              <button class="day-selector" data-days="2" onclick="selectDays(this, 2)" style="padding: 12px; border: 2px solid #ddd; border-radius: 8px; background: white; cursor: pointer; font-weight: 600; color: #666; transition: all 0.3s;">2 Days</button>
-              <button class="day-selector" data-days="3" onclick="selectDays(this, 3)" style="padding: 12px; border: 2px solid #ddd; border-radius: 8px; background: white; cursor: pointer; font-weight: 600; color: #666; transition: all 0.3s;">3 Days</button>
-              <button class="day-selector" data-days="4" onclick="selectDays(this, 4)" style="padding: 12px; border: 2px solid #ddd; border-radius: 8px; background: white; cursor: pointer; font-weight: 600; color: #666; transition: all 0.3s;">4 Days</button>
-              <button class="day-selector" data-days="5" onclick="selectDays(this, 5)" style="padding: 12px; border: 2px solid #ddd; border-radius: 8px; background: white; cursor: pointer; font-weight: 600; color: #666; transition: all 0.3s;">5+ Days</button>
-            </div>
-          </div>
-
-          <!-- Create Itinerary Button -->
-          <button id="createItineraryBtn" onclick="proceedToItineraryForm()" style="width: 100%; padding: 16px; background: linear-gradient(135deg, #ff7a18, #ff6a88); color: white; border: none; border-radius: 10px; font-size: 1.05rem; font-weight: 700; cursor: pointer; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 30px rgba(255,122,24,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">Create Itinerary</button>
+          <!-- Close modal button -->
+          <button type="button" onclick="closeDestinationModal()" style="width: 100%; padding: 16px; background: linear-gradient(135deg, #667eea, #764fa2); color: white; border: none; border-radius: 10px; font-size: 1.05rem; font-weight: 700; cursor: pointer; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 30px rgba(102,126,234,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">Close</button>
         </div>
       </div>
     </div>
 
-    <!-- Step 3: Itinerary Form & Results -->
-    <div id="itinerary"></div>
-    <div id="itineraryFormSection" style="display: none;">
-      <div class="create-itinerary-wrapper">
-        <!-- Left Column: Trip Details Form -->
-        <div class="itinerary-column itinerary-left">
-          <div class="itinerary-creator" style="background: linear-gradient(135deg, rgba(255,122,24,0.1), rgba(255,106,136,0.08)); border: 2px solid rgba(255,122,24,0.2);">
-            <h3 class="text-heading" style="color: #ff7a18; margin-bottom: 8px; animation-delay: 0.1s;">📋 Trip Details</h3>
-            <p class="text-paragraph" style="color: #a0aec0; margin-bottom: 20px; animation-delay: 0.2s;">Customize your itinerary preferences</p>
-            
-            <form id="itineraryForm" class="creator-form">
-              <!-- Trip Title -->
-              <div>
-                <label style="color: white; font-weight: 600; display: block; margin-bottom: 8px;">📍 Trip Name</label>
-                <input type="text" id="tripTitle" class="itinerary-input" placeholder="e.g., My Legazpi Adventure" required style="width: 100%; padding: 12px; border: 2px solid rgba(255,122,24,0.3); border-radius: 8px; background: rgba(255,255,255,0.05); color: white; font-size: 14px;" />
-              </div>
 
-              <!-- Budget Range -->
-              <div>
-                <label style="color: white; font-weight: 600; display: block; margin-bottom: 8px;">💰 Budget Range</label>
-                <select id="budgetRange" class="itinerary-select" style="width: 100%; padding: 12px; border: 2px solid rgba(255,122,24,0.5); border-radius: 8px; background: rgba(255,122,24,0.25); color: white; font-size: 14px;">
-                  <option value="">Select budget range</option>
-                  <option value="budget">Budget (₱1,000-3,000/day)</option>
-                  <option value="moderate">Moderate (₱3,000-7,000/day)</option>
-                  <option value="premium">Premium (₱7,000-15,000/day)</option>
-                  <option value="luxury">Luxury (₱15,000+/day)</option>
-                </select>
-              </div>
-
-              <!-- Travel Style -->
-              <div>
-                <label style="color: white; font-weight: 600; display: block; margin-bottom: 8px;">🎯 Travel Style</label>
-                <select id="travelStyle" class="itinerary-select" style="width: 100%; padding: 12px; border: 2px solid rgba(255,122,24,0.5); border-radius: 8px; background: rgba(255,122,24,0.25); color: white; font-size: 14px;">
-                  <option value="">Select your style</option>
-                  <option value="adventure">🏔️ Adventure (hiking, activities)</option>
-                  <option value="relaxation">🏖️ Relaxation (beaches, spas)</option>
-                  <option value="culture">🏛️ Culture (history, landmarks)</option>
-                  <option value="food">🍽️ Food (culinary, dining)</option>
-                  <option value="mixed">🎪 Mixed (all of the above)</option>
-                </select>
-              </div>
-
-              <!-- Generate Button with Change Route -->
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px;">
-                <button type="button" onclick="changeRoute()" style="padding: 14px; background: linear-gradient(135deg, #3498db, #2980b9); color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 1rem; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 30px rgba(52,152,219,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">↪️ Change Route</button>
-                <button type="button" id="generateItineraryBtn" onclick="generateItinerary()" style="padding: 14px; background: linear-gradient(135deg, #ff7a18, #ff6a88); color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 1rem; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 30px rgba(255,122,24,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">🚀 Generate My Itinerary</button>
-              </div>
-            </form>
-          </div>
-        </div>
-
-        <!-- Right Column: Results -->
-        <div class="itinerary-column itinerary-right">
-          <!-- Initial Placeholder -->
-          <div id="resultsPlaceholder" class="itinerary-plan-placeholder">
-            <h3 class="text-heading" style="animation-delay: 0.1s;">✨ Your Personalized Itinerary</h3>
-            <p class="text-paragraph" style="animation-delay: 0.2s;">Fill out your trip details and click "Generate My Itinerary" to get:</p>
-            <ul style="text-align: left; color: #666; margin-top: 15px;">
-              <li>🏨 Best hotels with prices & ratings</li>
-              <li>📅 Day-by-day activities & timing</li>
-              <li>�️ Live route map from your location to the destination</li>
-              <li>🌡️ Weather forecast for your dates</li>
-            </ul>
-          </div>
-
-          <!-- Results Container (Hidden Initially) -->
-          <div id="resultsContainer" style="display: none; display: flex; flex-direction: column; gap: 20px;">
-            
-            <!-- Hotels Panel -->
-            <div style="background: linear-gradient(135deg, rgba(102,126,234,0.1), rgba(118,75,162,0.08)); border: 2px solid rgba(102,126,234,0.2); border-radius: 12px; padding: 20px;">
-              <h4 style="color: white; font-weight: 700; margin: 0 0 15px 0;">🏨 Recommended Hotels</h4>
-              <div id="hotelLocation" style="background: rgba(255,122,24,0.15); padding: 12px; border-radius: 8px; border-left: 4px solid #ff7a18; margin-bottom: 15px; color: #a0aec0; font-size: 0.9rem; display: none;"></div>
-              <div id="hotelsList" style="display: grid; grid-template-columns: 1fr; gap: 12px;"></div>
-            </div>
-
-            <!-- Day-by-Day Activities -->
-            <div style="background: linear-gradient(135deg, rgba(102,126,234,0.1), rgba(118,75,162,0.08)); border: 2px solid rgba(102,126,234,0.2); border-radius: 12px; padding: 20px;">
-              <h4 style="color: white; font-weight: 700; margin: 0 0 15px 0;">📅 Day-by-Day Itinerary</h4>
-              <div id="dayByDayActivities" style="display: flex; flex-direction: column; gap: 12px;"></div>
-            </div>
-
-            <!-- Route -->
-            <div id="routePanel" style="background: linear-gradient(135deg, rgba(102,126,234,0.1), rgba(118,75,162,0.08)); border: 2px solid rgba(102,126,234,0.2); border-radius: 12px; padding: 20px;">
-              <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;">
-                  <div>
-                    <h4 style="color: white; font-weight: 700; margin: 0 0 8px 0;">🗺️ Route Map</h4>
-                    <p id="routeInfo" style="color: #a0aec0; font-size: 0.95rem; margin: 0;">Route from your current location to the selected destination will appear here.</p>
-                  </div>
-                  <div id="locationStatus" style="color: #a0aec0; font-size: 0.9rem; text-align: right;">📍 Detecting your location...</div>
-                </div>
-                <div id="routeTargetButtons" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center;">
-                  <button id="routeToDestinationBtn" type="button" onclick="setItineraryRouteTarget('destination')" style="border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.08); color: white; padding: 10px 16px; border-radius: 10px; cursor: pointer; min-width: 220px;">Route to destination</button>
-                  <button id="routeToHotelBtn" type="button" onclick="setItineraryRouteTarget('hotel')" style="border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.08); color: white; padding: 10px 16px; border-radius: 10px; cursor: pointer; opacity: 0.6; min-width: 220px;" disabled>Route to selected hotel</button>
-                </div>
-              </div>
-              <div id="itineraryRouteMap" style="width: 100%; height: 360px; border-radius: 12px; background: #1a1a2e; overflow: hidden;"></div>
-              <div id="routeDetailsCard" style="display:none; margin-top: 18px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 18px; color: white; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);"></div>
-            </div>
-
-            <!-- Weather -->
-            <div style="background: linear-gradient(135deg, rgba(102,126,234,0.1), rgba(118,75,162,0.08)); border: 2px solid rgba(102,126,234,0.2); border-radius: 12px; padding: 20px;">
-              <h4 style="color: white; font-weight: 700; margin: 0 0 15px 0;">🌡️ Weather Forecast</h4>
-              <div id="weatherList" style="display: grid; grid-template-columns: 1fr; gap: 12px;"></div>
-            </div>
-
-            <!-- Summary Card (Hidden Initially) -->
-            <div id="summaryCard" style="display: none; background: linear-gradient(135deg, rgba(255,122,24,0.2), rgba(255,106,136,0.2)); border: 2px solid rgba(255,122,24,0.4); border-radius: 12px; padding: 20px;">
-              <h4 style="color: #ff7a18; font-weight: 700; margin: 0 0 15px 0;">📋 Your Itinerary Summary</h4>
-              <div style="display: flex; gap: 16px; align-items: center; margin-bottom: 16px;">
-                <img id="summaryHotelImage" src="https://via.placeholder.com/200x120?text=Hotel" alt="Selected Hotel" style="width: 160px; height: 100px; object-fit: cover; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2);" />
-                <div style="flex: 1;">
-                  <p style="color: #a0aec0; font-size: 0.85rem; margin: 0; opacity: 0.8;">📍 Selected Accommodation</p>
-                  <p style="color: #ff7a18; font-weight: 600; margin: 5px 0 0 0;" id="summaryAccommodation">-</p>
-                </div>
-              </div>
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                <div>
-                  <p style="color: #a0aec0; font-size: 0.85rem; margin: 0; opacity: 0.8;">Trip Name</p>
-                  <p style="color: white; font-weight: 600; margin: 5px 0 0 0;" id="summaryTitle">-</p>
-                </div>
-                <div>
-                  <p style="color: #a0aec0; font-size: 0.85rem; margin: 0; opacity: 0.8;">Destination</p>
-                  <p style="color: white; font-weight: 600; margin: 5px 0 0 0;" id="summaryDest">-</p>
-                </div>
-                <div>
-                  <p style="color: #a0aec0; font-size: 0.85rem; margin: 0; opacity: 0.8;">Duration</p>
-                  <p style="color: white; font-weight: 600; margin: 5px 0 0 0;" id="summaryDays">-</p>
-                </div>
-                <div>
-                  <p style="color: #a0aec0; font-size: 0.85rem; margin: 0; opacity: 0.8;">Budget</p>
-                  <p style="color: white; font-weight: 600; margin: 5px 0 0 0;" id="summaryBudget">-</p>
-                </div>
-                <div style="grid-column: 1/-1;">
-                  <p style="color: #a0aec0; font-size: 0.85rem; margin: 0; opacity: 0.8;">Travel Style</p>
-                  <p style="color: white; font-weight: 600; margin: 5px 0 0 0;" id="summaryStyle">-</p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div id="actionButtons" style="display: none; gap: 12px; grid-template-columns: 1fr; margin-top: 20px;">
-              <button onclick="saveSummaryPDF()" style="padding: 14px; background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 0.95rem; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 30px rgba(231,76,60,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">Download</button>
-            </div>
-          </div>
-        </div>
-</section>
-
-<!-- =================== FEEDBACK (placed below Itinerary) =================== -->
 <section id="guest-feedback" class="parallax-bg scroll-animate" data-scroll-speed="0.3" style="background: linear-gradient(135deg, #0f172a 0%, #1a1f2e 100%), url('assets/aq.jpg') center/cover fixed; background-blend-mode: overlay; padding: 80px 20px;">
   <div style="position: absolute; inset: 0; background: linear-gradient(135deg, rgba(15,23,42,0.6), rgba(26,31,46,0.6)); pointer-events: none;"></div>
   <div style="max-width: 1200px; margin: 0 auto; position: relative; z-index: 1;">
@@ -3260,8 +3332,22 @@ function renderModalPredictionCharts(ev) {
 let currentDestination = null;
 let selectedDays = 0;
 let selectedDestinationCard = null;
+let selectedDestinationNames = [];
 let selectedAccommodation = null;
 let itineraryRouteTarget = 'destination';
+let itineraryOverviewMap = null;
+let itineraryOverviewMarkers = [];
+let itineraryOverviewLayer = null;
+let destinationUserRatings = JSON.parse(localStorage.getItem('destinationUserRatings') || '{}');
+let tripPreferences = {
+  startDate: '',
+  endDate: '',
+  budget: 5000,
+  adults: 2,
+  kids: 0,
+  travelStyle: 'nature',
+  travelStyles: ['nature']
+};
 
 // Comprehensive accommodation data with detailed transport options
 const accommodationData = {
@@ -3391,63 +3477,123 @@ const accommodationData = {
 const destinationData = {
   'Lignon Hill': {
     image: 'assets/lig.jpg',
-    description: 'Lignon Hill is a scenic viewpoint perfect for sunset watching and photography. Located in Legazpi City, it offers panoramic views of Mayon Volcano and the surrounding landscape. The hill is a favored spot for locals and tourists alike, especially during golden hour when the volcano is bathed in warm light.',
+    description: 'Lignon Hill is a scenic viewpoint perfect for sunset watching and photography. Located in Legazpi City, it offers panoramic views of Mayon Volcano and the surrounding landscape.',
     highlights: [
       '🌅 Best sunset views',
       '📸 Photography paradise',
       '🥾 Easy hiking trail',
       '🍽️ Nearby restaurants'
-    ]
+    ],
+    tags: ['nature', 'adventure', 'culture'],
+    budget: 'budget',
+    category: 'Nature',
+    rating: 4.7,
+    reviews: 4620,
+    address: 'San Roque, Legazpi City, Albay',
+    hours: '5:30 AM – 6:30 PM daily',
+    fee: '₱20 entrance fee',
+    crowdLevel: 'Moderately busy',
+    crowdPercent: 58
   },
   'Embarcadero de Legazpi': {
     image: 'assets/emba.jpg',
-    description: 'The Embarcadero de Legazpi is a modern waterfront development featuring shops, restaurants, and dining establishments. It\'s a vibrant hub for local and international cuisine, shopping, and entertainment. The area offers stunning night views of the city and is perfect for leisurely strolls, shopping, and savoring local delicacies.',
+    description: 'The Embarcadero is a vibrant waterfront district packed with restaurants, shops, and galleries. It\'s perfect for evening strolls, dining, and taking in spectacular bay views.',
     highlights: [
       '🍽️ Local & international cuisine',
       '🛍️ Shopping & boutiques',
       '🎉 Entertainment venues',
       '🌃 Beautiful night views'
-    ]
+    ],
+    tags: ['food', 'beach', 'culture'],
+    budget: 'moderate',
+    category: 'Dining',
+    rating: 4.8,
+    reviews: 5830,
+    address: 'Vasco St, Legazpi City, Albay',
+    hours: '10:00 AM – 10:00 PM daily',
+    fee: 'Free entry',
+    crowdLevel: 'Busy in the evenings',
+    crowdPercent: 72
   },
   'Albay Park & Wildlife': {
     image: 'assets/wild.jpg',
-    description: 'Albay Park & Wildlife offers visitors the chance to explore nature reserves and wildlife habitats. This eco-tourism destination is dedicated to conservation and education, featuring various animals, bird watching opportunities, and nature trails. Perfect for families and nature enthusiasts.',
+    description: 'Albay Park & Wildlife offers nature trails, wildlife encounters, and conservation exhibits. This family-friendly destination is ideal for outdoor learning and relaxation.',
     highlights: [
       '🦁 Wildlife viewing',
       '🐦 Bird watching',
       '🌿 Nature trails',
       '👨‍👧‍👦 Family-friendly'
-    ]
+    ],
+    tags: ['nature', 'family', 'mixed'],
+    budget: 'budget',
+    category: 'Wildlife',
+    rating: 4.6,
+    reviews: 2040,
+    address: 'Montenegro St, Legazpi City, Albay',
+    hours: '8:00 AM – 5:00 PM daily',
+    fee: '₱40 entry fee',
+    crowdLevel: 'Calm and easygoing',
+    crowdPercent: 32
   },
   'Highlands Park Legazpi City': {
     image: 'assets/high.jpg',
-    description: 'Located at elevation, Highlands Park offers scenic views and a cool climate perfect for picnics and family outings. The park features manicured gardens, scenic overlooks, and is ideal for those seeking a peaceful retreat away from the city.',
+    description: 'Highlands Park offers scenic views, lush gardens, and a cool climate. It\'s perfect for picnics, family outings, and relaxed walks in a peaceful elevated setting.',
     highlights: [
       '🏔️ Elevated scenic views',
       '🧘 Peaceful atmosphere',
       '🍴 Picnic areas',
       '👨‍👩‍👧‍👦 Family activities'
-    ]
+    ],
+    tags: ['adventure', 'nature', 'mixed'],
+    budget: 'moderate',
+    category: 'Park',
+    rating: 4.5,
+    reviews: 3210,
+    address: 'Bgy. Rawis, Legazpi City, Albay',
+    hours: '6:00 AM – 7:00 PM daily',
+    fee: '₱30 entrance fee',
+    crowdLevel: 'Pleasantly quiet',
+    crowdPercent: 38
   },
   'Nuestra Senora de Salvacion': {
     image: 'assets/marry.jpg',
-    description: 'This historic church is an important spiritual and cultural landmark in Legazpi. Built with traditional architecture, it represents the region\'s religious heritage and offers peaceful surroundings for reflection and prayer. The church is a must-visit for cultural enthusiasts.',
+    description: 'This historic church is a cultural landmark featuring classic architecture, stained glass, and a serene atmosphere. It\'s a peaceful stop for history lovers and spiritual visitors.',
     highlights: [
       '⛪ Historic architecture',
       '🙏 Spiritual significance',
       '📚 Cultural heritage',
       '🎨 Artwork & design'
-    ]
+    ],
+    tags: ['culture', 'history', 'mixed'],
+    budget: 'budget',
+    category: 'Landmark',
+    rating: 4.8,
+    reviews: 2890,
+    address: 'Daraga, Albay, Philippines',
+    hours: '6:00 AM – 6:00 PM daily',
+    fee: 'Free entry',
+    crowdLevel: 'Usually a little busy',
+    crowdPercent: 55
   },
   'SEVENTY-SIX Farm': {
     image: 'assets/farm.jpg',
-    description: 'An agritourism destination offering farm-to-table dining experiences. SEVENTY-SIX Farm showcases local agriculture, provides farm tours, and serves fresh, locally-sourced meals. Perfect for culinary enthusiasts and those wanting to connect with local farming practices.',
+    description: 'SEVENTY-SIX Farm is an agritourism destination where visitors can enjoy farm tours, fresh dining, and local produce experiences in a rustic setting.',
     highlights: [
       '🌾 Farm tours',
       '🍽️ Farm-to-table dining',
       '🥬 Fresh local produce',
       '🚜 Agricultural education'
-    ]
+    ],
+    tags: ['food', 'nature', 'family'],
+    budget: 'moderate',
+    category: 'Farm',
+    rating: 4.7,
+    reviews: 1980,
+    address: 'San Roque, Legazpi City, Albay',
+    hours: '8:00 AM – 6:00 PM daily',
+    fee: '₱50 entry fee',
+    crowdLevel: 'Lively and fresh',
+    crowdPercent: 63
   }
 };
 
@@ -3483,6 +3629,281 @@ function getHotelImage(hotelName) {
     'Emerald Boutique Hotel': 'https://via.placeholder.com/400x240?text=Emerald+Boutique+Hotel'
   };
   return images[hotelName] || 'https://via.placeholder.com/400x240?text=Hotel';
+}
+
+function setTravelStyle(event, style) {
+  const chips = document.querySelectorAll('.style-chip');
+  const allStyles = ['nature', 'beach', 'food', 'culture', 'adventure'];
+
+  if (style === 'mixed') {
+    tripPreferences.travelStyles = [...allStyles];
+  } else {
+    const styles = new Set(tripPreferences.travelStyles || [tripPreferences.travelStyle || 'nature']);
+    if (styles.has(style)) {
+      if (styles.size > 1) {
+        styles.delete(style);
+      }
+    } else {
+      styles.add(style);
+    }
+    tripPreferences.travelStyles = Array.from(styles);
+  }
+
+  if (!tripPreferences.travelStyles || tripPreferences.travelStyles.length === 0) {
+    tripPreferences.travelStyles = [...allStyles];
+  }
+
+  tripPreferences.travelStyle = tripPreferences.travelStyles.length === 1
+    ? tripPreferences.travelStyles[0]
+    : tripPreferences.travelStyles.length === allStyles.length
+      ? 'mixed'
+      : tripPreferences.travelStyles.join(', ');
+
+  chips.forEach(chip => {
+    if (chip.dataset.style === 'mixed') {
+      chip.classList.toggle('active', tripPreferences.travelStyles.length === allStyles.length);
+    } else {
+      chip.classList.toggle('active', tripPreferences.travelStyles.includes(chip.dataset.style));
+    }
+  });
+
+  const label = document.getElementById('selectedStyleLabel');
+  if (label) {
+    label.textContent = tripPreferences.travelStyles.length === allStyles.length
+      ? 'All'
+      : tripPreferences.travelStyles.map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(', ');
+  }
+
+  renderRecommendedDestinations();
+}
+
+function parseDestinationFee(dest) {
+  if (!dest) return null;
+  if (typeof dest.price === 'number') return dest.price;
+  if (typeof dest.fee === 'string') {
+    if (/free/i.test(dest.fee)) return 0;
+    const feeMatch = dest.fee.replace(/,/g, '').match(/(\d+(?:\.\d+)?)/);
+    if (feeMatch) return parseFloat(feeMatch[1]);
+  }
+  return null;
+}
+
+function getDestinationPrice(dest) {
+  if (!dest) return 0;
+  const feeValue = parseDestinationFee(dest);
+  if (feeValue !== null) return feeValue;
+
+  switch (dest.budget) {
+    case 'budget': return 300;
+    case 'moderate': return 650;
+    case 'premium': return 1500;
+    default: return 500;
+  }
+}
+
+function calculateSelectedCost() {
+  return selectedDestinationNames.reduce((sum, name) => {
+    const dest = destinationData[name];
+    return sum + getDestinationPrice(dest);
+  }, 0);
+}
+
+function calculateTotalBudget() {
+  return tripPreferences.budget;
+}
+
+function toggleDestinationSelection(destName) {
+  const dest = destinationData[destName];
+  if (!dest) return;
+
+  const index = selectedDestinationNames.indexOf(destName);
+  const isAdding = index < 0;
+  if (isAdding) {
+    const isFullyPacked = dest.crowdPercent >= 90 || /full capacity|fully packed/i.test(dest.crowdLevel || '');
+    const isVeryBusy = dest.crowdPercent >= 75 || /very busy/i.test(dest.crowdLevel || '');
+
+    if (isFullyPacked) {
+      const keep = confirm(`This spot is fully packed!\n\"${destName}\" is at full capacity. Add it anyway?`);
+      if (!keep) return;
+    } else if (isVeryBusy) {
+      showSnackbar(`Very Busy\n👥 ${destName} is very busy right now.`, 'warning', 5000);
+    }
+  }
+
+  if (index >= 0) {
+    selectedDestinationNames.splice(index, 1);
+  } else {
+    selectedDestinationNames.push(destName);
+  }
+
+  const totalBudget = calculateTotalBudget();
+  const selectedCost = calculateSelectedCost();
+
+  if (selectedCost > totalBudget) {
+    showSnackbar(`Total Budget Exceeded\nYour selections now cost ₱${selectedCost.toLocaleString('en-PH')}, over your ₱${totalBudget.toLocaleString('en-PH')} total budget.`, 'error', 6000);
+  }
+
+  updateBudgetSummary();
+  updateSelectedSummary();
+  renderRecommendedDestinations();
+}
+
+function updateBudgetSummary() {
+  const summaryCard = document.getElementById('destinationBudgetSummary');
+  const totalBudgetEl = document.getElementById('selectedTotalBudgetValue');
+  const selectedCostEl = document.getElementById('selectedCostValue');
+  const remainingEl = document.getElementById('selectedRemainingValue');
+  if (!summaryCard || !totalBudgetEl || !selectedCostEl || !remainingEl) return;
+
+  const selectedCount = selectedDestinationNames.length;
+  if (!selectedCount) {
+    summaryCard.style.display = 'none';
+    return;
+  }
+  summaryCard.style.display = 'grid';
+
+  const totalBudget = calculateTotalBudget();
+  const selectedCost = calculateSelectedCost();
+  const remaining = totalBudget - selectedCost;
+
+  const newTotal = `₱${totalBudget.toLocaleString('en-PH')}`;
+  const newSelected = `₱${selectedCost.toLocaleString('en-PH')}`;
+  const newRemaining = remaining >= 0
+    ? `₱${remaining.toLocaleString('en-PH')}`
+    : `₱${Math.abs(remaining).toLocaleString('en-PH')} over`;
+
+  if (totalBudgetEl.textContent !== newTotal) {
+    totalBudgetEl.textContent = newTotal;
+    totalBudgetEl.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.04)' }, { transform: 'scale(1)' }], { duration: 220, easing: 'ease-out' });
+  }
+  if (selectedCostEl.textContent !== newSelected) {
+    selectedCostEl.textContent = newSelected;
+    selectedCostEl.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.04)' }, { transform: 'scale(1)' }], { duration: 220, easing: 'ease-out' });
+  }
+  if (remainingEl.textContent !== newRemaining) {
+    remainingEl.textContent = newRemaining;
+    remainingEl.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.04)' }, { transform: 'scale(1)' }], { duration: 220, easing: 'ease-out' });
+  }
+
+  remainingEl.style.color = remaining < 0 ? '#fb7185' : '#fff';
+}
+
+function updateBudgetDisplay() {
+  const slider = document.getElementById('budgetRangeSlider');
+  const label = document.getElementById('budgetValueDisplay');
+  if (!slider || !label) return;
+  tripPreferences.budget = Number(slider.value);
+  label.textContent = `₱${tripPreferences.budget.toLocaleString('en-PH')}`;
+  updateBudgetSummary();
+  renderRecommendedDestinations();
+}
+
+function updateMapStatus(message) {
+  const el = document.getElementById('mapStatus');
+  if (el) el.textContent = message;
+}
+
+function applyTripPreferences() {
+  const startDate = document.getElementById('tripStartDate')?.value;
+  const endDate = document.getElementById('tripEndDate')?.value;
+  const adults = Number(document.getElementById('tripAdults')?.value || 1);
+  const kids = Number(document.getElementById('tripKids')?.value || 0);
+
+  if (!startDate || !endDate) {
+    alert('Please select travel dates before finding destinations.');
+    return;
+  }
+  if (new Date(endDate) < new Date(startDate)) {
+    alert('End date cannot be before start date.');
+    return;
+  }
+  if (adults < 1) {
+    alert('Please enter at least one adult traveler.');
+    return;
+  }
+
+  tripPreferences.startDate = startDate;
+  tripPreferences.endDate = endDate;
+  tripPreferences.adults = adults;
+  tripPreferences.kids = kids;
+
+  updateBudgetDisplay();
+  renderRecommendedDestinations();
+  renderItineraryOverviewMarkers();
+  document.getElementById('destinationCarouselStep').style.display = 'block';
+  document.getElementById('destinationCarouselStep').scrollIntoView({ behavior: 'smooth' });
+  updateMapStatus(`Budget ₱${tripPreferences.budget.toLocaleString('en-PH')} · ${tripPreferences.adults} adult(s), ${tripPreferences.kids} kid(s) · ${tripPreferences.travelStyle}`);
+}
+
+function initItineraryOverviewMap() {
+  const mapContainer = document.getElementById('itineraryOverviewMap');
+  if (!mapContainer || itineraryOverviewMap) return;
+
+  itineraryOverviewMap = L.map(mapContainer, { zoomControl: true, attributionControl: true }).setView([13.1, 123.75], 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors',
+    maxZoom: 19
+  }).addTo(itineraryOverviewMap);
+
+  renderItineraryOverviewMarkers();
+  setTimeout(() => {
+    if (itineraryOverviewMap) {
+      itineraryOverviewMap.invalidateSize();
+    }
+  }, 250);
+}
+
+function renderItineraryOverviewMarkers() {
+  if (!itineraryOverviewMap) return;
+  itineraryOverviewMarkers.forEach(marker => itineraryOverviewMap.removeLayer(marker));
+  itineraryOverviewMarkers = [];
+
+  const keys = Object.keys(destinationData);
+  const filteredKeys = tripPreferences.startDate ? keys.filter(destinationMatchesPreferences) : keys;
+  const markerKeys = filteredKeys.length ? filteredKeys : keys;
+
+  markerKeys.forEach(destName => {
+    const coords = itineraryDestinationCoords[destName];
+    if (!coords) return;
+    const dest = destinationData[destName];
+    const crowdPercent = dest?.crowdPercent || 0;
+    let markerColor = '#34d399';
+    if (crowdPercent >= 90) markerColor = '#ef4444';
+    else if (crowdPercent >= 75) markerColor = '#f97316';
+    else if (crowdPercent >= 50) markerColor = '#fbbf24';
+
+    const marker = L.circleMarker([coords.lat, coords.lon], {
+      radius: 11,
+      color: markerColor,
+      weight: 2,
+      fillColor: markerColor,
+      fillOpacity: 0.85
+    }).addTo(itineraryOverviewMap);
+
+    marker.bindTooltip(`
+      <div class="destination-tooltip-card">
+        <img src="${dest?.image || 'https://via.placeholder.com/88x88?text=Image'}" alt="${destName}" style="width:88px; height:88px; min-width:88px; object-fit:cover; border-radius:16px; border:1px solid rgba(255,255,255,0.14);" />
+        <div style="min-width:0; display:flex; flex-direction:column; gap:6px;">
+          <div style="font-size:0.95rem; font-weight:700; color:#fff; line-height:1.2; overflow-wrap:anywhere; word-break:break-word; white-space: normal;">${destName}</div>
+          <div style="font-size:0.78rem; color:#cbd5e1; line-height:1.35; overflow-wrap:anywhere; word-break:break-word; white-space: normal;">${dest?.address || 'Location unavailable'}</div>
+          <div style="margin-top:10px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; font-size:0.78rem; color:#fbbf24;">
+            <span>★ ${dest?.rating?.toFixed(1) || '0.0'}</span>
+            <span style="color:#94a3b8;">${dest?.reviews?.toLocaleString() || 0} reviews</span>
+          </div>
+        </div>
+      </div>
+    `, { direction: 'top', offset: [0, -14], className: 'destination-tooltip', opacity: 1 });
+    marker.on('click', () => {
+      currentDestination = destName;
+      showMapInfoCard(destName);
+    });
+    itineraryOverviewMarkers.push(marker);
+  });
+
+  if (markerKeys.length > 0) {
+    const bounds = L.latLngBounds(markerKeys.map(name => [itineraryDestinationCoords[name].lat, itineraryDestinationCoords[name].lon]));
+    itineraryOverviewMap.fitBounds(bounds.pad(0.15));
+  }
 }
 
 function getRouteItemImage(target, itemName) {
@@ -3709,87 +4130,416 @@ function getItineraryDayPlans(destination, category, days) {
   return plans;
 }
 
-// Initialize destination carousel
-function initDestinationCarousel() {
+function getBudgetLevel() {
+  const value = tripPreferences.budget;
+  if (value <= 3000) return 'budget';
+  if (value <= 7000) return 'moderate';
+  return 'premium';
+}
+
+function destinationMatchesPreferences(destName) {
+  const dest = destinationData[destName];
+  if (!dest) return false;
+
+  const styles = tripPreferences.travelStyles || [tripPreferences.travelStyle || 'nature'];
+  const budgetLevel = getBudgetLevel();
+  const matchesStyle = styles.includes('mixed') || (dest.tags && dest.tags.some(tag => styles.includes(tag)));
+  const matchesBudget = !dest.budget || dest.budget === budgetLevel || (budgetLevel === 'premium' && dest.budget !== 'budget');
+
+  return matchesStyle && matchesBudget;
+}
+
+let selectedDestinationCategory = 'Recommended';
+let selectedDestinationSort = 'recommended';
+const destinationBudgetRank = { budget: 1, moderate: 2, premium: 3 };
+
+function setDestinationCategory(category) {
+  selectedDestinationCategory = category;
+  document.querySelectorAll('[data-destination-category-button]').forEach(btn => {
+    const isActive = btn.dataset.destinationCategoryButton === category;
+    btn.style.background = isActive ? '#667eea' : 'rgba(255,255,255,0.06)';
+    btn.style.color = isActive ? '#fff' : '#cbd5e1';
+  });
+  renderRecommendedDestinations();
+}
+
+function setDestinationSort(sortType) {
+  selectedDestinationSort = sortType;
+  const select = document.getElementById('destinationSortSelect');
+  if (select) select.value = sortType;
+  renderRecommendedDestinations();
+}
+
+function destinationMatchesCategory(destName) {
+  if (selectedDestinationCategory === 'All') return true;
+  if (selectedDestinationCategory === 'Recommended') return destinationMatchesPreferences(destName);
+  const dest = destinationData[destName];
+  if (!dest) return false;
+  const normalizedCategory = selectedDestinationCategory.toLowerCase();
+  return (dest.category && dest.category.toLowerCase() === normalizedCategory) || (dest.tags && dest.tags.map(tag => tag.toLowerCase()).includes(normalizedCategory));
+}
+
+function getDestinationPrice(dest) {
+  if (!dest) return 0;
+  if (typeof dest.price === 'number') return dest.price;
+  switch (dest.budget) {
+    case 'budget': return 300;
+    case 'moderate': return 650;
+    case 'premium': return 1500;
+    default: return 500;
+  }
+}
+
+function sortDestinationNames(list) {
+  return list.slice().sort((a, b) => {
+    const destA = destinationData[a];
+    const destB = destinationData[b];
+    if (!destA || !destB) return 0;
+
+    switch (selectedDestinationSort) {
+      case 'highest_rating':
+        return (destB.rating || 0) - (destA.rating || 0);
+      case 'lowest_rating':
+        return (destA.rating || 0) - (destB.rating || 0);
+      case 'fits_budget': {
+        const aMatch = destinationMatchesPreferences(a) ? 0 : 1;
+        const bMatch = destinationMatchesPreferences(b) ? 0 : 1;
+        if (aMatch !== bMatch) return aMatch - bMatch;
+        return (destB.rating || 0) - (destA.rating || 0);
+      }
+      case 'lowest_cost':
+        return (destinationBudgetRank[destA.budget] || 99) - (destinationBudgetRank[destB.budget] || 99);
+      case 'highest_cost':
+        return (destinationBudgetRank[destB.budget] || 99) - (destinationBudgetRank[destA.budget] || 99);
+      case 'least_crowded_first':
+        return (destA.crowdPercent || 0) - (destB.crowdPercent || 0);
+      default:
+        const aRec = destinationMatchesPreferences(a) ? 0 : 1;
+        const bRec = destinationMatchesPreferences(b) ? 0 : 1;
+        if (aRec !== bRec) return aRec - bRec;
+        return (destB.rating || 0) - (destA.rating || 0);
+    }
+  });
+}
+
+function renderRecommendedDestinations() {
   const carousel = document.getElementById('destinationCarousel');
+  if (!carousel) return;
   carousel.innerHTML = '';
 
-  Object.keys(destinationData).forEach((destName, index) => {
+  const allDestinations = Object.keys(destinationData);
+  const recommended = allDestinations.filter(destinationMatchesPreferences);
+  const filtered = allDestinations.filter(destinationMatchesCategory);
+  const displayList = sortDestinationNames(filtered);
+
+  displayList.forEach(destName => {
+    const dest = destinationData[destName];
+    const isRecommended = recommended.includes(destName);
+    const isSelected = selectedDestinationNames.includes(destName);
     const card = document.createElement('div');
     card.style.cssText = `
-      background: white;
+      background: ${isSelected ? 'rgba(56,189,248,0.08)' : '#0f172a'};
       border-radius: 16px;
       overflow: hidden;
       cursor: pointer;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-      transition: all 0.3s ease;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+      transition: transform 0.3s ease, border-color 0.3s ease, opacity 0.3s ease;
       transform: scale(1);
+      border: 1px solid ${isSelected ? '#22c55e' : isRecommended ? '#ff7a18' : 'rgba(255,255,255,0.08)'};
     `;
     card.onmouseover = function() {
-      this.style.transform = 'scale(1.05)';
-      this.style.boxShadow = '0 12px 40px rgba(0,0,0,0.2)';
+      this.style.transform = 'scale(1.03)';
     };
     card.onmouseout = function() {
       this.style.transform = 'scale(1)';
-      this.style.boxShadow = '0 6px 20px rgba(0,0,0,0.1)';
     };
-    card.onclick = () => openDestinationModal(destName);
+    card.onclick = (e) => {
+      if (!e.target.closest('.select-destination-button')) {
+        toggleDestinationSelection(destName);
+      }
+    };
 
-    const imgUrl = destinationData[destName].image;
+    const imgUrl = dest.image;
+    const summary = dest.description.length > 90 ? dest.description.substring(0, 90) + '...' : dest.description;
+    const price = getDestinationPrice(dest);
+    const starCount = Math.round(dest.rating || 4);
+    const stars = '★'.repeat(Math.min(5, starCount));
+    const reviewCount = dest.reviews ? `${dest.reviews.toLocaleString()} guest review${dest.reviews === 1 ? '' : 's'}` : '1 guest review';
+    const tagLabel = dest.category || dest.tags?.[0] || 'Travel';
+    const isCrowded = dest.crowdPercent >= 75 || /very busy/i.test(dest.crowdLevel || '');
+    const isPacked = dest.crowdPercent >= 90 || /full capacity|fully packed/i.test(dest.crowdLevel || '');
+    const crowdStatus = isPacked ? 'Fully packed' : isCrowded ? 'Very busy' : dest.crowdLevel || 'Light crowd';
+    const crowdColor = isPacked ? '#fda4af' : isCrowded ? '#fde68a' : '#94a3b8';
     card.innerHTML = `
-      <div style="height: 200px; background: linear-gradient(135deg, #667eea, #764fa2); overflow: hidden;">
-        <img src="${imgUrl}" alt="${destName}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.background='linear-gradient(135deg, #667eea, #764fa2)'">
-      </div>
-      <div style="padding: 16px;">
-        <h4 style="color: #0f172a; font-weight: 700; margin: 0 0 8px 0; font-size: 1.1rem;">${destName}</h4>
-        <p style="color: #666; font-size: 0.9rem; margin: 0; line-height: 1.5; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical;">
-          ${destinationData[destName].description.substring(0, 80)}...
-        </p>
-        <button style="margin-top: 12px; width: 100%; padding: 10px; background: linear-gradient(135deg, #ff7a18, #ff6a88); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s;">View Details</button>
+      <div style="height: 220px; overflow: hidden; background: #111;"><img src="${imgUrl}" alt="${destName}" style="width:100%; height:100%; object-fit:cover; filter: brightness(0.85);" /></div>
+      <div style="padding: 18px; display:flex; flex-direction:column; height:100%;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px;">
+          <h4 style="color:#fff; font-size:1.15rem; margin:0;">${destName}</h4>
+          <span style="padding:4px 10px; border-radius:999px; font-size:0.75rem; font-weight:700; letter-spacing:0.4px; background:${isRecommended ? '#ff7a18' : 'rgba(255,255,255,0.08)'}; color:${isRecommended ? '#0b1220' : '#d1d5db'};">${isRecommended ? 'Recommended' : 'Optional'}</span>
+        </div>
+        <p style="color:#cbd5e1; font-size:0.9rem; line-height:1.6; min-height:56px; margin:0 0 12px 0;">${summary}</p>
+        <div style="display:flex; gap: 10px; flex-wrap:wrap; margin-bottom: 14px;">
+          <span style="background: rgba(255,122,24,0.12); color: #ffb347; padding: 8px 10px; border-radius: 10px; font-size:0.8rem;">${tagLabel}</span>
+          <span style="background: rgba(255,255,255,0.05); color: #94a3b8; padding: 8px 10px; border-radius: 10px; font-size:0.8rem;">${dest.budget ? dest.budget.charAt(0).toUpperCase() + dest.budget.slice(1) : 'Flexible'}</span>
+          <span style="background: rgba(255,255,255,0.05); color: ${crowdColor}; padding: 8px 10px; border-radius: 10px; font-size:0.8rem;">${crowdStatus}</span>
+        </div>
+        <div style="display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px;">
+          <div style="background: rgba(255,255,255,0.05); color: #fff; padding: 12px 14px; border-radius: 16px; font-size: 0.85rem;">
+            <div style="color:#94a3b8; font-size:0.75rem; margin-bottom:6px;">Price</div>
+            <div style="font-weight:700;">₱${price}/pax</div>
+          </div>
+          <div style="background: rgba(255,255,255,0.05); color: #fff; padding: 12px 14px; border-radius: 16px; font-size: 0.85rem;">
+            <div style="color:#94a3b8; font-size:0.75rem; margin-bottom:6px;">Rating</div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="color:#ffd166;">${stars}</span>
+              <span style="font-weight:700;">${dest.rating?.toFixed(1) || '4.0'}</span>
+            </div>
+            <div style="color:#94a3b8; font-size:0.75rem; margin-top:4px;">${reviewCount}</div>
+          </div>
+        </div>
+        <button type="button" class="select-destination-button" style="width:100%; margin-top:auto; padding:12px 0; border:none; border-radius:12px; background: ${isSelected ? '#22c55e' : 'linear-gradient(135deg, #ff7a18, #ff6a88)'}; color:#fff; font-weight:700; cursor:pointer;">${isSelected ? 'Selected' : 'Select destination'}</button>
       </div>
     `;
+
+    const button = card.querySelector('.select-destination-button');
+    if (button) {
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleDestinationSelection(destName);
+      });
+    }
 
     carousel.appendChild(card);
   });
 }
 
+function initDestinationCarousel() {
+  setDestinationCategory(selectedDestinationCategory);
+  setDestinationSort(selectedDestinationSort);
+  updateSelectedSummary();
+}
+
+function updateSelectedSummary() {
+  const summaryBar = document.getElementById('selectedDestinationSummary');
+  const statusEl = document.getElementById('selectedDestinationStatus');
+  if (!summaryBar || !statusEl) return;
+
+  const count = selectedDestinationNames.length;
+  if (!count) {
+    summaryBar.style.display = 'none';
+    return;
+  }
+
+  const busyList = selectedDestinationNames.filter(name => {
+    const dest = destinationData[name];
+    if (!dest) return false;
+    return dest.crowdPercent >= 75 || /very busy/i.test(dest.crowdLevel || '');
+  });
+  const packedList = selectedDestinationNames.filter(name => {
+    const dest = destinationData[name];
+    if (!dest) return false;
+    return dest.crowdPercent >= 90 || /full capacity|fully packed/i.test(dest.crowdLevel || '');
+  });
+
+  const totalBudget = calculateTotalBudget();
+  const selectedCost = calculateSelectedCost();
+  const remaining = totalBudget - selectedCost;
+
+  const labels = [`Selected ${count} destination${count > 1 ? 's' : ''}`];
+  if (busyList.length) labels.push(`${busyList.length} very busy`);
+  if (packedList.length) labels.push(`${packedList.length} fully packed`);
+
+  statusEl.textContent = labels.join(' • ');
+
+  const noteEl = document.getElementById('selectedDestinationNote');
+  if (noteEl) {
+    if (remaining < 0) {
+      noteEl.textContent = `Over budget by ₱${Math.abs(remaining).toLocaleString('en-PH')}`;
+      noteEl.style.display = 'block';
+    } else if (busyList.length || packedList.length) {
+      noteEl.textContent = `Some selected destinations are busy/packed`;
+      noteEl.style.display = 'block';
+    } else {
+      noteEl.style.display = 'none';
+    }
+  }
+
+  summaryBar.style.display = 'flex';
+}
+
+
+
 // Open destination modal
 function openDestinationModal(destName) {
+  showMapInfoCard(destName);
+}
+
+function hideMapInfoCard() {
+  const card = document.getElementById('mapInfoCard');
+  if (card) card.style.display = 'none';
+}
+
+function showMapInfoCard(destName) {
   currentDestination = destName;
   try{ sendGuestEvent('destination_viewed', { destination: destName }); }catch(e){}
   const data = destinationData[destName];
-  
-  document.getElementById('modalDestTitle').textContent = destName;
-  document.getElementById('modalDestDescription').textContent = data.description;
-  
-  const highlightsList = document.getElementById('modalHighlights');
-  highlightsList.innerHTML = data.highlights.map(h => `<li style="color: #333; padding: 4px 0;">${h}</li>`).join('');
-  
-  const heroImg = document.getElementById('modalHeroImage');
-  heroImg.style.backgroundImage = `url('${data.image}')`;
-  heroImg.style.backgroundSize = 'cover';
-  heroImg.style.backgroundPosition = 'center';
-  
-  // Reset day selection
-  document.querySelectorAll('.day-selector').forEach(btn => btn.style.borderColor = '#ddd');
-  selectedDays = 0;
-  
-  document.getElementById('destinationModal').style.display = 'flex';
-  document.body.style.overflow = 'hidden';
+  if (!data) return;
+
+  document.getElementById('mapInfoTitle').textContent = destName;
+  document.getElementById('mapInfoDescription').textContent = data.description;
+  document.getElementById('mapInfoCategory').textContent = data.category || 'Destination';
+  document.getElementById('mapInfoReviewText').textContent = `${data.rating || 0} • ${data.reviews || 0} reviews`;
+  document.getElementById('mapInfoAddress').textContent = data.address || 'Legazpi, Albay';
+  document.getElementById('mapInfoHours').textContent = data.hours || 'Hours not available';
+  document.getElementById('mapInfoFee').textContent = data.fee || 'Free entry';
+  document.getElementById('mapInfoCrowdPercent').textContent = `${data.crowdPercent || 0}%`;
+  document.getElementById('mapInfoCrowdBar').style.width = `${data.crowdPercent || 0}%`;
+  const crowdLabel = document.getElementById('mapInfoCrowdLabel');
+  const crowdPercent = data.crowdPercent || 0;
+  let crowdStatus = 'Light crowd';
+  let crowdColor = '#34d399';
+  if (crowdPercent >= 90) {
+    crowdStatus = 'Fully packed';
+    crowdColor = '#ef4444';
+  } else if (crowdPercent >= 75) {
+    crowdStatus = 'Very busy';
+    crowdColor = '#f97316';
+  } else if (crowdPercent >= 50) {
+    crowdStatus = 'Moderate';
+    crowdColor = '#fbbf24';
+  }
+  if (crowdLabel) {
+    crowdLabel.textContent = crowdStatus;
+    crowdLabel.style.background = 'rgba(255,255,255,0.08)';
+    crowdLabel.style.color = '#fff';
+  }
+  document.getElementById('mapInfoCrowdBar').style.background = crowdColor;
+  const imgEl = document.getElementById('mapInfoImage');
+  if (imgEl) {
+    imgEl.style.backgroundImage = `url('${data.image || 'https://via.placeholder.com/400x240?text=Destination'}')`;
+  }
+
+  const tagEl = document.getElementById('mapInfoTag');
+  if (tagEl) tagEl.textContent = data.category ? data.category.toUpperCase() : 'DESTINATION';
+
+  const ratingEl = document.getElementById('mapInfoRating');
+  if (ratingEl) {
+    const rating = data.rating || 0;
+    const fullStars = Math.floor(rating);
+    const halfStar = rating % 1 >= 0.5;
+    let starsHtml = '★'.repeat(fullStars);
+    if (halfStar) starsHtml += '½';
+    ratingEl.textContent = starsHtml;
+  }
+
+  const starRatingEl = document.getElementById('mapInfoStarRating');
+  if (starRatingEl) {
+    const rating = Number(data.rating) || 0;
+    starRatingEl.textContent = `${getStarRatingMarkup(rating)} ${rating.toFixed(1)}/5`;
+  }
+
+  const infoCard = document.getElementById('mapInfoCard');
+  if (infoCard) {
+    infoCard.style.display = 'block';
+    infoCard.classList.remove('slide-in-left');
+    void infoCard.offsetWidth;
+    infoCard.classList.add('slide-in-left');
+  }
+  renderDestinationRatingInput(destName);
+  updateMapStatus(`Showing details for ${destName}`);
 }
 
-// Close destination modal
-function closeDestinationModal() {
-  document.getElementById('destinationModal').style.display = 'none';
-  document.body.style.overflow = 'auto';
+function saveDestinationUserRatings() {
+  localStorage.setItem('destinationUserRatings', JSON.stringify(destinationUserRatings));
 }
 
-// Select number of days
-function selectDays(btn, days) {
-  document.querySelectorAll('.day-selector').forEach(b => b.style.borderColor = '#ddd');
-  btn.style.borderColor = '#ff7a18';
-  btn.style.background = 'rgba(255,122,24,0.1)';
-  selectedDays = days;
+function setDestinationUserRating(destName, rating) {
+  destinationUserRatings[destName] = rating;
+  saveDestinationUserRatings();
+  renderDestinationRatingInput(destName);
+  const feedback = document.getElementById('mapInfoRatingFeedback');
+  if (feedback) {
+    feedback.textContent = `Thanks! You rated ${destName} ${rating}/5 stars.`;
+  }
+}
+
+function renderDestinationRatingInput(destName) {
+  const container = document.getElementById('mapInfoStarRating');
+  const feedback = document.getElementById('mapInfoRatingFeedback');
+  if (!container) return;
+
+  const currentRating = Number(destinationUserRatings[destName] || 0);
+  container.innerHTML = '';
+
+  for (let i = 1; i <= 5; i += 1) {
+    const star = document.createElement('span');
+    star.textContent = '★';
+    star.dataset.value = i;
+    star.style.color = i <= currentRating ? '#ffd166' : 'rgba(255,255,255,0.35)';
+    star.style.fontSize = '1.2rem';
+    star.style.cursor = 'pointer';
+    star.style.transition = 'color 0.15s ease';
+    star.onmouseenter = () => {
+      for (let j = 0; j < container.children.length; j += 1) {
+        container.children[j].style.color = j < i ? '#ffe066' : 'rgba(255,255,255,0.35)';
+      }
+    };
+    star.onmouseleave = () => {
+      for (let j = 0; j < container.children.length; j += 1) {
+        const val = Number(container.children[j].dataset.value);
+        container.children[j].style.color = val <= currentRating ? '#ffd166' : 'rgba(255,255,255,0.35)';
+      }
+    };
+    star.onclick = () => setDestinationUserRating(destName, i);
+    container.appendChild(star);
+  }
+
+  if (feedback) {
+    feedback.textContent = currentRating ? `You rated this destination ${currentRating}/5 stars.` : 'Tap a star to rate this destination.';
+  }
+}
+
+function getStarRatingMarkup(rating) {
+  const fullStars = Math.floor(rating);
+  const halfStar = rating % 1 >= 0.5;
+  const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+  return '★'.repeat(fullStars) + (halfStar ? '½' : '') + '☆'.repeat(emptyStars);
+}
+
+function navigateToDestinationWithCurrentLocation(destName = currentDestination) {
+  if (!destName) {
+    alert('Please select a destination first.');
+    return;
+  }
+  const coords = itineraryDestinationCoords[destName];
+  if (!coords) {
+    alert('Destination coordinates are unavailable.');
+    return;
+  }
+
+  currentDestination = destName;
+  const routePanel = document.getElementById('routePanel');
+  const routeInfoEl = document.getElementById('routeInfo');
+  if (routePanel) {
+    routePanel.style.display = 'block';
+  }
+  if (routeInfoEl) {
+    routeInfoEl.textContent = 'Calculating best route from your current location...';
+  }
+
+  if (itineraryOverviewMap) {
+    renderItineraryOverviewRoute(destName);
+  } else {
+    refreshUserLocation().then(loc => {
+      if (!loc.lat || !loc.lon) {
+        alert('Could not get your current location. Please allow location access and try again.');
+        return;
+      }
+      const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${loc.lat},${loc.lon}&destination=${coords.lat},${coords.lon}&travelmode=driving`;
+      window.open(mapsUrl, '_blank');
+    });
+  }
 }
 
 // Generic guest-side event logger (sends to backend unified logger)
@@ -3802,9 +4552,13 @@ function sendGuestEvent(actionName, payload){
 
 // Proceed to itinerary form
 function proceedToItineraryForm() {
-  if (!currentDestination || selectedDays === 0) {
-    alert('Please select a destination and number of days');
+  if (!selectedDestinationNames.length) {
+    alert('Please select a destination before continuing');
     return;
+  }
+
+  if (!currentDestination) {
+    currentDestination = selectedDestinationNames[0];
   }
   
   closeDestinationModal();
@@ -3829,9 +4583,14 @@ async function generateItinerary() {
   }
   
   // Show results container and action buttons
-  document.getElementById('resultsPlaceholder').style.display = 'none';
-  document.getElementById('resultsContainer').style.display = 'flex';
-  document.getElementById('actionButtons').style.display = 'grid';
+  const resultsContainer = document.getElementById('resultsContainer');
+  if (resultsContainer) {
+    resultsContainer.style.display = 'flex';
+  }
+  const actionButtons = document.getElementById('actionButtons');
+  if (actionButtons) {
+    actionButtons.style.display = 'grid';
+  }
   
   // Populate results with live itinerary weather
   await populateItineraryResults();
@@ -4003,12 +4762,15 @@ function resetItineraryFlow() {
   document.getElementById('budgetRange').value = '';
   document.getElementById('travelStyle').value = '';
   
-  // Show carousel, hide form and results
-  document.getElementById('destinationCarouselStep').style.display = 'block';
+  // Show preferences first, hide destination carousel and results
+  document.getElementById('tripPreferencesStep').style.display = 'block';
+  document.getElementById('destinationCarouselStep').style.display = 'none';
   document.getElementById('itineraryFormSection').style.display = 'none';
   document.getElementById('resultsContainer').style.display = 'none';
-  document.getElementById('resultsPlaceholder').style.display = 'flex';
-  document.getElementById('actionButtons').style.display = 'none';
+  const actionButtons = document.getElementById('actionButtons');
+  if (actionButtons) {
+    actionButtons.style.display = 'none';
+  }
   document.getElementById('routePanel').style.display = 'none';
   document.getElementById('routeInfo').textContent = 'Route from your current location to the selected destination will appear here.';
   if (typeof clearItineraryRouteMap === 'function') {
@@ -4558,6 +5320,18 @@ async function saveItineraryPDF() {
 }
 document.addEventListener('DOMContentLoaded', () => {
   initDestinationCarousel();
+  updateBudgetDisplay();
+  setTravelStyle(null, tripPreferences.travelStyle);
+  initItineraryOverviewMap();
+  document.getElementById('budgetRangeSlider')?.addEventListener('input', updateBudgetDisplay);
+  document.getElementById('tripAdults')?.addEventListener('input', () => {
+    tripPreferences.adults = Number(document.getElementById('tripAdults')?.value || 1);
+    updateBudgetSummary();
+  });
+  document.getElementById('tripKids')?.addEventListener('input', () => {
+    tripPreferences.kids = Number(document.getElementById('tripKids')?.value || 0);
+    updateBudgetSummary();
+  });
 
   // Feedback Form Handler
   const feedbackForm = document.getElementById('footerFeedbackForm');
@@ -4629,6 +5403,8 @@ let userLocationWatchId = null;
 let itineraryRouteMap = null;
 let itineraryRouteLayer = null;
 let itineraryRouteMarkers = [];
+let itineraryOverviewRouteLayer = null;
+let itineraryOverviewRouteMarkers = [];
 
 function setUserLocation(lat, lon, accuracy = 0, fromDefault = false) {
   userLocation = { lat, lon, accuracy, fromDefault };
@@ -4786,6 +5562,93 @@ function generateTransportationRoutes(startLocation, destinations) {
   return routes;
 }
 
+function getRecommendedTransportMode(distanceKm) {
+  if (distanceKm <= 1.5) return { mode: 'Tricycle', reason: 'Short route, best for quick and budget-friendly local travel.' };
+  if (distanceKm <= 4) return { mode: 'Jeepney', reason: 'Affordable and convenient for nearby city trips.' };
+  if (distanceKm <= 10) return { mode: 'Taxi', reason: 'Comfortable and direct for medium-distance trips.' };
+  return { mode: 'Ride-hailing', reason: 'Fastest and easiest choice for longer distances.' };
+}
+
+function showMapInfoRouteSuggestion(route, destinationName) {
+  const suggestionEl = document.getElementById('mapInfoRouteSuggestion');
+  if (!suggestionEl || !route) return;
+
+  const distanceKm = (route.distance || 0) / 1000;
+  const durationMin = Math.round((route.duration || 0) / 60);
+  const fares = calculateFare(distanceKm);
+  const recommended = getRecommendedTransportMode(distanceKm);
+
+  suggestionEl.innerHTML = `
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
+        <div>
+          <div style="font-size:0.82rem; color:#94a3b8; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px;">Smart transport suggestion</div>
+          <div style="font-size:1rem; color:#fff; font-weight:700;">${destinationName}</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+          <div style="font-size:0.95rem; color:#cbd5e1;">${distanceKm.toFixed(1)} km • ${formatDurationMin(route.duration)}</div>
+          <button onclick="closeCurrentRoute()" style="padding:8px 14px; border:none; border-radius:999px; background: rgba(255,255,255,0.12); color:#fff; font-weight:700; cursor:pointer;">Close route</button>
+        </div>
+      </div>
+      <div style="display:grid; gap:10px;">
+        <div style="display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:10px;">
+          <div style="background: rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:12px;">
+            <div style="font-size:0.78rem; color:#94a3b8; margin-bottom:4px;">🚜 Tricycle</div>
+            <div style="font-size:1rem; color:#fff; font-weight:700;">₱${fares.tricycle}</div>
+          </div>
+          <div style="background: rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:12px;">
+            <div style="font-size:0.78rem; color:#94a3b8; margin-bottom:4px;">🚕 Taxi</div>
+            <div style="font-size:1rem; color:#fff; font-weight:700;">₱${fares.taxi}</div>
+          </div>
+          <div style="background: rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:12px;">
+            <div style="font-size:0.78rem; color:#94a3b8; margin-bottom:4px;">🚐 Jeepney</div>
+            <div style="font-size:1rem; color:#fff; font-weight:700;">₱${fares.jeepney}</div>
+          </div>
+          <div style="background: rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:12px;">
+            <div style="font-size:0.78rem; color:#94a3b8; margin-bottom:4px;">🚗 Ride-hailing</div>
+            <div style="font-size:1rem; color:#fff; font-weight:700;">₱${fares.ridehailing}</div>
+          </div>
+        </div>
+        <div style="font-size:0.9rem; color:#cbd5e1; background: rgba(255,255,255,0.04); border-radius:14px; padding:14px; border:1px solid rgba(255,255,255,0.08);">
+          <strong>${recommended.mode}</strong> is recommended. ${recommended.reason}
+        </div>
+      </div>
+    </div>
+  `;
+
+  suggestionEl.style.display = 'block';
+}
+
+function closeCurrentRoute() {
+  clearItineraryOverviewRoute();
+  clearItineraryRouteMap();
+
+  const routePanel = document.getElementById('routePanel');
+  if (routePanel) {
+    routePanel.style.display = 'none';
+  }
+
+  const routeInfoEl = document.getElementById('routeInfo');
+  if (routeInfoEl) {
+    routeInfoEl.textContent = 'Route from your current location to the selected destination will appear here.';
+  }
+
+  const routeDetailsCard = document.getElementById('routeDetailsCard');
+  if (routeDetailsCard) {
+    routeDetailsCard.style.display = 'none';
+    routeDetailsCard.innerHTML = '';
+  }
+
+  clearMapInfoRouteSuggestion();
+}
+
+function clearMapInfoRouteSuggestion() {
+  const suggestionEl = document.getElementById('mapInfoRouteSuggestion');
+  if (!suggestionEl) return;
+  suggestionEl.style.display = 'none';
+  suggestionEl.innerHTML = '';
+}
+
 function clearItineraryRouteMap() {
   if (itineraryRouteLayer) {
     itineraryRouteMap.removeLayer(itineraryRouteLayer);
@@ -4797,6 +5660,80 @@ function clearItineraryRouteMap() {
   }
   if (itineraryRouteMap) {
     itineraryRouteMap.invalidateSize(true);
+  }
+}
+
+function clearItineraryOverviewRoute() {
+  if (itineraryOverviewRouteLayer && itineraryOverviewMap) {
+    itineraryOverviewMap.removeLayer(itineraryOverviewRouteLayer);
+    itineraryOverviewRouteLayer = null;
+  }
+  if (itineraryOverviewRouteMarkers.length && itineraryOverviewMap) {
+    itineraryOverviewRouteMarkers.forEach(marker => itineraryOverviewMap.removeLayer(marker));
+    itineraryOverviewRouteMarkers = [];
+  }
+  clearMapInfoRouteSuggestion();
+}
+
+async function renderItineraryOverviewRoute(destName) {
+  if (!itineraryOverviewMap) return;
+  if (!destName) return;
+  const coords = itineraryDestinationCoords[destName];
+  if (!coords) return;
+
+  const origin = await refreshUserLocation();
+  if (!origin || !origin.lat || !origin.lon) {
+    alert('Could not get your current location. Please allow location access and try again.');
+    return;
+  }
+
+  clearItineraryOverviewRoute();
+
+  const serviceUrl = `https://router.project-osrm.org/route/v1/driving/${origin.lon},${origin.lat};${coords.lon},${coords.lat}?overview=full&geometries=geojson`;
+  try {
+    const res = await fetch(serviceUrl);
+    const data = await res.json();
+    if (!data || data.code !== 'Ok' || !data.routes || !data.routes.length) {
+      alert('Could not calculate the route on the map. Please try again later.');
+      return;
+    }
+
+    const route = data.routes[0];
+    const geoCoords = route.geometry.coordinates.map(pt => [pt[1], pt[0]]);
+    itineraryOverviewRouteLayer = L.polyline(geoCoords, { color: '#22c55e', weight: 6, opacity: 0.85, interactive: false }).addTo(itineraryOverviewMap);
+
+    const originMarker = L.circleMarker([origin.lat, origin.lon], {
+      radius: 10,
+      fillColor: '#3b82f6',
+      color: '#fff',
+      weight: 2,
+      fillOpacity: 1
+    }).addTo(itineraryOverviewMap).bindPopup('<strong>Your Location</strong>').bindTooltip('You', { permanent: false, direction: 'top', opacity: 0.9 });
+
+    const destMarker = L.circleMarker([coords.lat, coords.lon], {
+      radius: 10,
+      fillColor: '#ff7a18',
+      color: '#fff',
+      weight: 2,
+      fillOpacity: 1
+    }).addTo(itineraryOverviewMap).bindPopup(`<strong>${destName}</strong>`).bindTooltip(destName, { permanent: false, direction: 'top', opacity: 0.9 });
+
+    originMarker.bringToFront();
+    destMarker.bringToFront();
+    itineraryOverviewRouteMarkers.push(originMarker, destMarker);
+    const bounds = L.latLngBounds(geoCoords);
+    bounds.extend([origin.lat, origin.lon]);
+    bounds.extend([coords.lat, coords.lon]);
+    itineraryOverviewMap.fitBounds(bounds, { padding: [40, 40] });
+
+    const routeInfoEl = document.getElementById('routeInfo');
+    showMapInfoRouteSuggestion(route, destName);
+    if (routeInfoEl) {
+      routeInfoEl.innerHTML = `Best route to <strong>${destName}</strong>: ${formatDistanceKM(route.distance)} • ${formatDurationMin(route.duration)}`;
+    }
+  } catch (err) {
+    console.warn('Overview route fetch failed:', err);
+    alert('Unable to fetch the best route right now.');
   }
 }
 

@@ -168,6 +168,10 @@ section {
   to { transform: translateX(0); opacity: 1; }
 }
 
+.slide-in-left {
+  animation: slideInLeft 0.35s ease-out forwards;
+}
+
 @keyframes slideInUp {
   from { transform: translateY(40px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
@@ -2608,6 +2612,46 @@ footer {
   font-weight: 600;
   color: #333;
   font-size: 0.9rem;
+}
+
+.itinerary-overview-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: 1.5rem;
+}
+
+.itinerary-overview-panel {
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
+  overflow: visible;
+  min-height: 420px;
+}
+
+#itineraryOverviewMap {
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 360px;
+  height: 100%;
+}
+
+.style-chip {
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.05);
+  color: #e2e8f0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform 0.25s ease, background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+.style-chip:hover,
+.style-chip.active {
+  background: linear-gradient(135deg, rgba(255,122,24,0.18), rgba(255,106,136,0.18));
+  color: #fff;
+  border-color: rgba(255,122,24,0.35);
+  transform: translateY(-1px);
 }
 
 .dark .days-selector label {
