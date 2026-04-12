@@ -286,6 +286,35 @@ function normalize_image_path($path){
     return $path;
 }
 
+function ensure_feedback_schema($db){
+    if (!$db) return;
+    $db->query("CREATE TABLE IF NOT EXISTS feedback (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_email VARCHAR(255),
+        user_name VARCHAR(255),
+        feedback_type VARCHAR(50) DEFAULT 'other',
+        target_type VARCHAR(50) DEFAULT NULL,
+        target_id VARCHAR(255) DEFAULT NULL,
+        target_name VARCHAR(255) DEFAULT NULL,
+        anonymous TINYINT DEFAULT 0,
+        message TEXT,
+        rating INT DEFAULT 5,
+        image VARCHAR(255) DEFAULT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )");
+    $columns = ['feedback_type','target_type','target_id','target_name'];
+    foreach ($columns as $col) {
+        $res = $db->query("SHOW COLUMNS FROM feedback LIKE '$col'");
+        if ($res && $res->num_rows === 0) {
+            if ($col === 'feedback_type') {
+                $db->query("ALTER TABLE feedback ADD COLUMN feedback_type VARCHAR(50) DEFAULT 'other'");
+            } else {
+                $db->query("ALTER TABLE feedback ADD COLUMN $col VARCHAR(255) DEFAULT NULL");
+            }
+        }
+    }
+}
+
 // List events
 if ($action === 'list_events'){
     $db = get_db();
@@ -294,7 +323,7 @@ if ($action === 'list_events'){
         exit;
     }
     
-    $res = $db->query("SELECT id, title, description, image, datetime, location, capacity, author, anonymous, event_type, prediction, start_lat, start_lng, end_lat, end_lng, created_at FROM events ORDER BY created_at DESC");
+    $res = $db->query("SELECT id, title, description, image, datetime, location, capacity, author, anonymous, event_type, start_time, end_time, prediction, start_lat, start_lng, end_lat, end_lng, created_at FROM events ORDER BY created_at DESC");
     if (!$res) {
         j(['error' => $db->error, 'events' => []]);
         exit;
@@ -736,12 +765,14 @@ if ($action === 'edit_event'){
     $id = intval($d['id'] ?? 0);
     $image_path = $d['image_path'] ?? null;
     // If image_path provided, update image too
+    $start_time = $d['start_time'] ?? null;
+    $end_time = $d['end_time'] ?? null;
     if (!empty($d['image_path'])){
-        $stmt = $db->prepare('UPDATE events SET title=?,description=?,datetime=?,location=?,capacity=?,image=? WHERE id=?');
-        $stmt->bind_param('ssssisi', $title, $description, $datetime, $location, $capacity, $image_path, $id);
+        $stmt = $db->prepare('UPDATE events SET title=?,description=?,datetime=?,location=?,capacity=?,start_time=?,end_time=?,image=? WHERE id=?');
+        $stmt->bind_param('ssssisssi', $title, $description, $datetime, $location, $capacity, $start_time, $end_time, $image_path, $id);
     } else {
-        $stmt = $db->prepare('UPDATE events SET title=?,description=?,datetime=?,location=?,capacity=? WHERE id=?');
-        $stmt->bind_param('ssssii', $title, $description, $datetime, $location, $capacity, $id);
+        $stmt = $db->prepare('UPDATE events SET title=?,description=?,datetime=?,location=?,capacity=?,start_time=?,end_time=? WHERE id=?');
+        $stmt->bind_param('ssssissi', $title, $description, $datetime, $location, $capacity, $start_time, $end_time, $id);
     }
     if ($stmt->execute()){
         // If admin provided coordinates, attempt to persist if table supports columns
@@ -941,11 +972,15 @@ if ($action === 'delete_category'){
 // Feedback (guests)
 if ($action === 'add_feedback'){
     $d = json_input();
-    $anon = !empty($d['anonymous']) ? 1 : 0;
     $db = get_db();
-    // Insert feedback without image for now
-    $stmt = $db->prepare('INSERT INTO feedback (user_email,user_name,anonymous,message,rating) VALUES (?,?,?,?,?)');
-    $stmt->bind_param('ssisi',$d['email'],$d['name'],$anon,$d['message'],$d['rating']);
+    ensure_feedback_schema($db);
+    $anon = !empty($d['anonymous']) ? 1 : 0;
+    $feedback_type = isset($d['feedback_type']) ? $d['feedback_type'] : 'other';
+    $target_type = isset($d['target_type']) ? $d['target_type'] : null;
+    $target_id = isset($d['target_id']) ? $d['target_id'] : null;
+    $target_name = isset($d['target_name']) ? $d['target_name'] : null;
+    $stmt = $db->prepare('INSERT INTO feedback (user_email,user_name,feedback_type,target_type,target_id,target_name,anonymous,message,rating) VALUES (?,?,?,?,?,?,?,?,?)');
+    $stmt->bind_param('ssssssisi', $d['email'],$d['name'],$feedback_type,$target_type,$target_id,$target_name,$anon,$d['message'],$d['rating']);
     if ($stmt->execute()) j(['success'=>true,'id'=>$db->insert_id]);
     j(['success'=>false,'error'=>$stmt->error]);
 }
@@ -953,10 +988,22 @@ if ($action === 'add_feedback'){
 // List feedback
 if ($action === 'list_feedback'){
     $db = get_db();
-    $res = $db->query('SELECT id, user_email as email, user_name as name, anonymous, feedback_type as type, message as feedback, rating, created_at FROM feedback ORDER BY created_at DESC LIMIT 100');
+    ensure_feedback_schema($db);
+    $target_type = $_GET['target_type'] ?? ($_POST['target_type'] ?? null);
+    $target_id = $_GET['target_id'] ?? ($_POST['target_id'] ?? null);
+    $where = '1=1';
+    if ($target_type) {
+        $where .= " AND target_type = '" . $db->real_escape_string($target_type) . "'";
+    }
+    if ($target_id) {
+        $where .= " AND target_id = '" . $db->real_escape_string($target_id) . "'";
+    }
+    $res = $db->query("SELECT id, user_email as email, user_name as name, anonymous, feedback_type as type, target_type, target_id, target_name, message as feedback, rating, created_at FROM feedback WHERE $where ORDER BY created_at DESC LIMIT 200");
     $feedback = [];
-    while ($row = $res->fetch_assoc()) {
-        $feedback[] = $row;
+    if ($res) {
+        while ($row = $res->fetch_assoc()) {
+            $feedback[] = $row;
+        }
     }
     j(['success'=>true,'feedback'=>$feedback]);
 }
@@ -1395,6 +1442,7 @@ if ($action === 'delete_itinerary'){
 if ($action === 'analytics_summary'){
     require_admin();
     $db = get_db();
+    ensure_feedback_schema($db);
     $out = [];
     
     // Auto-initialize critical tables if they don't exist
@@ -1434,6 +1482,24 @@ if ($action === 'analytics_summary'){
     
     $res = $db->query('SELECT COUNT(*) AS c FROM shops'); 
     $out['total_shops'] = ($res && $r = $res->fetch_assoc()) ? $r['c'] : 0;
+    
+    $res = $db->query("SELECT AVG(rating) AS avg_rating FROM feedback WHERE target_type='destination' AND rating > 0");
+    $out['avg_destination_rating'] = ($res && $r = $res->fetch_assoc()) ? round(floatval($r['avg_rating']), 2) : 0.0;
+    $res = $db->query("SELECT AVG(rating) AS avg_rating FROM feedback WHERE target_type='hotel' AND rating > 0");
+    $out['avg_hotel_rating'] = ($res && $r = $res->fetch_assoc()) ? round(floatval($r['avg_rating']), 2) : 0.0;
+    $res = $db->query("SELECT AVG(rating) AS avg_rating FROM feedback WHERE target_type='shop' AND rating > 0");
+    $out['avg_shop_rating'] = ($res && $r = $res->fetch_assoc()) ? round(floatval($r['avg_rating']), 2) : 0.0;
+    $res = $db->query("SELECT AVG(rating) AS avg_rating FROM feedback WHERE target_type='product' AND rating > 0");
+    $out['avg_product_rating'] = ($res && $r = $res->fetch_assoc()) ? round(floatval($r['avg_rating']), 2) : 0.0;
+    
+    $res = $db->query("SELECT COUNT(*) AS c FROM feedback WHERE target_type='destination'");
+    $out['destination_feedback_count'] = ($res && $r = $res->fetch_assoc()) ? intval($r['c']) : 0;
+    $res = $db->query("SELECT COUNT(*) AS c FROM feedback WHERE target_type='hotel'");
+    $out['hotel_feedback_count'] = ($res && $r = $res->fetch_assoc()) ? intval($r['c']) : 0;
+    $res = $db->query("SELECT COUNT(*) AS c FROM feedback WHERE target_type='shop'");
+    $out['shop_feedback_count'] = ($res && $r = $res->fetch_assoc()) ? intval($r['c']) : 0;
+    $res = $db->query("SELECT COUNT(*) AS c FROM feedback WHERE target_type='product'");
+    $out['product_feedback_count'] = ($res && $r = $res->fetch_assoc()) ? intval($r['c']) : 0;
     // page views last 30 days (from page_views table)
     $res = $db->query("SELECT DATE(ts) AS d, COUNT(*) AS c FROM page_views WHERE ts >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY DATE(ts) ORDER BY DATE(ts)");
     $pv = []; while($r=$res->fetch_assoc()) $pv[]=$r; $out['pv_last_30'] = $pv;
@@ -2793,7 +2859,7 @@ if ($action === 'init_tables'){
         "CREATE TABLE IF NOT EXISTS shops (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255) NOT NULL, description TEXT, address VARCHAR(255), contact VARCHAR(255), owner_name VARCHAR(255), image VARCHAR(255) DEFAULT NULL, clicks INT DEFAULT 0, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)",
         "CREATE TABLE IF NOT EXISTS destinations (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255) NOT NULL, description TEXT, location VARCHAR(255), image VARCHAR(255) DEFAULT NULL, category_id INT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)",
         "CREATE TABLE IF NOT EXISTS destination_categories (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255) NOT NULL, description TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)",
-        "CREATE TABLE IF NOT EXISTS feedback (id INT AUTO_INCREMENT PRIMARY KEY, user_email VARCHAR(255), user_name VARCHAR(255), anonymous TINYINT DEFAULT 0, message TEXT, rating INT DEFAULT 5, image VARCHAR(255) DEFAULT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)",
+        "CREATE TABLE IF NOT EXISTS feedback (id INT AUTO_INCREMENT PRIMARY KEY, user_email VARCHAR(255), user_name VARCHAR(255), feedback_type VARCHAR(50) DEFAULT 'other', target_type VARCHAR(50) DEFAULT NULL, target_id VARCHAR(255) DEFAULT NULL, target_name VARCHAR(255) DEFAULT NULL, anonymous TINYINT DEFAULT 0, message TEXT, rating INT DEFAULT 5, image VARCHAR(255) DEFAULT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)",
         "CREATE TABLE IF NOT EXISTS itineraries (id INT AUTO_INCREMENT PRIMARY KEY, user_email VARCHAR(255), user_name VARCHAR(255), anonymous TINYINT DEFAULT 0, title VARCHAR(255), days INT, destinations TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)",
         "CREATE TABLE IF NOT EXISTS local_experiences (id INT AUTO_INCREMENT PRIMARY KEY, title VARCHAR(255) NOT NULL, description TEXT, type VARCHAR(100), price DECIMAL(10, 2), duration VARCHAR(100), image VARCHAR(255), created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"
     ];

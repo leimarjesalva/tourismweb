@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quick Rating Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .box { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h1 { color: #333; }
+        button { padding: 12px 24px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
+        button:hover { background: #764ba2; }
+        .steps { background: #f0f7ff; padding: 15px; border-left: 4px solid #0066cc; border-radius: 4px; }
+        code { background: #f0f0f0; padding: 2px 6px; font-family: monospace; }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h1>✅ Fixed: Now Loading Shop Ratings</h1>
+    
+    <p><strong>What was wrong:</strong> The ratings loading code was in the wrong function.</p>
+    
+    <p><strong>What was fixed:</strong> Added ratings loading to the REAL <code>openShopModal()</code> function in script.js.</p>
+    
+    <h2>🧪 Test It Now</h2>
+    
+    <div class="steps">
+        <ol>
+            <li><a href="/capstone/frontend/index.html" target="_blank"><button>Open Main Site →</button></a></li>
+            <li>Press <strong>F12</strong> to open DevTools</li>
+            <li>Click on <strong>Console</strong> tab</li>
+            <li>Click on a shop to open its modal</li>
+            <li>Look for console messages starting with 🔵 and 🔄</li>
+        </ol>
+    </div>
+    
+    <h2>📋 Expected Console Output</h2>
+    
+    <p>You should see these messages in order:</p>
+    
+    <pre style="background: #f0f0f0; padding: 12px; border-radius: 4px; overflow-x: auto;">
+🔵 openShopModal called with shopId: 27
+🔄 Loading ratings for shop ID: 27
+📡 HTTP Response: 200
+📦 API Response: {success: true, reviews: [...], statistics: {...}}
+📊 Extracted: 0 reviews
+📝 No reviews - showing empty state
+✅ Updated summary card
+✅ All reviews rendered
+    </pre>
+    
+    <h2>✨ What Should Happen</h2>
+    
+    <ol>
+        <li>Shop modal opens showing shop info and products</li>
+        <li>Reviews section loads and shows either:</li>
+        <ul>
+            <li>If NO reviews: "No reviews yet. Be the first to review!"</li>
+            <li>If reviews exist: All review cards displayed with ratings and comments</li>
+        </ul>
+        <li>Summary card at top shows rating stats (0.0/5 if no reviews)</li>
+    </ol>
+    
+    <hr>
+    
+    <h2>🐛 If Still Not Working</h2>
+    
+    <p>Check the console for any error messages (red text). The debug messages tell you exactly where it fails:</p>
+    
+    <table style="width: 100%; border-collapse: collapse;">
+        <tr style="background: #f0f0f0;">
+            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">If You See</th>
+            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">It Means</th>
+        </tr>
+        <tr>
+            <td style="padding: 10px; border: 1px solid #ddd;">🔵 openShopModal called</td>
+            <td style="padding: 10px; border: 1px solid #ddd;">✅ Function is being called</td>
+        </tr>
+        <tr>
+            <td style="padding: 10px; border: 1px solid #ddd;">🔄 Loading ratings</td>
+            <td style="padding: 10px; border: 1px solid #ddd;">✅ API call is starting</td>
+        </tr>
+        <tr>
+            <td style="padding: 10px; border: 1px solid #ddd;">📡 HTTP Response: 200</td>
+            <td style="padding: 10px; border: 1px solid #ddd;">✅ API server responded OK</td>
+        </tr>
+        <tr>
+            <td style="padding: 10px; border: 1px solid #ddd;">❌ API Error</td>
+            <td style="padding: 10px; border: 1px solid #ddd;">⚠️ Problem with API response</td>
+        </tr>
+        <tr>
+            <td style="padding: 10px; border: 1px solid #ddd;">Nothing appears</td>
+            <td style="padding: 10px; border: 1px solid #ddd;">⚠️ Function never called - reload page</td>
+        </tr>
+    </table>
+    
+</div>
+
+</body>
+</html>

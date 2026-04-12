@@ -1,0 +1,13 @@
+{
+    "id": 10,
+    "timestamp": "2026-04-10 03:06:29",
+    "user_name": "Test User",
+    "user_email": "test@example.com",
+    "target_type": "destination",
+    "target_id": "Test Destination",
+    "target_name": "Test Destination",
+    "rating": 5,
+    "message": "Great place!",
+    "anonymous": 1,
+    "feedback_type": "review"
+}

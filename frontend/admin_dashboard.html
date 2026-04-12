@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html>
 <head>
   <meta charset="utf-8" />
@@ -358,14 +358,13 @@
     </div>
     <ul class="sidebar-nav">
       <li><a href="#" class="nav-link active" onclick="showTab('overview')">📈 Dashboard</a></li>
-      <li><a href="#" class="nav-link" onclick="showTab('events')">📅 Community Events</a></li>
+      <li><a href="#" class="nav-link" onclick="showTab('events')">🗺️ Destination Management</a></li>
       <li><a href="#" class="nav-link" onclick="showTab('destinations')">🗺️ Destinations</a></li>
       <li><a href="#" class="nav-link" onclick="showTab('shops')">🛍️ Shops</a></li>
       <li><a href="#" class="nav-link" onclick="showTab('experiences')">🎭 Experiences</a></li>
       <li><a href="#" class="nav-link" onclick="showTab('festivals')">🎉 Festivals</a></li>
       <li><a href="#" class="nav-link" onclick="showTab('alerts')">🚨 Alerts</a></li>
-      <!-- itineraries and feedback navigation removed; predictions link kept -->
-      <li><a href="#" class="nav-link" onclick="showTab('predictions')">🔮 ML Predictions</a></li>
+      <li><a href="#" class="nav-link" onclick="showTab('feedback')">💬 Feedback & Ratings</a></li>
       <!-- Guest Activity Logs removed - itineraries now collect guest saves -->
     </ul>
   </div>
@@ -424,6 +423,26 @@
             <div class="stat-value" id="stat-shops">0</div>
             <small id="stat-shops-detail" style="color:#999; margin-top:8px; display:block;">Registered shops</small>
           </div>
+          <div class="stat-card">
+            <strong>🌟 Avg Destination Rating</strong>
+            <div class="stat-value" id="stat-destination-rating">0.00</div>
+            <small style="color:#999; margin-top:8px; display:block;">Based on destination reviews</small>
+          </div>
+          <div class="stat-card">
+            <strong>🏨 Avg Hotel Rating</strong>
+            <div class="stat-value" id="stat-hotel-rating">0.00</div>
+            <small style="color:#999; margin-top:8px; display:block;">Based on hotel reviews</small>
+          </div>
+          <div class="stat-card">
+            <strong>🛍️ Avg Shop Rating</strong>
+            <div class="stat-value" id="stat-shop-rating">0.00</div>
+            <small style="color:#999; margin-top:8px; display:block;">Based on shop reviews</small>
+          </div>
+          <div class="stat-card">
+            <strong>🛒 Avg Product Rating</strong>
+            <div class="stat-value" id="stat-product-rating">0.00</div>
+            <small style="color:#999; margin-top:8px; display:block;">Based on product reviews</small>
+          </div>
         </div>
         
           <!-- Guest feedback preview added to metrics -->
@@ -453,166 +472,163 @@
           <!-- Page views metrics removed per request -->
       </div>
       </div>
-      <!-- EVENTS TAB -->
-      <div id="events" class="tab-content">
-        <div class="section-title">📅 Community Events Management</div>
+      <!-- DESTINATION MANAGEMENT TAB -->
+      <div id="events" class="tab-content" style="display:none;">
+        <div class="section-title">🗺️ Destination Management</div>
         
-        <!-- Event Form Card - Improved UX -->
+        <!-- Destination Form Card - Improved UX -->
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 0; border-radius: 16px; margin-bottom: 36px; overflow: hidden; box-shadow: 0 12px 36px rgba(102,126,234,0.3);">
           <div style="background: white; padding: 36px; border-radius: 16px 16px 0 0;">
-            <h3 style="margin: 0 0 24px 0; color: #1a237e; display: flex; align-items: center; gap: 12px; font-size: 20px; font-weight: 800;"><span>📝</span> Add New Event</h3>
+            <h3 style="margin: 0 0 24px 0; color: #1a237e; display: flex; align-items: center; gap: 12px; font-size: 20px; font-weight: 800;"><span>📝</span> Add New Destination</h3>
             
             <form id="eventForm" style="display: grid; gap: 30px;">
               
-              <!-- STEP 1: Event Basics -->
+              <!-- STEP 1: Basic Information -->
               <div style="border-bottom: 3px solid #667eea; padding-bottom: 24px;">
                 <h4 style="color: #667eea; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 18px 0;">
-                  ✏️ Step 1: Event Basics
+                  ✏️ Step 1: Basic Information
                 </h4>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                  <div class="form-group"><label>Event Title *</label><input name="title" required placeholder="e.g., Cagsawa Festival 2026" /></div>
-                  <div class="form-group"><label>Event Type *</label><select name="event_type" required style="width:100%; padding:11px 14px; border:2px solid #ecf0f1; border-radius:8px; background:white; cursor:pointer; font-size: 14px;"><option value="">Select event type...</option><option value="celebration">🎊 Celebration (New Year, Independence)</option><option value="festival">🎭 Festival (Cultural events)</option><option value="expo">🏢 Expo (Exhibitions)</option><option value="marathon">🏃 Marathon (Sports)</option><option value="fiesta">🎪 Fiesta (Community festival)</option><option value="religious">⛪ Religious (Pilgrimages)</option><option value="food_festival">🍜 Food Festival</option><option value="concert">🎵 Concert</option><option value="market">🛍️ Market/Fair</option><option value="workshop">📚 Workshop</option><option value="sports">⚽ Sports Event</option><option value="conference">💼 Conference</option><option value="other">📌 Other</option></select></div>
-                  <div class="form-group"><label>Location</label><input name="location" value="Legazpi City" placeholder="Event location" /></div>
-                  <div class="form-group"><label>Expected Capacity</label><input name="capacity" type="number" placeholder="Expected maximum guests" value="5000" /></div>
+                  <div class="form-group"><label>Destination Name *</label><input name="title" required placeholder="e.g., Historic Ibalong Park" /></div>
+                  <div class="form-group"><label>Destination Type *</label><select name="event_type" required style="width:100%; padding:11px 14px; border:2px solid #ecf0f1; border-radius:8px; background:white; cursor:pointer; font-size: 14px;"><option value="">Select type...</option><option value="cultural">🏛️ Cultural</option><option value="nature">🌿 Nature</option><option value="shopping">🛍️ Novelty Shop / Market</option><option value="food">🍜 Food & Dining</option><option value="heritage">🏯 Heritage Site</option><option value="adventure">🚣 Adventure</option><option value="wellness">🧘 Wellness</option><option value="family">👨‍👩‍👧 Family-Friendly</option><option value="scenic">🌄 Scenic Spot</option><option value="other">📌 Other</option></select></div>
+                  <div class="form-group"><label>Location</label><input name="location" value="Legazpi City" placeholder="Legazpi City" /></div>
+                  <div class="form-group"><label>Expected Daily Visitors</label><input name="capacity" type="number" placeholder="e.g., 5000" value="5000" /></div>
+                </div>
+                <div class="form-group" style="margin-top: 20px;">
+                  <label>📝 Description</label>
+                  <textarea name="description" rows="3" placeholder="Describe this destination, highlights, and visitor tips..."></textarea>
                 </div>
               </div>
 
-              <!-- STEP 2: Duration Type Selection -->
+              <!-- STEP 2: Location & Hours -->
               <div style="border-bottom: 3px solid #667eea; padding-bottom: 24px;">
                 <h4 style="color: #667eea; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 18px 0;">
-                  📅 Step 2: Select Event Duration
-                </h4>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
-                  <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 12px; text-align: center; cursor: pointer; border: 3px solid #667eea; transition: all 0.3s;" id="oneDayOption" onclick="selectDurationType('single')">
-                    <p style="margin: 0; color: white; font-weight: 800; font-size: 18px;">☀️</p>
-                    <p style="margin: 8px 0 0 0; color: white; font-weight: 700;">Single Day Event</p>
-                    <p style="margin: 6px 0 0 0; color: rgba(255,255,255,0.9); font-size: 0.85rem;">1 specific date</p>
-                  </div>
-                  <div style="background: #f5f5f5; padding: 20px; border-radius: 12px; text-align: center; cursor: pointer; border: 3px solid #e0e0e0; transition: all 0.3s;" id="multiDayOption" onclick="selectDurationType('multi')">
-                    <p style="margin: 0; color: #667eea; font-weight: 800; font-size: 18px;">📆</p>
-                    <p style="margin: 8px 0 0 0; color: #333; font-weight: 700;">Multi-Day Event</p>
-                    <p style="margin: 6px 0 0 0; color: #666; font-size: 0.85rem;">2-31 days (with range)</p>
-                  </div>
-                </div>
-                <input type="hidden" name="duration_type" id="durationType" />
-              </div>
-
-              <!-- STEP 3A: Single Day Event Layout -->
-              <div id="singleDayContainer" style="display: none; border-bottom: 3px solid #667eea; padding-bottom: 24px;">
-                <h4 style="color: #667eea; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 18px 0;">
-                  📍 Step 3: Select Date & Time
+                  📍 Step 2: Location & Hours
                 </h4>
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px;">
-                  <div class="form-group"><label>Event Date *</label><input name="single_event_date" type="date" /></div>
-                  <div class="form-group"><label>Start Time</label><input name="single_start_time" type="time" value="09:00" /></div>
-                  <div class="form-group"><label>End Time</label><input name="single_end_time" type="time" value="17:00" /></div>
-                </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                  <label>📝 Event Description</label>
-                  <textarea name="description" rows="3" placeholder="Describe the event, activities, expected crowds..."></textarea>
-                </div>
-              </div>
-
-              <!-- STEP 3B: Multi-Day Event Layout -->
-              <div id="multiDayContainer" style="display: none; border-bottom: 3px solid #667eea; padding-bottom: 24px;">
-                <h4 style="color: #667eea; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 18px 0;">
-                  📅 Step 3: Select Date Range
-                </h4>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; background: #f9f9f9; padding: 20px; border-radius: 12px;">
-                  <div class="form-group" style="margin-bottom: 0;">
-                    <label>Start Date *</label>
-                    <input name="multi_start_date" type="date" onchange="updateMultiDayPreview()" />
+                  <div class="form-group">
+                    <label>Open Days *</label>
+                    <select name="single_event_start_day" id="singleEventStartDay" style="width:100%; padding:11px 14px; border:2px solid #ecf0f1; border-radius:8px; background:white; cursor:pointer; font-size: 14px;">
+                      <option value="">From Day</option>
+                      <option value="Monday">Monday</option>
+                      <option value="Tuesday">Tuesday</option>
+                      <option value="Wednesday">Wednesday</option>
+                      <option value="Thursday">Thursday</option>
+                      <option value="Friday">Friday</option>
+                      <option value="Saturday">Saturday</option>
+                      <option value="Sunday">Sunday</option>
+                    </select>
                   </div>
-                  <div class="form-group" style="margin-bottom: 0;">
-                    <label>End Date *</label>
-                    <input name="multi_end_date" type="date" onchange="updateMultiDayPreview()" />
+                  <div class="form-group">
+                    <label>To Day</label>
+                    <select name="single_event_end_day" id="singleEventEndDay" style="width:100%; padding:11px 14px; border:2px solid #ecf0f1; border-radius:8px; background:white; cursor:pointer; font-size: 14px;">
+                      <option value="">To Day</option>
+                      <option value="Monday">Monday</option>
+                      <option value="Tuesday">Tuesday</option>
+                      <option value="Wednesday">Wednesday</option>
+                      <option value="Thursday">Thursday</option>
+                      <option value="Friday">Friday</option>
+                      <option value="Saturday">Saturday</option>
+                      <option value="Sunday">Sunday</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Operating Hours</label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                      <input name="single_start_time" type="time" value="09:00" style="flex: 1;" />
+                      <span>to</span>
+                      <input name="single_end_time" type="time" value="17:00" style="flex: 1;" />
+                    </div>
                   </div>
                 </div>
                 
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px; border-radius: 10px; margin-bottom: 20px; text-align: center;">
-                  <p style="margin: 0; font-size: 0.9rem; opacity: 0.95;">📊 Duration Overview</p>
-                  <p id="durationPreview" style="margin: 6px 0 0 0; font-size: 18px; font-weight: 800;">Select dates to see details</p>
+                <!-- Destination Location -->
+                <h5 style="color: #667eea; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; margin: 20px 0 16px 0;">🗺️ Destination Location</h5>
+                
+                <!-- Hidden input fields for coordinates -->
+                <input name="start_lat" type="hidden" />
+                <input name="start_lng" type="hidden" />
+                
+                <!-- Location Display Card -->
+                <div style="margin-bottom: 18px;">
+                  <div id="startLocationCard" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 12px; color: white; text-align: center; min-height: 110px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: all 0.3s; border: 2px solid transparent; box-shadow: 0 4px 12px rgba(102,126,234,0.2);" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 12px 28px rgba(102,126,234,0.35)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(102,126,234,0.2)';">
+                    <p style="margin: 0 0 10px 0; font-size: 0.95rem; opacity: 0.9; font-weight: 600;">📍 Location</p>
+                    <p id="startLocationText" style="margin: 0; font-weight: 800; font-size: 1.2rem;">Click to Pick</p>
+                    <p id="startLocationCoord" style="margin: 6px 0 0 0; font-size: 0.8rem; opacity: 0.8;"></p>
+                  </div>
                 </div>
-
-                <div class="form-group" style="margin-bottom: 0;">
-                  <label>📝 Event Description</label>
-                  <textarea name="description" rows="3" placeholder="Describe the event, activities, expected crowds..."></textarea>
+                
+                <!-- Control Buttons -->
+                <div style="display: flex; gap: 12px; margin-bottom: 18px; flex-wrap: wrap;">
+                  <button type="button" id="pickStartEventBtn" class="btn" style="flex: 1; min-width: 150px; padding: 13px; font-weight: 700; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 10px; cursor: pointer; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(102,126,234,0.3)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">📍 Pick Location</button>
+                  <button type="button" id="clearEventPickBtn" class="btn" style="flex: 1; min-width: 150px; padding: 13px; font-weight: 700; background: #e0e0e0; color: #333; border: none; border-radius: 10px; cursor: pointer; transition: all 0.3s;" onmouseover="this.style.backgroundColor='#d0d0d0';" onmouseout="this.style.backgroundColor='#e0e0e0';">🗑️ Clear</button>
                 </div>
+                
+                <!-- Interactive Map -->
+                <div id="eventLocationPickerMap" style="width: 100%; height: 320px; border: 2px solid #667eea; border-radius: 12px; background: #f0f4ff; position: relative; overflow: hidden; box-shadow: 0 4px 12px rgba(102,126,234,0.15);"></div>
+                <p style="margin-top: 12px; font-size: 0.9rem; color: #667eea; text-align: center; font-weight: 600;">💡 Click the button above to pick the destination location on the map</p>
               </div>
 
-              <!-- Hidden field for event schedule JSON -->
+              <!-- Hidden fields for event schedule and edit preservation -->
+              <input name="event_datetime" type="hidden" />
               <input name="event_start_date" type="hidden" />
               <input name="event_end_date" type="hidden" />
               <input name="event_schedule" type="hidden" value="[]" />
 
-              <!-- STEP 4: Advanced Options (Collapsible) -->
+              <!-- STEP 3: Advanced Options (Collapsible) -->
               <details style="border: 2px solid #ecf0f1; border-radius: 10px; padding: 0; cursor: pointer;">
                 <summary style="padding: 16px 20px; background: linear-gradient(135deg, rgba(102,126,234,0.08), rgba(118,75,162,0.05)); font-weight: 700; color: #667eea; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">
-                  ⚙️ Step 4: Advanced Options (Optional)
+                  ⚙️ Step 3: Advanced Options (Optional)
                 </summary>
                 <div style="padding: 24px; border-top: 2px solid #ecf0f1;">
                   
                   <!-- Event Image (can also be MP4 video) -->
-                  <div class="form-group" style="margin-bottom: 20px;">
-                    <label>📸 Event Image / 🎬 Event Video</label>
-                    <!-- accept both images and MP4 so admins can attach short clips -->
+                  <div class="form-group">
+                    <label>📸 Destination Image</label>
                     <input type="file" id="eventImage" accept="image/*,video/mp4" />
                     <div id="eventImagePreview" style="margin-top: 12px;"></div>
                   </div>
 
-                  <!-- Event Route & Locations -->
-                  <h5 style="color: #667eea; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 16px 0;">🗺️ Event Route & Locations</h5>
-                  
-                  <!-- Hidden input fields for coordinates -->
-                  <input name="start_lat" type="hidden" />
-                  <input name="start_lng" type="hidden" />
-                  <input name="end_lat" type="hidden" />
-                  <input name="end_lng" type="hidden" />
-                  
-                  <!-- Location Display Cards -->
-                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px;">
-                    <!-- Start Location Card -->
-                    <div id="startLocationCard" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 12px; color: white; text-align: center; min-height: 110px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: all 0.3s; border: 2px solid transparent; box-shadow: 0 4px 12px rgba(102,126,234,0.2);" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 12px 28px rgba(102,126,234,0.35)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(102,126,234,0.2)';">
-                      <p style="margin: 0 0 10px 0; font-size: 0.95rem; opacity: 0.9; font-weight: 600;">🏁 Start Point</p>
-                      <p id="startLocationText" style="margin: 0; font-weight: 800; font-size: 1.2rem;">Click to Pick</p>
-                      <p id="startLocationCoord" style="margin: 6px 0 0 0; font-size: 0.8rem; opacity: 0.8;"></p>
-                    </div>
-                    
-                    <!-- End Location Card -->
-                    <div id="endLocationCard" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 20px; border-radius: 12px; color: white; text-align: center; min-height: 110px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: all 0.3s; border: 2px solid transparent; box-shadow: 0 4px 12px rgba(245,87,108,0.2);" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 12px 28px rgba(245,87,108,0.35)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(245,87,108,0.2)';">
-                      <p style="margin: 0 0 10px 0; font-size: 0.95rem; opacity: 0.9; font-weight: 600;">🏁 End Point</p>
-                      <p id="endLocationText" style="margin: 0; font-weight: 800; font-size: 1.2rem;">Click to Pick</p>
-                      <p id="endLocationCoord" style="margin: 6px 0 0 0; font-size: 0.8rem; opacity: 0.8;"></p>
-                    </div>
-                  </div>
-                  
-                  <!-- Control Buttons -->
-                  <div style="display: flex; gap: 12px; margin-bottom: 18px; flex-wrap: wrap;">
-                    <button type="button" id="pickStartEventBtn" class="btn" style="flex: 1; min-width: 150px; padding: 13px; font-weight: 700; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 10px; cursor: pointer; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(102,126,234,0.3)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">📍 Pick Start</button>
-                    <button type="button" id="pickEndEventBtn" class="btn" style="flex: 1; min-width: 150px; padding: 13px; font-weight: 700; background: linear-gradient(135deg, #f093fb, #f5576c); color: white; border: none; border-radius: 10px; cursor: pointer; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(245,87,108,0.3)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">📍 Pick End</button>
-                    <button type="button" id="clearEventPickBtn" class="btn" style="flex: 1; min-width: 150px; padding: 13px; font-weight: 700; background: #e0e0e0; color: #333; border: none; border-radius: 10px; cursor: pointer; transition: all 0.3s;" onmouseover="this.style.backgroundColor='#d0d0d0';" onmouseout="this.style.backgroundColor='#e0e0e0';">🗑️ Clear</button>
-                  </div>
-                  
-                  <!-- Interactive Map -->
-                  <div id="eventLocationPickerMap" style="width: 100%; height: 320px; border: 2px solid #667eea; border-radius: 12px; background: #f0f4ff; position: relative; overflow: hidden; box-shadow: 0 4px 12px rgba(102,126,234,0.15);"></div>
-                  <p style="margin-top: 12px; font-size: 0.9rem; color: #667eea; text-align: center; font-weight: 600;">💡 Click the buttons above to pick locations on the map</p>
                 </div>
               </details>
 
               <!-- Form Buttons -->
               <div style="display: grid; grid-template-columns: 1fr auto; gap: 12px; padding-top: 12px;">
-                <button type="submit" class="btn btn-primary" id="submitEventBtn" style="padding: 14px; width: 100%; grid-column: 1;">➕ Create Event</button>
+                <button type="submit" class="btn btn-primary" id="submitEventBtn" style="padding: 14px; width: 100%; grid-column: 1;">➕ Create Destination</button>
                 <button type="button" class="btn" style="background: #e0e0e0; color: #333; display: none; padding: 14px 24px; grid-column: 2;" onclick="resetEventForm()" id="cancelEditBtn">Cancel</button>
               </div>
             </form>
           </div>
         </div>
         
-        <!-- Events list header removed as requested -->
+        <!-- Destinations list header removed as requested -->
         <div id="eventsList" style="display: grid; gap: 18px;"></div>
       </div>
       <div id="shops" class="tab-content" style="display:none;">
         <div class="section-title">🛍️ Shop Management</div>
+        
+        <!-- Shop & Product Ratings Overview -->
+        <div style="background: linear-gradient(135deg, white 0%, #fafbfc 100%); padding: 24px; border-radius: 12px; margin-bottom: 28px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); border: 1px solid rgba(255,122,24,0.15);">
+          <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #1a237e;">⭐ Shop & Product Ratings Overview</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px;">
+            <div style="background: white; padding: 16px; border-radius: 8px; text-align: center; border-left: 4px solid #ff7a18;">
+              <small style="color: #666; font-weight: 600;">Avg Shop Rating</small>
+              <div style="font-size: 28px; font-weight: 900; color: #ff7a18; margin: 8px 0;" id="dashShopAvgRating">0.0</div>
+              <small style="color: #999;">from guest reviews</small>
+            </div>
+            <div style="background: white; padding: 16px; border-radius: 8px; text-align: center; border-left: 4px solid #3498db;">
+              <small style="color: #666; font-weight: 600;">Avg Product Rating</small>
+              <div style="font-size: 28px; font-weight: 900; color: #3498db; margin: 8px 0;" id="dashProductAvgRating">0.0</div>
+              <small style="color: #999;">from guest reviews</small>
+            </div>
+            <div style="background: white; padding: 16px; border-radius: 8px; text-align: center; border-left: 4px solid #e74c3c;">
+              <small style="color: #666; font-weight: 600;">Total Reviews</small>
+              <div style="font-size: 28px; font-weight: 900; color: #e74c3c; margin: 8px 0;" id="dashShopProductReviewCount">0</div>
+              <small style="color: #999;">for shops & products</small>
+            </div>
+          </div>
+          <button onclick="loadShopRatingsOverview()" style="margin-top: 16px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9rem;">🔄 Refresh Ratings</button>
+        </div>
         
         <!-- Shop Form -->
         <div class="form-card">
@@ -688,8 +704,26 @@
         </div>
 
       </div>
-      <div id="destinations" class="tab-content">
+      <div id="destinations" class="tab-content" style="display:none;">
         <div class="section-title">🗺️ Destinations Management</div>
+        
+        <!-- Destination Ratings Overview -->
+        <div style="background: linear-gradient(135deg, white 0%, #fafbfc 100%); padding: 24px; border-radius: 12px; margin-bottom: 28px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); border: 1px solid rgba(100,200,100,0.15);">
+          <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #1a237e;">⭐ Destination Ratings Overview</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
+            <div style="background: white; padding: 16px; border-radius: 8px; text-align: center; border-left: 4px solid #27ae60;">
+              <small style="color: #666; font-weight: 600;">Avg Destination Rating</small>
+              <div style="font-size: 28px; font-weight: 900; color: #27ae60; margin: 8px 0;" id="dashDestAvgRating">0.0</div>
+              <small style="color: #999;">from guest reviews</small>
+            </div>
+            <div style="background: white; padding: 16px; border-radius: 8px; text-align: center; border-left: 4px solid #e74c3c;">
+              <small style="color: #666; font-weight: 600;">Total Destination Reviews</small>
+              <div style="font-size: 28px; font-weight: 900; color: #e74c3c; margin: 8px 0;" id="dashDestReviewCount">0</div>
+              <small style="color: #999;">feedback received</small>
+            </div>
+          </div>
+          <button onclick="loadDestinationRatingsOverview()" style="margin-top: 16px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9rem;">🔄 Refresh Ratings</button>
+        </div>
         
         <!-- Category Management -->
         <div class="expandable-section" style="margin-bottom: 25px;">
@@ -735,7 +769,7 @@
         </div>
       </div>
 
-      <div id="experiences" class="tab-content">
+      <div id="experiences" class="tab-content" style="display:none;">
         <div class="section-title">🎭 Local Experiences Management</div>
         
         <!-- Add New Experience -->
@@ -767,7 +801,7 @@
         </div>
       </div>
 
-      <div id="festivals" class="tab-content">
+      <div id="festivals" class="tab-content" style="display:none;">
         <div class="section-title">🎉 Festivals & Events Management</div>
         
         <!-- Add New Festival/Event -->
@@ -801,10 +835,8 @@
         </div>
       </div>
 
-      <!-- FEEDBACK TAB (Admin view for guest feedback) -->
-      <!-- feedback tab removed; content now shown in metrics -->
-
-      <div id="alerts" class="tab-content">
+      <!-- ALERTS TAB -->
+      <div id="alerts" class="tab-content" style="display:none;">
         <div class="section-title">🚨 Event Alerts</div>
         <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
           <h3>📝 Add New Alert</h3>
@@ -825,188 +857,77 @@
           </form>
         </div>
         
-        <h3 style="margin-top: 30px;">📋 Active Alerts</h3>
+        <h3 style="margin-top: 30px; color: #1a237e; font-weight: 700;">📋 Active Alerts</h3>
         <div id="alertsList" style="display: grid; gap: 12px;"></div>
       </div>
-      
-      <!-- Itinerary Management Section -->
-      <div id="itineraryManagement" class="tab-content" style="display:none;">
-        <div class="section-title">✈️ Create Your Itinerary - System Management</div>
+
+      <!-- FEEDBACK & RATINGS SECTION -->
+      <div id="feedback" class="tab-content" style="display:none;">
+        <div class="section-title">💬 Guest Ratings & Reviews</div>
         
-        <!-- Manage Destinations -->
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 0; border-radius: 12px; margin-bottom: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(102,126,234,0.3);">
-          <div style="background: white; padding: 20px; border-radius: 12px 12px 0 0;">
-            <h3 style="margin: 0 0 12px 0; color: #333;">➕ Add Itinerary Destination</h3>
-            <form id="itineraryDestinationForm" style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
-              <div class="form-group"><label>Destination Name *</label><input name="name" placeholder="e.g., Mayon Volcano" required /></div>
-              <div class="form-group"><label>Category</label><input name="category" placeholder="e.g., Natural Landmark" /></div>
-              <div class="form-group"><label>Latitude *</label><input name="latitude" type="number" step="0.0001" placeholder="13.1550" required /></div>
-              <div class="form-group"><label>Longitude *</label><input name="longitude" type="number" step="0.0001" placeholder="123.7050" required /></div>
-              <div class="form-group" style="grid-column:1/-1;"><label>Pick Location on Map</label><div style="display:flex; gap:8px; margin-bottom:8px;"><button type="button" id="pickDestLocationBtn" class="btn" style="background:#667eea; color:white;">📍 Pick Location</button><button type="button" id="clearDestPickBtn" class="btn" style="background:#999; color:white;">Clear Map</button></div><div id="destPickerMap" style="width:100%; height:220px; border:1px solid #ddd; border-radius:6px;"></div><small style="display:block; color:#666; margin-top:6px;">Click on the map to select destination location.</small></div>
-              <div class="form-group" style="grid-column:1/-1;"><label>Description</label><textarea name="description" rows="3" placeholder="Destination details..."></textarea></div>
-              <div class="form-group" style="grid-column:1/-1;"><label>Activities (comma-separated)</label><input name="activities" placeholder="e.g., Hiking, Photography, Sightseeing" /></div>
-              <div class="form-group" style="grid-column:1/-1;"><label>Destination Image</label><input type="file" id="destImage" accept="image/*" /></div>
-              <div id="destImagePreview" style="grid-column:1/-1;"></div>
-              <div style="grid-column:1/-1; display:flex; gap:10px;"><button type="submit" class="btn btn-primary" style="flex:1;">➕ Add Destination</button><button type="button" class="btn" style="flex:1; background:#f0f0f0;" onclick="resetItineraryDestinationForm()">Reset</button></div>
-            </form>
+        <!-- Filter and Statistics Section -->
+        <div style="background: linear-gradient(135deg, white 0%, #fafbfc 100%); padding: 24px; border-radius: 12px; margin-bottom: 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); border: 1px solid rgba(255,122,24,0.15);">
+          <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #1a237e;">📊 Rating Statistics</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 20px;">
+            <div style="background: white; padding: 16px; border-radius: 8px; text-align: center; border-left: 4px solid #ff7a18;">
+              <small style="color: #666; font-weight: 600;">Total Reviews</small>
+              <div style="font-size: 28px; font-weight: 900; color: #ff7a18; margin: 8px 0;" id="totalReviewsCount">0</div>
+            </div>
+            <div style="background: white; padding: 16px; border-radius: 8px; text-align: center; border-left: 4px solid #27ae60;">
+              <small style="color: #666; font-weight: 600;">Avg Shop Rating</small>
+              <div style="font-size: 28px; font-weight: 900; color: #27ae60; margin: 8px 0;" id="avgShopRating">0.0</div>
+            </div>
+            <div style="background: white; padding: 16px; border-radius: 8px; text-align: center; border-left: 4px solid #3498db;">
+              <small style="color: #666; font-weight: 600;">Avg Product Rating</small>
+              <div style="font-size: 28px; font-weight: 900; color: #3498db; margin: 8px 0;" id="avgProductRating">0.0</div>
+            </div>
+            <div style="background: white; padding: 16px; border-radius: 8px; text-align: center; border-left: 4px solid #e74c3c;">
+              <small style="color: #666; font-weight: 600;">Positive Reviews</small>
+              <div style="font-size: 28px; font-weight: 900; color: #e74c3c; margin: 8px 0;" id="positiveReviewsCount">0</div>
+            </div>
+          </div>
+
+          <!-- Filter Options -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 16px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Filter by Type</label>
+              <select id="feedbackTypeFilter" onchange="loadAndDisplayFeedback()">
+                <option value="">-- All Types --</option>
+                <option value="shop">🛍️ Shop</option>
+                <option value="product">🛒 Product</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Filter by Rating</label>
+              <select id="feedbackRatingFilter" onchange="loadAndDisplayFeedback()">
+                <option value="">-- All Ratings --</option>
+                <option value="5">⭐⭐⭐⭐⭐ (5 Stars)</option>
+                <option value="4">⭐⭐⭐⭐ (4 Stars)</option>
+                <option value="3">⭐⭐⭐ (3 Stars)</option>
+                <option value="2">⭐⭐ (2 Stars)</option>
+                <option value="1">⭐ (1 Star)</option>
+              </select>
+            </div>
+            <div style="display: flex; align-items: flex-end; gap: 10px;">
+              <button class="btn btn-primary" onclick="loadAndDisplayFeedback()" style="flex: 1; background: #667eea;">🔄 Refresh</button>
+            </div>
           </div>
         </div>
-        
-        <h3 style="margin-top:10px;">📍 Itinerary Destinations List</h3>
-        <div id="itineraryDestinationsList" style="display:grid; gap:12px;"></div>
-        
-        <!-- Manage Hotels -->
-        <div style="background: linear-gradient(135deg, #27ae60 0%, #229954 100%); padding: 0; border-radius: 12px; margin-bottom: 20px; margin-top: 30px; overflow: hidden; box-shadow: 0 10px 30px rgba(39,174,96,0.3);">
-          <div style="background: white; padding: 20px; border-radius: 12px 12px 0 0;">
-            <h3 style="margin: 0 0 12px 0; color: #333;">➕ Add Hotel to Itinerary</h3>
-            <form id="itineraryHotelForm" style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
-              <div class="form-group"><label>Hotel Name *</label><input name="name" placeholder="e.g., The Marison Hotel" required /></div>
-              <div class="form-group"><label>Category</label><input name="category" placeholder="e.g., 3-Star" /></div>
-              <div class="form-group"><label>Latitude *</label><input name="latitude" type="number" step="0.0001" placeholder="13.1130" required /></div>
-              <div class="form-group"><label>Longitude *</label><input name="longitude" type="number" step="0.0001" placeholder="123.7540" required /></div>
-              <div class="form-group"><label>Rating</label><input name="rating" type="number" step="0.1" min="0" max="5" placeholder="4.5" /></div>
-              <div class="form-group"><label>Price per Night (₱)</label><input name="ratePerNight" type="number" placeholder="2800" /></div>
-              <div class="form-group"><label>Phone Number</label><input name="phone" placeholder="(052) 480-9999" /></div>
-              <div class="form-group"><label>Address</label><input name="address" placeholder="Street, Area, Legazpi City" /></div>
-              <div class="form-group" style="grid-column:1/-1;"><label>Pick Location on Map</label><div style="display:flex; gap:8px; margin-bottom:8px;"><button type="button" id="pickHotelLocationBtn" class="btn" style="background:#27ae60; color:white;">📍 Pick Location</button><button type="button" id="clearHotelPickBtn" class="btn" style="background:#999; color:white;">Clear Map</button></div><div id="hotelPickerMap" style="width:100%; height:220px; border:1px solid #ddd; border-radius:6px;"></div><small style="display:block; color:#666; margin-top:6px;">Click on the map to select hotel location.</small></div>
-              <div class="form-group" style="grid-column:1/-1;"><label>Description</label><textarea name="description" rows="2" placeholder="Hotel details..."></textarea></div>
-              <div class="form-group" style="grid-column:1/-1;"><label>Features (comma-separated)</label><input name="features" placeholder="e.g., WiFi, Restaurant, Pool, Gym" /></div>
-              <div class="form-group" style="grid-column:1/-1;"><label>Hotel Image</label><input type="file" id="hotelImage" accept="image/*" /></div>
-              <div id="hotelImagePreview" style="grid-column:1/-1;"></div>
-              <div style="grid-column:1/-1; display:flex; gap:10px;"><button type="submit" class="btn btn-primary" style="flex:1;">➕ Add Hotel</button><button type="button" class="btn" style="flex:1; background:#f0f0f0;" onclick="resetItineraryHotelForm()">Reset</button></div>
-            </form>
+
+        <!-- Feedback List Section -->
+        <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.08);">
+          <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #1a237e; display: flex; justify-content: space-between; align-items: center;">
+            <span>📝 All Feedback & Reviews</span>
+            <span id="feedbackCountBadge" style="background: #ff7a18; color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700;">0 reviews</span>
+          </h3>
+          <div id="feedbackListContainer" style="display: grid; gap: 16px; max-height: 600px; overflow-y: auto; padding-right: 8px;">
+            <div style="text-align: center; padding: 40px; color: #999;">Loading feedback...</div>
           </div>
         </div>
-        
-        <h3 style="margin-top:10px;">🏨 Itinerary Hotels List</h3>
-        <div id="itineraryHotelsList" style="display:grid; gap:12px;"></div>
-      </div>
+
+
       
       <!-- itineraries tab removed; content now shown in metrics -->
-
-      <!-- PREDICTIONS TAB -->
-      <div id="predictions" class="tab-content">
-        <div class="section-title">🔮 ML Tourism Predictions</div>
-        <div style="background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%); padding: 20px; border-radius: 8px; border-left: 4px solid #667eea; margin-bottom: 28px;">
-          <p style="margin: 0; color: #1a237e; font-weight: 600;">Advanced Machine Learning Models for Accurate Visitor & Tourism Forecasting</p>
-          <small style="color: #555; margin-top: 8px; display: block;">Trained on 2025 actual data | 92.75% accuracy | Updated automatically</small>
-        </div>
-
-        <!-- Model Summary Card -->
-        <div class="chart-container" style="background: linear-gradient(135deg, white 0%, #fafbfc 100%); border: 2px solid #667eea;">
-          <h3>📊 Model Performance Summary</h3>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px;">
-            <div style="background: white; padding: 18px; border-radius: 10px; border-left: 5px solid #667eea; text-align: center;">
-              <strong style="color: #667eea; display: block; font-size: 14px;">Best Model</strong>
-              <div style="font-size: 20px; font-weight: 900; color: #1a237e; margin-top: 8px;" id="pred-model">ARIMA(1,1,1)</div>
-            </div>
-            <div style="background: white; padding: 18px; border-radius: 10px; border-left: 5px solid #ff7a18; text-align: center;">
-              <strong style="color: #ff7a18; display: block; font-size: 14px;">Accuracy</strong>
-              <div style="font-size: 20px; font-weight: 900; color: #d84315; margin-top: 8px;" id="pred-accuracy">92.75%</div>
-            </div>
-            <div style="background: white; padding: 18px; border-radius: 10px; border-left: 5px solid #2196F3; text-align: center;">
-              <strong style="color: #2196F3; display: block; font-size: 14px;">Error Margin</strong>
-              <div style="font-size: 20px; font-weight: 900; color: #0d47a1; margin-top: 8px;" id="pred-error">±3,550</div>
-            </div>
-            <div style="background: white; padding: 18px; border-radius: 10px; border-left: 5px solid #4CAF50; text-align: center;">
-              <strong style="color: #4CAF50; display: block; font-size: 14px;">Confidence</strong>
-              <div style="font-size: 20px; font-weight: 900; color: #1b5e20; margin-top: 8px;" id="pred-confidence">MEDIUM</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 2025 Historical Data -->
-        <div class="chart-container">
-          <h3>📈 2025 Historical Performance</h3>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 16px;">
-            <div style="background: #f5f5f5; padding: 16px; border-radius: 10px; text-align: center;">
-              <small style="color: #666; display: block; font-weight: 600;">Annual Total</small>
-              <div style="font-size: 28px; font-weight: 900; color: #1a237e; margin-top: 8px;" id="hist-annual">548,880</div>
-              <small style="color: #999; margin-top: 4px; display: block;">visitors</small>
-            </div>
-            <div style="background: #f5f5f5; padding: 16px; border-radius: 10px; text-align: center;">
-              <small style="color: #666; display: block; font-weight: 600;">Domestic</small>
-              <div style="font-size: 28px; font-weight: 900; color: #2e7d32; margin-top: 8px;" id="hist-domestic">543,908</div>
-              <small style="color: #999; margin-top: 4px; display: block;">99.1%</small>
-            </div>
-            <div style="background: #f5f5f5; padding: 16px; border-radius: 10px; text-align: center;">
-              <small style="color: #666; display: block; font-weight: 600;">Foreign</small>
-              <div style="font-size: 28px; font-weight: 900; color: #0288d1; margin-top: 8px;" id="hist-foreign">4,972</div>
-              <small style="color: #999; margin-top: 4px; display: block;">0.9%</small>
-            </div>
-            <div style="background: #f5f5f5; padding: 16px; border-radius: 10px; text-align: center;">
-              <small style="color: #666; display: block; font-weight: 600;">Monthly Avg</small>
-              <div style="font-size: 28px; font-weight: 900; color: #c62828; margin-top: 8px;" id="hist-monthly">45,740</div>
-              <small style="color: #999; margin-top: 4px; display: block;">visitors</small>
-            </div>
-          </div>
-          <div style="margin-top: 20px; padding: 16px; background: white; border-radius: 10px; border: 1px solid #ecf0f1;">
-            <strong>Peak Season:</strong> <span id="pred-peak-month" style="color: #ff7a18; font-weight: 900;">November - December</span> | 
-            <strong>Low Season:</strong> <span id="pred-low-month" style="color: #2196F3; font-weight: 900;">February - April</span>
-          </div>
-          <div id="hist-monthly-breakdown" style="margin-top: 12px;"></div>
-        </div>
-
-        <!-- 2026 Q1 Forecast -->
-        <div class="chart-container">
-          <h3>🔮 2026 Q1 Predictions (Forecast)</h3>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-top: 16px;">
-            <div style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); padding: 20px; border-radius: 10px; border-left: 5px solid #2196F3;">
-              <strong style="display: block; color: #0d47a1; font-size: 14px;">📅 January 2026</strong>
-              <div style="font-size: 24px; font-weight: 900; color: #1a237e; margin-top: 10px;" id="pred-jan">Loading...</div>
-            </div>
-            <div style="background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%); padding: 20px; border-radius: 10px; border-left: 5px solid #9c27b0;">
-              <strong style="display: block; color: #4a148c; font-size: 14px;">📅 February 2026</strong>
-              <div style="font-size: 24px; font-weight: 900; color: #1a237e; margin-top: 10px;" id="pred-feb">Loading...</div>
-            </div>
-            <div style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); padding: 20px; border-radius: 10px; border-left: 5px solid #4CAF50;">
-              <strong style="display: block; color: #1b5e20; font-size: 14px;">📅 March 2026</strong>
-              <div style="font-size: 24px; font-weight: 900; color: #1a237e; margin-top: 10px;" id="pred-mar">Loading...</div>
-            </div>
-          </div>
-          <div style="margin-top: 20px; padding: 16px; background: #fff3e0; border-left: 5px solid #ff7a18; border-radius: 8px;">
-            <strong style="color: #e65100;">📊 Q1 2026 Total Forecast:</strong>
-            <div style="font-size: 32px; font-weight: 900; color: #ff7a18; margin-top: 8px;" id="pred-q1-total">Loading...</div>
-            <small style="display: block; color: #666; margin-top: 8px;" id="pred-q1-growth">Growth comparison to 2025 Q1</small>
-          </div>
-        </div>
-
-        <!-- Model Comparison -->
-        <div class="chart-container">
-          <h3>⚙️ Model Comparison & Selection</h3>
-          <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
-            <thead>
-              <tr style="background: #f5f5f5; border-bottom: 2px solid #ddd;">
-                <th style="text-align: left; padding: 12px; font-weight: 700; color: #1a237e;">Model</th>
-                <th style="text-align: center; padding: 12px; font-weight: 700; color: #1a237e;">Accuracy</th>
-                <th style="text-align: center; padding: 12px; font-weight: 700; color: #1a237e;">MAE</th>
-                <th style="text-align: center; padding: 12px; font-weight: 700; color: #1a237e;">RMSE</th>
-              </tr>
-            </thead>
-            <tbody id="pred-models-table">
-              <tr><td colspan="4" style="text-align: center; padding: 20px; color: #999;">Loading model metrics...</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Seasonal Patterns -->
-        <div class="chart-container">
-          <h3>📊 Visitor Behavior Clustering & Patterns</h3>
-          <div id="pred-seasonal-patterns" style="margin-top: 16px;">
-            <p style="color: #999; text-align: center; padding: 20px;">Loading seasonal analysis...</p>
-          </div>
-        </div>
-
-        <!-- Community events predictions section removed per request -->
-
-        <!-- Regenerate Model Button -->
-        <div style="margin-top: 32px; text-align: center;">
-          <button onclick="regeneratePredictions()" class="btn btn-primary" style="font-size: 15px; padding: 14px 32px;">
-            🔄 Regenerate Model (Re-train)
-          </button>
-          <small style="display: block; color: #999; margin-top: 12px;">Automatically updatesevery 7 days. Manual regeneration runs in background (~2 mins).</small>
-        </div>
-      </div>
 
       <!-- Feedback UI removed from admin (handled on guest site) -->
         
@@ -1025,32 +946,72 @@ function apiUrl(endpoint) {
 }
 
 async function postJSON(url, data){ 
-  // If url doesn't start with http, use apiUrl helper
+  // If url doesn't start with http, try multiple possible paths
   if (!url.startsWith('http')) {
-    url = apiUrl(url.replace(/^\.\.\/backend\//, ''));
+    const possiblePaths = [
+      url, // original
+      '../backend/' + url.replace(/^\.\.\/backend\//, ''), // relative to frontend
+      'backend/' + url.replace(/^backend\//, ''), // relative to root
+      '/capstone/backend/' + url.replace(/^\/capstone\/backend\//, '') // absolute
+    ];
+    
+    for (const path of possiblePaths) {
+      try {
+        const res = await fetch(path, {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify(data),
+          credentials:'include'
+        }); 
+        
+        if (res.ok) {
+          const json = await res.json();
+          return json;
+        }
+      } catch(e) {
+        // Try next path
+      }
+    }
+    throw new Error('All POST API paths failed');
   }
-  console.log('📤 postJSON request to:', url, 'Data:', data);
+  
+  // For absolute URLs
   const res = await fetch(url, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data),credentials:'include'}); 
   const json = await res.json();
-  console.log('📥 postJSON response:', json);
   return json;
 }
-async function getJSON(url){ 
-  // If url doesn't start with http, use apiUrl helper
-  if (!url.startsWith('http')) {
-    url = apiUrl(url.replace(/^\.\.\/backend\//, ''));
+async function getJSON(url){
+  // Enhanced getJSON with multi-path fallback for API calls
+  const paths = ['http://localhost/capstone/backend/', '../backend/', 'backend/', '/capstone/backend/'];
+
+  for (const path of paths) {
+    try {
+      let fullUrl;
+      if (url.startsWith('http')) {
+        fullUrl = url;
+      } else if (url.startsWith('../backend/')) {
+        fullUrl = path + url.substring(11); // Remove '../backend/' prefix
+      } else if (url.startsWith('backend/')) {
+        fullUrl = path + url.substring(8); // Remove 'backend/' prefix
+      } else {
+        fullUrl = path + url;
+      }
+
+      console.log('Trying API path:', fullUrl);
+
+      const response = await fetch(fullUrl);
+      if (response.ok) {
+        const data = await response.json();
+        console.log('API call successful:', fullUrl);
+        return data;
+      }
+    } catch (e) {
+      console.log('API path failed:', path, e.message);
+      continue;
+    }
   }
-  const res = await fetch(url, {credentials:'include'}); 
-  const text = await res.text();
-  if (!text) {
-    return {};
-  }
-  try {
-    return JSON.parse(text);
-  } catch(e) {
-    console.error('JSON parse error:', e, 'Response:', text.substring(0, 100));
-    return { error: 'Invalid JSON response', raw: text.substring(0, 500) };
-  }
+
+  throw new Error('All API paths failed');
 }
 
 // Simple snackbar for admin page
@@ -1169,6 +1130,7 @@ async function loadAllData(){
     loadFestivals(),
     loadAlerts(),
     loadGuestFeedback(),
+    loadAndDisplayFeedback(),
     loadPredictions()
   ]);
 }
@@ -1176,6 +1138,7 @@ async function loadAllData(){
 async function loadAnalytics(){
   const r = await getJSON('../backend/api.php?action=analytics_summary');
   const now = new Date().toLocaleString();
+  const formatAvg = (value) => Number(value || 0).toFixed(2);
   
   document.getElementById('stat-events').textContent = r.total_events || 0;
   const eventDetail = document.getElementById('stat-events-detail');
@@ -1194,6 +1157,15 @@ async function loadAnalytics(){
   if(shopEl) shopEl.textContent = shopCount;
   const shopDetail = document.getElementById('stat-shops-detail');
   if(shopDetail) shopDetail.textContent = '📅 ' + now;
+  
+  const destRatingEl = document.getElementById('stat-destination-rating');
+  if (destRatingEl) destRatingEl.textContent = formatAvg(r.avg_destination_rating);
+  const hotelRatingEl = document.getElementById('stat-hotel-rating');
+  if (hotelRatingEl) hotelRatingEl.textContent = formatAvg(r.avg_hotel_rating);
+  const shopRatingEl = document.getElementById('stat-shop-rating');
+  if (shopRatingEl) shopRatingEl.textContent = formatAvg(r.avg_shop_rating);
+  const productRatingEl = document.getElementById('stat-product-rating');
+  if (productRatingEl) productRatingEl.textContent = formatAvg(r.avg_product_rating);
   
   // page view metrics removed; guest logs will track activity instead
   
@@ -1294,22 +1266,23 @@ async function editEvent(id){
   form.location.value = ev.location;
   form.capacity.value = ev.capacity;
   form.description.value = ev.description || '';
+  if (form.event_datetime) form.event_datetime.value = ev.datetime || '';
   if(form.event_type) form.event_type.value = ev.event_type || 'other';
-  
+
   // Determine event duration and set form mode
   const startDate = ev.event_start_date || '';
   const endDate = ev.event_end_date || '';
   
   if (startDate && endDate) {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const durationDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
-    
-    // If single day event, use single-day mode; otherwise use multi-day mode
-    if (durationDays === 1) {
+    const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const isSingleDayName = dayNames.includes(startDate) && startDate === endDate;
+
+    if (isSingleDayName) {
       selectDurationType('single');
-      const singleDateInput = document.querySelector('input[name="single_event_date"]');
-      if (singleDateInput) singleDateInput.value = startDate;
+      const startDayInput = document.querySelector('select[name="single_event_start_day"]');
+      const endDayInput = document.querySelector('select[name="single_event_end_day"]');
+      if (startDayInput) startDayInput.value = startDate;
+      if (endDayInput) endDayInput.value = endDate;
       
       // Load times from schedule if available
       try {
@@ -1322,13 +1295,38 @@ async function editEvent(id){
           if (endTimeInput && firstDay.end_time) endTimeInput.value = firstDay.end_time;
         }
       } catch(e) { console.warn('Failed to parse schedule times', e); }
+
+      // Fallback to top-level stored event time if schedule data is missing
+      const startTimeInput = document.querySelector('input[name="single_start_time"]');
+      const endTimeInput = document.querySelector('input[name="single_end_time"]');
+      if (startTimeInput && !startTimeInput.value && ev.start_time) startTimeInput.value = ev.start_time;
+      if (endTimeInput && !endTimeInput.value && ev.end_time) endTimeInput.value = ev.end_time;
     } else {
-      selectDurationType('multi');
-      const startDateInput = document.querySelector('input[name="multi_start_date"]');
-      const endDateInput = document.querySelector('input[name="multi_end_date"]');
-      if (startDateInput) startDateInput.value = startDate;
-      if (endDateInput) endDateInput.value = endDate;
-      updateMultiDayPreview();
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
+        const durationDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+        if (durationDays === 1) {
+          selectDurationType('single');
+          const startDayInput = document.querySelector('select[name="single_event_start_day"]');
+          const endDayInput = document.querySelector('select[name="single_event_end_day"]');
+          if (startDayInput) startDayInput.value = dayNames[start.getDay()] || '';
+          if (endDayInput) endDayInput.value = dayNames[end.getDay()] || '';
+        } else {
+          selectDurationType('multi');
+          const startDateInput = document.querySelector('input[name="multi_start_date"]');
+          const endDateInput = document.querySelector('input[name="multi_end_date"]');
+          if (startDateInput) startDateInput.value = startDate;
+          if (endDateInput) endDateInput.value = endDate;
+          updateMultiDayPreview();
+        }
+      } else {
+        selectDurationType('single');
+        const startDayInput = document.querySelector('select[name="single_event_start_day"]');
+        const endDayInput = document.querySelector('select[name="single_event_end_day"]');
+        if (startDayInput) startDayInput.value = startDate;
+        if (endDayInput) endDayInput.value = endDate || startDate;
+      }
     }
   }
   
@@ -1370,9 +1368,27 @@ async function editEvent(id){
   }
   
   editingEventId = id; 
-  document.getElementById('submitEventBtn').textContent = '💾 Update Event'; 
+  document.getElementById('submitEventBtn').textContent = '💾 Update Destination'; 
   document.getElementById('cancelEditBtn').style.display = 'inline-block';
   form.scrollIntoView({behavior: 'smooth'});
+}
+
+async function deleteEvent(id) {
+  if (!await showConfirm('Delete this destination?')) return;
+  try {
+    const r = await postJSON('../backend/api.php?action=delete_event', { id });
+    if (r.success) {
+      showSnackbar('Destination deleted', 'success');
+      if (editingEventId === id) resetEventForm();
+      loadEvents();
+    } else {
+      showSnackbar('Error deleting destination: ' + (r.error || r.message || 'Failed'), 'error');
+      console.error('deleteEvent failed', r);
+    }
+  } catch (err) {
+    console.error('deleteEvent error', err);
+    showSnackbar('Error deleting destination', err.message || 'Unknown error');
+  }
 }
 
 // Event Schedule Builder Functions
@@ -1535,16 +1551,28 @@ function generateDayPrediction(entry){
   };
   const start = parseTime(entry.start_time);
   const end = parseTime(entry.end_time);
-  let hourly = [], peak=0, peakHour=start;
-  for(let h=0; h<24; h++){
-    let factor = 0.1;
-    if(h>=start && h<=end){
-      const pos = (h-start)/Math.max(1,(end-start));
-      factor = 0.2 + (0.8 * Math.sin(pos * Math.PI));
+  let hourly = [], peak = 0, peakHour = start;
+  const activeHours = [];
+  if (!isNaN(start) && !isNaN(end)) {
+    if (end > start) {
+      for (let h = Math.floor(start); h < Math.ceil(end); h += 1) activeHours.push(h % 24);
+    } else {
+      for (let h = Math.floor(start); h < 24; h += 1) activeHours.push(h);
+      for (let h = 0; h < Math.ceil(end); h += 1) activeHours.push(h);
+    }
+  }
+
+  for (let h = 0; h < 24; h++) {
+    let factor = 0.0;
+    const isActive = activeHours.includes(h);
+    if (isActive) {
+      const span = (end > start) ? (end - start) : ((24 - start) + end);
+      const pos = span > 0 ? ((h + 0.5 - start + 24) % 24) / span : 0;
+      factor = Math.max(0, 0.2 + (0.8 * Math.sin(pos * Math.PI)));
     }
     const visitors = Math.round(expected * factor);
     hourly.push(visitors);
-    if(visitors > peak){ peak = visitors; peakHour = h; }
+    if (visitors > peak) { peak = visitors; peakHour = h; }
   }
   const hourlyWaste = hourly.map(v=>Math.round(v * wastePerVisitor * 100)/100);
   const phase = {arrival:Math.round(expected*0.3),peak:Math.round(expected*0.4),leaving:Math.round(expected*0.3)};
@@ -1623,19 +1651,7 @@ function removeScheduleDay(idx){
   document.getElementById('eventForm').event_schedule.value = JSON.stringify(eventSchedule);
 }
 
-function resetEventForm(){ 
-  document.getElementById('eventForm').reset(); 
-  eventSchedule = [];
-  document.getElementById('scheduleList').innerHTML = '';
-  document.getElementById('eventForm').event_schedule.value = JSON.stringify(eventSchedule);
-  editingEventId = null; 
-  document.getElementById('submitEventBtn').textContent = 'Add Event'; 
-  document.getElementById('cancelEditBtn').style.display = 'none'; 
-}
-
-async function deleteEvent(id){ if(!await showConfirm('Delete this event?')) return; const r = await postJSON('../backend/api.php?action=delete_event',{id}); if(r.success){ loadEvents(); showSnackbar('Event deleted','success'); } else showSnackbar('Error: '+(r.error||'failed'),'error'); }
-
-async function uploadEventImage(file){ 
+async function uploadEventImage(file){
   if(!file) {
     console.error('❌ No file provided to uploadEventImage');
     return {success: false, error: 'No file provided'};
@@ -1764,7 +1780,7 @@ function resetEventForm() {
   document.getElementById('multiDayOption').style.background = '#f5f5f5';
   document.getElementById('multiDayOption').style.borderColor = '#e0e0e0';
   document.getElementById('cancelEditBtn').style.display = 'none';
-  document.getElementById('submitEventBtn').innerHTML = '➕ Create Event';
+  document.getElementById('submitEventBtn').innerHTML = '➕ Create Destination';
   editingEventId = null;
 }
 
@@ -1796,33 +1812,82 @@ document.getElementById('eventForm')?.addEventListener('submit', async (e)=>{
   try {
   const f = e.target;
   const file = document.getElementById('eventImage')?.files?.[0] || null;
-  const durationType = document.getElementById('durationType').value;
-  
-  // Validate duration type is selected
+  const originalDatetime = f.event_datetime?.value || '';
+  let durationType = 'single'; // Default to single-day destinations
+
+  const scheduleField = f.event_schedule || document.querySelector('input[name="event_schedule"]');
+  let existingSchedule = [];
+
+  // If duration type was not explicitly selected, infer it from the values already present.
   if (!durationType) {
-    showSnackbar('Please select whether this is a single-day or multi-day event', 'error');
-    return;
+    const singleStart = document.querySelector('select[name="single_event_start_day"]')?.value;
+    const singleEnd = document.querySelector('select[name="single_event_end_day"]')?.value;
+    const multiStart = document.querySelector('input[name="multi_start_date"]')?.value;
+    const multiEnd = document.querySelector('input[name="multi_end_date"]')?.value;
+    if (singleStart || singleEnd) {
+      durationType = 'single';
+      selectDurationType('single');
+    } else if (multiStart || multiEnd) {
+      durationType = 'multi';
+      selectDurationType('multi');
+    }
   }
-  
+
   let startDate, endDate, eventSchedule = [];
-  
-  if (durationType === 'single') {
-    // Single-day event
-    const dateInput = document.querySelector('input[name="single_event_date"]');
+
+  if (!durationType && scheduleField?.value) {
+    try {
+      const parsedSchedule = typeof scheduleField.value === 'string' ? JSON.parse(scheduleField.value) : scheduleField.value;
+      if (Array.isArray(parsedSchedule) && parsedSchedule.length > 0) {
+        const normalizedSchedule = parsedSchedule.map(item => ({
+          date: item.date,
+          start_time: item.start_time || '09:00',
+          end_time: item.end_time || '17:00',
+          capacity: parseInt(f.capacity.value || 0),
+          description: f.description.value
+        }));
+        existingSchedule = normalizedSchedule;
+        if (normalizedSchedule.length === 1) {
+          durationType = 'single';
+          selectDurationType('single');
+          startDate = normalizedSchedule[0].date;
+          endDate = normalizedSchedule[0].date;
+        } else {
+          durationType = 'multi';
+          selectDurationType('multi');
+          startDate = normalizedSchedule[0].date;
+          endDate = normalizedSchedule[normalizedSchedule.length - 1].date;
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to parse existing event_schedule for edit fallback', err);
+    }
+  }
+
+  if (existingSchedule.length > 0) {
+    eventSchedule = existingSchedule;
+  } else if (durationType === 'single') {
+    // Single-day / weekday-range destination availability
+    const startDayInput = document.querySelector('select[name="single_event_start_day"]');
+    const endDayInput = document.querySelector('select[name="single_event_end_day"]');
     const startTimeInput = document.querySelector('input[name="single_start_time"]');
     const endTimeInput = document.querySelector('input[name="single_end_time"]');
     
-    if (!dateInput.value) {
-      showSnackbar('Please select the event date', 'error');
+    if (!startDayInput || !startDayInput.value) {
+      showSnackbar('Please select the start open day', 'error');
+      return;
+    }
+    if (!endDayInput || !endDayInput.value) {
+      showSnackbar('Please select the end open day', 'error');
       return;
     }
     
-    startDate = dateInput.value;
-    endDate = dateInput.value;
+    startDate = startDayInput.value;
+    endDate = endDayInput.value;
+    const dateLabel = startDate === endDate ? startDate : `${startDate} to ${endDate}`;
     
-    // Create single-day schedule entry
     eventSchedule = [{
-      date: startDate,
+      date: dateLabel,
       start_time: startTimeInput.value || '09:00',
       end_time: endTimeInput.value || '17:00',
       capacity: parseInt(f.capacity.value || 0),
@@ -1866,19 +1931,32 @@ document.getElementById('eventForm')?.addEventListener('submit', async (e)=>{
     }
   }
 
-  if (eventSchedule.length === 0) {
-    showSnackbar('Failed to create event schedule', 'error');
+  if (eventSchedule.length === 0 && !editingEventId) {
+    showSnackbar('Failed to create destination schedule', 'error');
     return;
   }
 
-  // Calculate duration from start to end date
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-  const durationDays = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1);
+  // Calculate duration from start to end date. If the user entered a weekday label, treat it as one day.
+  let durationDays = 1;
+  if (eventSchedule.length > 0) {
+    if (/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(startDate) && /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(endDate)) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      durationDays = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1);
+    } else {
+      durationDays = 1;
+    }
+  }
 
-  // Use first day as datetime
-  const datetime = `${startDate}T00:00`;
+  // Preserve original datetime on edits if we loaded it from the event record.
+  const datetime = editingEventId && originalDatetime
+    ? originalDatetime
+    : (/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(startDate)
+      ? `${startDate}T00:00`
+      : `${new Date().toISOString().split('T')[0]}T00:00`);
 
+  const startTimeInput = document.querySelector('input[name="single_start_time"]');
+  const endTimeInput = document.querySelector('input[name="single_end_time"]');
   const data = {
     title: f.title.value, 
     description: f.description.value, 
@@ -1888,6 +1966,8 @@ document.getElementById('eventForm')?.addEventListener('submit', async (e)=>{
     event_schedule: JSON.stringify(eventSchedule),
     duration_hours: durationDays * 8, // Estimate 8 hours/day
     duration_days: durationDays,
+    start_time: (startTimeInput && startTimeInput.value) ? startTimeInput.value : '09:00',
+    end_time: (endTimeInput && endTimeInput.value) ? endTimeInput.value : '17:00',
     location: f.location.value || 'Legazpi', 
     capacity: parseInt(f.capacity.value || 0), 
     event_type: f.event_type.value || 'other',
@@ -1898,18 +1978,12 @@ document.getElementById('eventForm')?.addEventListener('submit', async (e)=>{
   // include optional route coordinates if provided
   if (f.start_lat && f.start_lat.value) data.start_lat = parseFloat(f.start_lat.value);
   if (f.start_lng && f.start_lng.value) data.start_lng = parseFloat(f.start_lng.value);
-  if (f.end_lat && f.end_lat.value) data.end_lat = parseFloat(f.end_lat.value);
-  if (f.end_lng && f.end_lng.value) data.end_lng = parseFloat(f.end_lng.value);
   
   console.log('📍 COORDINATES BEING SUBMITTED:', {
     start_lat: data.start_lat,
     start_lng: data.start_lng,
-    end_lat: data.end_lat,
-    end_lng: data.end_lng,
     form_start_lat: f.start_lat?.value,
-    form_start_lng: f.start_lng?.value,
-    form_end_lat: f.end_lat?.value,
-    form_end_lng: f.end_lng?.value
+    form_start_lng: f.start_lng?.value
   });
   
   if(file){ 
@@ -1983,83 +2057,13 @@ document.getElementById('eventForm')?.addEventListener('submit', async (e)=>{
 let eventPickerMap = null;
 let pickMode = null;
 let startMarker = null;
-let endMarker = null;
-let routeLine = null;  // Store reference to polyline route
 
-function drawRouteLine() {
-  // Get current locations from inputs
-  const startLat = parseFloat(document.querySelector('input[name="start_lat"]').value);
-  const startLng = parseFloat(document.querySelector('input[name="start_lng"]').value);
-  const endLat = parseFloat(document.querySelector('input[name="end_lat"]').value);
-  const endLng = parseFloat(document.querySelector('input[name="end_lng"]').value);
-  
-  // Only draw if both locations are set and map is ready
-  if (!startLat || !startLng || !endLat || !endLng) {
-    console.log('⏭️ Route not ready - missing coordinates');
-    return;
-  }
-  
-  // If map isn't ready yet, retry in a moment
-  if (!eventPickerMap) {
-    console.log('⏳ Map not initialized yet, retrying route drawing...');
-    setTimeout(drawRouteLine, 200);
-    return;
-  }
-  
-  // Remove existing route line if any
-  if (routeLine) {
-    routeLine.setMap(null);
-    routeLine = null;
-  }
-  
-  try {
-    // Create new polyline route between start and end points
-    routeLine = L.polyline([
-      [startLat, startLng],
-      [endLat, endLng]
-    ], {
-      color: '#667eea',
-      weight: 4,
-      opacity: 0.9,
-      dashArray: ''
-    }).addTo(eventPickerMap)
-      .bindPopup(`
-        <div style="padding: 8px;">
-          <strong>📍 Event Route</strong><br>
-          Start: ${startLat.toFixed(4)}, ${startLng.toFixed(4)}<br>
-          End: ${endLat.toFixed(4)}, ${endLng.toFixed(4)}
-        </div>
-      `);
-    
-    console.log('✅ Polyline created successfully:', {startLat, startLng, endLat, endLng});
-  } catch(err) {
-    console.error('❌ Error creating polyline:', err);
-    return;
-  }
-  
-  // Auto-fit map bounds to show entire route with padding
-  const bounds = L.latLngBounds([
-    [startLat, startLng],
-    [endLat, endLng]
-  ]);
-  
-  try {
-    eventPickerMap.fitBounds(bounds, { padding: [50, 50] });
-    console.log('✅ Map fitted to route bounds with padding');
-    showSnackbar('🛣️ Event route line drawn on map!', 'success');
-  } catch(err) {
-    console.warn('⚠️ Could not fit bounds:', err);
-  }
-  
-  console.log('✅ Route line drawn from start to end location - map auto-fitted');
-}
-
-function updateLocationCard(isStart, lat, lng) {
-  const card = document.getElementById(isStart ? 'startLocationCard' : 'endLocationCard');
-  const textEl = document.getElementById(isStart ? 'startLocationText' : 'endLocationText');
-  const coordEl = document.getElementById(isStart ? 'startLocationCoord' : 'endLocationCoord');
-  const input_lat = document.querySelector(`input[name="${isStart ? 'start_lat' : 'end_lat'}"]`);
-  const input_lng = document.querySelector(`input[name="${isStart ? 'start_lng' : 'end_lng'}"]`);
+function updateLocationCard(lat, lng) {
+  const card = document.getElementById('startLocationCard');
+  const textEl = document.getElementById('startLocationText');
+  const coordEl = document.getElementById('startLocationCoord');
+  const input_lat = document.querySelector('input[name="start_lat"]');
+  const input_lng = document.querySelector('input[name="start_lng"]');
   
   // Update hidden inputs
   input_lat.value = lat.toFixed(6);
@@ -2070,9 +2074,6 @@ function updateLocationCard(isStart, lat, lng) {
   coordEl.textContent = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
   card.style.borderColor = '#4caf50';
   card.style.boxShadow = '0 0 0 3px rgba(76,175,80,0.2)';
-  
-  // Automatically draw route line if both locations are set
-  drawRouteLine();
 }
 
 function initEventLocationPicker() {
@@ -2093,42 +2094,29 @@ function initEventLocationPicker() {
 
     eventPickerMap.on('click', function(e) {
       if (!pickMode) {
-        showSnackbar('Select a location type first', 'info');
+        showSnackbar('Click the Pick Location button first', 'info');
         return;
       }
       const lat = e.latlng.lat;
       const lng = e.latlng.lng;
 
-      const addMarker = (isStart) => {
-        if (isStart && startMarker) startMarker.remove();
-        if (!isStart && endMarker) endMarker.remove();
-        
-        const marker = L.marker([lat, lng], {
-          draggable: true,
-          title: isStart ? 'Start Point' : 'End Point'
-        }).addTo(eventPickerMap)
-          .bindPopup(`<strong>${isStart ? 'Start' : 'End'} Point</strong><br>Drag to adjust`);
-        
-        marker.on('dragend', function() {
-          const p = this.getLatLng();
-          updateLocationCard(isStart, p.lat, p.lng);
-        });
-        
-        if (isStart) startMarker = marker;
-        else endMarker = marker;
-      };
-
-      if (pickMode === 'start') {
-        addMarker(true);
-        updateLocationCard(true, lat, lng);
-        pickMode = null;
-        showSnackbar('✓ Start location picked!', 'success');
-      } else if (pickMode === 'end') {
-        addMarker(false);
-        updateLocationCard(false, lat, lng);
-        pickMode = null;
-        showSnackbar('✓ End location picked!', 'success');
-      }
+      if (startMarker) startMarker.remove();
+      
+      const marker = L.marker([lat, lng], {
+        draggable: true,
+        title: 'Destination Location'
+      }).addTo(eventPickerMap)
+        .bindPopup(`<strong>Destination Location</strong><br>Drag to adjust`);
+      
+      marker.on('dragend', function() {
+        const p = this.getLatLng();
+        updateLocationCard(p.lat, p.lng);
+      });
+      
+      startMarker = marker;
+      updateLocationCard(lat, lng);
+      pickMode = null;
+      showSnackbar('✓ Destination location picked!', 'success');
     });
   }, 100);
 }
@@ -2137,13 +2125,7 @@ function initEventLocationPicker() {
 document.getElementById('pickStartEventBtn')?.addEventListener('click', () => {
   initEventLocationPicker();
   pickMode = 'start';
-  showSnackbar('Click on the map to pick the START location', 'info');
-});
-
-document.getElementById('pickEndEventBtn')?.addEventListener('click', () => {
-  initEventLocationPicker();
-  pickMode = 'end';
-  showSnackbar('Click on the map to pick the END location', 'info');
+  showSnackbar('Click on the map to pick the destination location', 'info');
 });
 
 document.getElementById('clearEventPickBtn')?.addEventListener('click', () => {
@@ -2151,33 +2133,17 @@ document.getElementById('clearEventPickBtn')?.addEventListener('click', () => {
     try { if (startMarker && startMarker.remove) startMarker.remove(); } catch(e) {}
     startMarker = null;
   }
-  if (endMarker) {
-    try { if (endMarker && endMarker.remove) endMarker.remove(); } catch(e) {}
-    endMarker = null;
-  }
-  
-  // Remove route line
-  if (routeLine) {
-    routeLine.setMap(null);
-    routeLine = null;
-  }
   
   document.querySelector('input[name="start_lat"]').value = '';
   document.querySelector('input[name="start_lng"]').value = '';
-  document.querySelector('input[name="end_lat"]').value = '';
-  document.querySelector('input[name="end_lng"]').value = '';
   
   document.getElementById('startLocationText').textContent = 'Click to Pick';
   document.getElementById('startLocationCoord').textContent = '';
-  document.getElementById('endLocationText').textContent = 'Click to Pick';
-  document.getElementById('endLocationCoord').textContent = '';
   
   document.getElementById('startLocationCard').style.borderColor = 'transparent';
   document.getElementById('startLocationCard').style.boxShadow = 'none';
-  document.getElementById('endLocationCard').style.borderColor = 'transparent';
-  document.getElementById('endLocationCard').style.boxShadow = 'none';
   
-  showSnackbar('Locations cleared', 'success');
+  showSnackbar('Location cleared', 'success');
 });
 
 // When editing, populate location markers if available
@@ -2214,32 +2180,10 @@ window.editEvent = async function(id) {
     
     startMarker.on('dragend', function(evt) {
       const p = this.getLatLng();
-      updateLocationCard(true, p.lat, p.lng);
+      updateLocationCard(p.lat, p.lng);
     });
     
-    updateLocationCard(true, lat, lng);
-  }
-  
-  if (ev.end_lat && ev.end_lng) {
-    const lat = parseFloat(ev.end_lat);
-    const lng = parseFloat(ev.end_lng);
-    document.querySelector('input[name="end_lat"]').value = lat;
-    document.querySelector('input[name="end_lng"]').value = lng;
-    
-    if (endMarker && endMarker.remove) endMarker.remove();
-    
-    endMarker = L.marker([lat, lng], {
-      draggable: true,
-      title: 'End Point'
-    }).addTo(eventPickerMap)
-      .bindPopup('<strong>End Point</strong><br>Drag to adjust');
-    
-    endMarker.on('dragend', function(evt) {
-      const p = this.getLatLng();
-      updateLocationCard(false, p.lat, p.lng);
-    });
-    
-    updateLocationCard(false, lat, lng);
+    updateLocationCard(lat, lng);
   }
 }
 
@@ -2294,7 +2238,7 @@ async function loadShops(){
         <small style="color:#999; display:block; margin-top:6px;">📝 ${shopDesc ? shopDesc.substring(0,100) : 'No description'}</small>
       </div>
       <div class="list-item-actions" style="display:flex; gap:8px;">
-        <button class="btn" onclick="viewShopProducts(${shop.id})">� Manage Products</button>
+        <button class="btn" onclick="viewShopProducts(${shop.id})">🛍️ Manage Products</button>
         <button class="btn btn-primary" onclick="editShop(${shop.id})">✏️ Edit</button>
         <button class="btn btn-danger" onclick="deleteShop(${shop.id})">🗑️ Delete</button>
       </div>
@@ -3044,6 +2988,7 @@ async function loadGuestFeedback(){
     'suggestion': { emoji: '💡', label: 'Suggestion', color: '#3b82f6' },
     'bug': { emoji: '🐛', label: 'Bug Report', color: '#ef4444' },
     'praise': { emoji: '⭐', label: 'Praise', color: '#f59e0b' },
+    'review': { emoji: '🌟', label: 'Review', color: '#f59e0b' },
     'other': { emoji: '📌', label: 'Other', color: '#8b5cf6' }
   };
   
@@ -3056,11 +3001,15 @@ async function loadGuestFeedback(){
     const rating = f.rating ? '⭐'.repeat(parseInt(f.rating)) : 'No rating';
     const typeInfo = typeIcons[f.type] || { emoji: '📌', label: 'Other', color: '#999' };
     const timestamp = f.created_at ? new Date(f.created_at).toLocaleDateString() + ' ' + new Date(f.created_at).toLocaleTimeString() : 'N/A';
+    const targetLabel = f.target_type ? `${f.target_type.charAt(0).toUpperCase() + f.target_type.slice(1)}${f.target_name ? ' - ' + f.target_name : f.target_id ? ' - ' + f.target_id : ''}` : 'General';
     
     card.innerHTML = `
       <div style="width:100%; margin-bottom:8px;">
         <div style="display:flex; gap:12px; align-items:center; margin-bottom:8px;">
-          <h4 style="margin:0; color:#333; flex:1;">${f.name || 'Anonymous'}</h4>
+          <div style="flex:1;">
+            <h4 style="margin:0; color:#333;">${f.name || 'Anonymous'}</h4>
+            <small style="color:#777;">Target: ${targetLabel}</small>
+          </div>
           <span style="padding: 4px 12px; background: ${typeInfo.color}20; color: ${typeInfo.color}; border-radius: 20px; font-size: 0.8rem; font-weight: 600; white-space: nowrap;">
             ${typeInfo.emoji} ${typeInfo.label}
           </span>
@@ -3232,6 +3181,11 @@ function showTab(tab){
     selectedTab.style.display = 'block';
   }
   
+  // Load ratings when feedback tab is shown
+  if(tab === 'feedback' && typeof loadGuestRatings === 'function') {
+    loadGuestRatings();
+  }
+  
   // Activate correct nav link by finding it through onclick attribute
   const navLinks = document.querySelectorAll('.nav-link');
   for(let link of navLinks) {
@@ -3262,7 +3216,6 @@ function showTab(tab){
     if(typeof loadAlerts === 'function') loadAlerts();
   }
   // itineraries are shown in metrics; no separate tab loading
-  if(tab === 'predictions' && typeof loadPredictions === 'function') loadPredictions();
   if(tab === 'logs' && typeof loadGuestLogs === 'function') loadGuestLogs();
   // feedback is shown in metrics; no separate tab loading
 
@@ -3333,6 +3286,190 @@ function switchDashTab(tab) {
   }
 }
 
+// ============= NEW COMPREHENSIVE FEEDBACK SYSTEM =============
+
+async function loadAndDisplayFeedback() {
+  const typeFilter = document.getElementById('feedbackTypeFilter')?.value || '';
+  const ratingFilter = document.getElementById('feedbackRatingFilter')?.value || '';
+  
+  const container = document.getElementById('feedbackListContainer');
+  if(!container) return;
+  
+  // Show loading state
+  container.innerHTML = '<div style="text-align: center; padding: 40px; color: #667eea;">⏳ Loading feedback...</div>';
+  
+  try {
+    // Try direct fetch with absolute path first
+    let url = '/capstone/backend/ratings_api.php?action=get_ratings&limit=1000';
+    if(typeFilter) url += '&target_type=' + encodeURIComponent(typeFilter);
+    
+    console.log('Fetching feedback from:', url);
+    
+    const response = await fetch(url);
+    console.log('Response status:', response.status);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    console.log('Feedback response:', data);
+    
+    if (!data.success && !Array.isArray(data)) {
+      throw new Error(data.error || 'Invalid response format');
+    }
+    
+    // Handle both response formats
+    let feedbacks = Array.isArray(data) ? data : (data.data || []);
+    
+    // Apply filters
+    if(ratingFilter) {
+      feedbacks = feedbacks.filter(f => f.rating == ratingFilter);
+    }
+    
+    // Update statistics
+    const allData = Array.isArray(data) ? data : (data.data || []);
+    updateFeedbackStatistics(allData);
+    
+    // Render feedback list
+    container.innerHTML = '';
+    
+    if(feedbacks.length === 0) {
+      container.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">No feedback found.</div>';
+      const badge = document.getElementById('feedbackCountBadge');
+      if(badge) badge.textContent = '0 reviews';
+      return;
+    }
+    
+    // Update count badge
+    const badge = document.getElementById('feedbackCountBadge');
+    if(badge) badge.textContent = feedbacks.length + ' review' + (feedbacks.length !== 1 ? 's' : '');
+    
+    // Render each feedback
+    feedbacks.forEach(f => {
+      const card = createFeedbackCard(f);
+      container.appendChild(card);
+    });
+    
+  } catch(e) {
+    console.error('❌ Error loading feedback:', e);
+    if(container) {
+      container.innerHTML = `
+        <div style="text-align: center; padding: 40px;">
+          <div style="color: #e74c3c; font-weight: 700; margin-bottom: 12px;">⚠️ Error Loading Feedback</div>
+          <div style="color: #666; margin-bottom: 16px; font-size: 14px;">${e.message}</div>
+          <button onclick="loadAndDisplayFeedback()" style="padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">🔄 Retry</button>
+        </div>
+      `;
+    }
+  }
+}
+
+function createFeedbackCard(feedback) {
+  const card = document.createElement('div');
+  card.style.cssText = 'background: white; padding: 18px; border-radius: 10px; border-left: 5px solid #ff7a18; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: all 0.3s;';
+  
+  const typeInfo = {
+    'shop': { emoji: '🛍️', color: '#ff7a18' },
+    'product': { emoji: '🛒', color: '#3b82f6' },
+    'destination': { emoji: '🗺️', color: '#27ae60' },
+    'hotel': { emoji: '🏨', color: '#9b59b6' },
+    'system': { emoji: '⭐', color: '#f59e0b' }
+  };
+  
+  const type = feedback.target_type || 'system';
+  const info = typeInfo[type] || { emoji: '📝', color: '#999' };
+  
+  const ratingStars = '⭐'.repeat(parseInt(feedback.rating || 0)) + '☆'.repeat(5 - parseInt(feedback.rating || 0));
+  const timestamp = new Date(feedback.created_at).toLocaleDateString() + ' ' + new Date(feedback.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+  
+  card.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+      <div style="flex: 1;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+          <h4 style="margin: 0; color: #333; font-weight: 700;">${feedback.user_name || 'Anonymous'}</h4>
+          <span style="background: ${info.color}20; color: ${info.color}; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; white-space: nowrap;">
+            ${info.emoji} ${type.charAt(0).toUpperCase() + type.slice(1)}
+          </span>
+        </div>
+        <div style="color: #666; font-size: 13px;">
+          📧 ${feedback.user_email || 'N/A'} 
+          ${feedback.anonymous ? ' (Anonymous)' : ''}
+        </div>
+        <div style="color: #666; font-size: 13px; margin-top: 4px;">
+          📍 ${feedback.target_name || feedback.target_id || 'General'}
+        </div>
+      </div>
+      <div style="text-align: right; min-width: 100px;">
+        <div style="font-size: 18px; color: #f59e0b; margin-bottom: 4px;">${ratingStars}</div>
+        <div style="color: #999; font-size: 12px;">${feedback.rating}/5 stars</div>
+      </div>
+    </div>
+    
+    <div style="background: #f9f9f9; padding: 12px; border-radius: 8px; margin-bottom: 12px; border-left: 3px solid ${info.color};">
+      <p style="margin: 0; color: #555; line-height: 1.6; font-size: 14px;">💬 ${feedback.message}</p>
+    </div>
+    
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <small style="color: #999;">📅 ${timestamp}</small>
+      <button class="btn btn-danger" onclick="deleteFeedbackRating(${feedback.id})" style="padding: 8px 16px; font-size: 12px;">🗑️ Delete</button>
+    </div>
+  `;
+  
+  card.onmouseover = function() { this.style.boxShadow = '0 8px 20px rgba(255,122,24,0.2)'; };
+  card.onmouseout = function() { this.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'; };
+  
+  return card;
+}
+
+function updateFeedbackStatistics(allFeedbacks) {
+  // Calculate stats from data
+  const total = allFeedbacks.length;
+  const positive = allFeedbacks.filter(f => f.rating >= 4).length;
+  
+  // Calculate averages by type
+  const shopRatings = allFeedbacks.filter(f => f.target_type === 'shop');
+  const productRatings = allFeedbacks.filter(f => f.target_type === 'product');
+  
+  const avgShopRating = shopRatings.length > 0 ? 
+    (shopRatings.reduce((sum, f) => sum + (f.rating || 0), 0) / shopRatings.length).toFixed(2) : 0;
+  const avgProductRating = productRatings.length > 0 ? 
+    (productRatings.reduce((sum, f) => sum + (f.rating || 0), 0) / productRatings.length).toFixed(2) : 0;
+  
+  // Update UI
+  document.getElementById('totalReviewsCount').textContent = total;
+  document.getElementById('avgShopRating').textContent = avgShopRating;
+  document.getElementById('avgProductRating').textContent = avgProductRating;
+  document.getElementById('positiveReviewsCount').textContent = positive;
+}
+
+async function deleteFeedbackRating(id) {
+  if(!confirm('Delete this feedback? This action cannot be undone.')) return;
+  
+  try {
+    console.log('Deleting feedback ID:', id);
+    const response = await fetch('/capstone/backend/ratings_api.php?action=delete_rating', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rating_id: id })
+    });
+    
+    const data = await response.json();
+    console.log('Delete response:', data);
+    
+    if(data.success) {
+      showSnackbar('✅ Feedback deleted successfully', 'success');
+      await loadAndDisplayFeedback();
+    } else {
+      showSnackbar('❌ Error: ' + (data.error || 'Failed to delete'), 'error');
+    }
+  } catch(e) {
+    console.error('Delete error:', e);
+    showSnackbar('❌ Error: ' + e.message, 'error');
+  }
+}
+
+
 document.addEventListener('DOMContentLoaded', function(){
   checkAdminSession();
   
@@ -3364,6 +3501,7 @@ document.addEventListener('DOMContentLoaded', function(){
   // Load initial analytics
   if(typeof loadAnalytics !== 'undefined') loadAnalytics();
   if(typeof loadGuestFeedback !== 'undefined') loadGuestFeedback();
+  if(typeof loadAndDisplayFeedback !== 'undefined') loadAndDisplayFeedback();
   if(typeof loadGuestActivityLogs !== 'undefined') loadGuestActivityLogs();
   
   // Auto-refresh metrics every 10 seconds to show new feedback/logs in real-time
@@ -3454,33 +3592,6 @@ async function showEventModal(){
       </div>`;
     });
     if(events.length > 10) html += '<p style="color:#999; text-align:center; margin-top:15px;">... and ' + (events.length - 10) + ' more</p>';
-  }
-  html += '</div>';
-  const modal = document.createElement('div');
-  modal.className = 'modal-overlay active';
-  modal.innerHTML = '<div class="modal-box">' + html + '</div>';
-  modal.onclick = (e) => { if(e.target === modal) closeAllModals(); };
-  document.body.appendChild(modal);
-}
-
-async function showItineraryModal(){
-  closeAllModals();
-  const r = await getJSON('../backend/api.php?action=list_itineraries');
-  const itins = r.itineraries || [];
-  let html = '<div style="position:relative;"><button class="modal-close" onclick="closeAllModals()">&times;</button>';
-  html += '<h2>🗺️ Itinerary Details</h2>';
-  html += '<p style="color:#666; margin-bottom:15px;">Total Itineraries: <strong>' + itins.length + '</strong></p>';
-  if(itins.length === 0){ html += '<p style="color:#999;">No itineraries found</p>'; }
-  else {
-    itins.slice(0, 10).forEach(it=>{
-      html += `<div style="background:#f5f5f5; padding:15px; margin-bottom:10px; border-radius:8px; border-left:4px solid #667eea;">
-        <strong>${it.title || 'Untitled'}</strong><br/>
-        <small style="color:#666;">👤 ${it.user_name || it.name || 'Guest'}</small><br/>
-        <small style="color:#666;">📧 ${it.user_email || it.email || 'N/A'}</small><br/>
-        <small style="color:#999; display:block; margin-top:6px;">⏱️ ${it.days || '?'} days • 📅 ${it.created_at ? new Date(it.created_at).toLocaleDateString() : 'N/A'}</small>
-      </div>`;
-    });
-    if(itins.length > 10) html += '<p style="color:#999; text-align:center; margin-top:15px;">... and ' + (itins.length - 10) + ' more</p>';
   }
   html += '</div>';
   const modal = document.createElement('div');
@@ -4153,404 +4264,11 @@ function cancelFestivalEdit(){
 }
 async function deleteFestival(id){ if(!confirm('Delete festival?')) return; const res = await postJSON('../backend/api.php?action=delete_festival',{ id }); if(res.success){ showSnackbar('Deleted','success'); loadFestivals(); } else showSnackbar('Delete failed','error'); }
 
-// ===== ITINERARY MANAGEMENT FUNCTIONS =====
-
-async function loadItineraryDestinations(){
-  const r = await getJSON('../backend/api.php?action=list_itinerary_destinations');
-  const out = document.getElementById('itineraryDestinationsList');
-  out.innerHTML = '';
-  
-  if(!r.success || !r.destinations || r.destinations.length === 0){
-    out.innerHTML = '<div style="color:#999; padding:20px; text-align:center;">No custom destinations yet. Add one above.</div>';
-    return;
-  }
-  
-  const destinations = r.destinations;
-  destinations.forEach(dest => {
-    const div = document.createElement('div');
-    div.style.cssText = 'background:white; padding:15px; border-radius:8px; border-left:4px solid #667eea; display:flex; justify-content:space-between; align-items:center; gap:15px;';
-    div.innerHTML = `
-      <div style="flex:1;">
-        ${dest.image ? `<img src="${dest.image}" style="width:80px; height:80px; border-radius:6px; object-fit:cover; margin-bottom:8px;">` : ''}
-        <strong>${dest.name}</strong><br/>
-        <small style="color:#666;">${dest.category || 'Uncategorized'} • 📍 ${dest.latitude.toFixed(4)}, ${dest.longitude.toFixed(4)}</small><br/>
-        <small style="color:#999;">${dest.description ? dest.description.substring(0, 80) : ''}</small>
-      </div>
-      <div style="display:flex; gap:8px; flex-direction:column;">
-        <button class="btn btn-primary" onclick="editItineraryDestination(${dest.id})" style="background:#3498db; white-space:nowrap;">✏️ Edit</button>
-        <button class="btn btn-danger" onclick="deleteItineraryDestination(${dest.id})" style="white-space:nowrap;">🗑️ Delete</button>
-      </div>
-    `;
-    out.appendChild(div);
-  });
-}
-
-async function loadItineraryHotels(){
-  const r = await getJSON('../backend/api.php?action=list_itinerary_hotels');
-  const out = document.getElementById('itineraryHotelsList');
-  out.innerHTML = '';
-  
-  if(!r.success || !r.hotels || r.hotels.length === 0){
-    out.innerHTML = '<div style="color:#999; padding:20px; text-align:center;">No custom hotels yet. Add one above.</div>';
-    return;
-  }
-  
-  const hotels = r.hotels;
-  hotels.forEach(hotel => {
-    const div = document.createElement('div');
-    div.style.cssText = 'background:white; padding:15px; border-radius:8px; border-left:4px solid #27ae60; display:flex; justify-content:space-between; align-items:center; gap:15px;';
-    div.innerHTML = `
-      <div style="flex:1;">
-        ${hotel.image ? `<img src="${hotel.image}" style="width:80px; height:80px; border-radius:6px; object-fit:cover; margin-bottom:8px;">` : ''}
-        <strong>${hotel.name}</strong><br/>
-        <small style="color:#666;">${hotel.category || 'Uncategorized'} • ⭐ ${hotel.rating || 'N/A'} • ₱${hotel.rate_per_night || 'N/A'}/night</small><br/>
-        <small style="color:#999;">📍 ${hotel.latitude.toFixed(4)}, ${hotel.longitude.toFixed(4)}</small>
-      </div>
-      <div style="display:flex; gap:8px; flex-direction:column;">
-        <button class="btn btn-primary" onclick="editItineraryHotel(${hotel.id})" style="background:#27ae60; white-space:nowrap;">✏️ Edit</button>
-        <button class="btn btn-danger" onclick="deleteItineraryHotel(${hotel.id})" style="white-space:nowrap;">🗑️ Delete</button>
-      </div>
-    `;
-    out.appendChild(div);
-  });
-}
-
-function resetItineraryDestinationForm(){
-  const f = document.getElementById('itineraryDestinationForm');
-  if(f) {
-    f.reset();
-    f.dataset.editingId = '';
-    document.getElementById('destImagePreview').innerHTML = '';
-  }
-  const btn = f?.querySelector('button[type="submit"]');
-  if(btn) btn.textContent = '➕ Add Destination';
-}
-
-function resetItineraryHotelForm(){
-  const f = document.getElementById('itineraryHotelForm');
-  if(f) {
-    f.reset();
-    f.dataset.editingId = '';
-    document.getElementById('hotelImagePreview').innerHTML = '';
-  }
-  const btn = f?.querySelector('button[type="submit"]');
-  if(btn) btn.textContent = '➕ Add Hotel';
-}
-
-async function editItineraryDestination(id){
-  const r = await getJSON('../backend/api.php?action=list_itinerary_destinations');
-  const dest = r.destinations.find(d => d.id == id);
-  if(!dest) { showSnackbar('Destination not found', 'error'); return; }
-  
-  const f = document.getElementById('itineraryDestinationForm');
-  f.name.value = dest.name;
-  f.category.value = dest.category || '';
-  f.latitude.value = dest.latitude;
-  f.longitude.value = dest.longitude;
-  f.description.value = dest.description || '';
-  f.activities.value = dest.activities || '';
-  
-  // Initialize map and add marker
-  initDestPickerMap();
-  if (destMarker) destPickerMap.removeLayer(destMarker);
-  destMarker = L.marker([parseFloat(dest.latitude), parseFloat(dest.longitude)], {draggable:true}).addTo(destPickerMap).bindPopup('Destination');
-  destMarker.on('dragend', function(e){ 
-    const p = e.target.getLatLng(); 
-    f.latitude.value = p.lat.toFixed(4); 
-    f.longitude.value = p.lng.toFixed(4); 
-  });
-  destPickerMap.setView([parseFloat(dest.latitude), parseFloat(dest.longitude)], 14);
-  
-  f.dataset.editingId = id;
-  const btn = f.querySelector('button[type="submit"]');
-  btn.textContent = '💾 Update Destination';
-  f.scrollIntoView({behavior: 'smooth'});
-}
-
-async function editItineraryHotel(id){
-  const r = await getJSON('../backend/api.php?action=list_itinerary_hotels');
-  const hotel = r.hotels.find(h => h.id == id);
-  if(!hotel) { showSnackbar('Hotel not found', 'error'); return; }
-  
-  const f = document.getElementById('itineraryHotelForm');
-  f.name.value = hotel.name;
-  f.category.value = hotel.category || '';
-  f.latitude.value = hotel.latitude;
-  f.longitude.value = hotel.longitude;
-  f.rating.value = hotel.rating || '';
-  f.ratePerNight.value = hotel.rate_per_night || '';
-  f.phone.value = hotel.phone || '';
-  f.address.value = hotel.address || '';
-  f.description.value = hotel.description || '';
-  f.features.value = hotel.features || '';
-  
-  // Initialize map and add marker
-  initHotelPickerMap();
-  if (hotelMarker) hotelPickerMap.removeLayer(hotelMarker);
-  hotelMarker = L.marker([parseFloat(hotel.latitude), parseFloat(hotel.longitude)], {draggable:true}).addTo(hotelPickerMap).bindPopup('Hotel');
-  hotelMarker.on('dragend', function(e){ 
-    const p = e.target.getLatLng(); 
-    f.latitude.value = p.lat.toFixed(4); 
-    f.longitude.value = p.lng.toFixed(4); 
-  });
-  hotelPickerMap.setView([parseFloat(hotel.latitude), parseFloat(hotel.longitude)], 14);
-  
-  f.dataset.editingId = id;
-  const btn = f.querySelector('button[type="submit"]');
-  btn.textContent = '💾 Update Hotel';
-  f.scrollIntoView({behavior: 'smooth'});
-}
-
-async function deleteItineraryDestination(id){
-  if(!confirm('Delete this destination?')) return;
-  const r = await postJSON('../backend/api.php?action=delete_itinerary_destination', {id});
-  if(r.success){ showSnackbar('Destination deleted', 'success'); loadItineraryDestinations(); }
-  else showSnackbar('Error: '+(r.error||'failed'), 'error');
-}
-
-async function deleteItineraryHotel(id){
-  if(!confirm('Delete this hotel?')) return;
-  const r = await postJSON('../backend/api.php?action=delete_itinerary_hotel', {id});
-  if(r.success){ showSnackbar('Hotel deleted', 'success'); loadItineraryHotels(); }
-  else showSnackbar('Error: '+(r.error||'failed'), 'error');
-}
+// ===== ANALYTICS FUNCTIONS =====
 
 // Map picker for destination and hotel
 let destPickerMap = null; let destMarker = null;
 let hotelPickerMap = null; let hotelMarker = null;
-
-function initDestPickerMap(){
-  if (destPickerMap || !window.L) return;
-  const mapDiv = document.getElementById('destPickerMap');
-  if (!mapDiv) return;
-  const center = [13.1448, 123.7435];
-  destPickerMap = L.map(mapDiv).setView(center, 13);
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors',
-    maxZoom: 19
-  }).addTo(destPickerMap);
-  destPickerMap.on('click', function(e){
-    const lat = e.latlng.lat.toFixed(4);
-    const lng = e.latlng.lng.toFixed(4);
-    document.querySelector('input[name="latitude"]').value = lat;
-    document.querySelector('input[name="longitude"]').value = lng;
-    if (destMarker) destMarker.remove();
-    destMarker = L.marker([parseFloat(lat), parseFloat(lng)], {
-      draggable: true,
-      title: 'Destination'
-    }).addTo(destPickerMap);
-    destMarker.on('dragend', function(evt){
-      const p = this.getLatLng();
-      document.querySelector('input[name="latitude"]').value = p.lat.toFixed(4);
-      document.querySelector('input[name="longitude"]').value = p.lng.toFixed(4);
-    });
-    showSnackbar('Location selected!', 'success');
-  });
-}
-
-function initHotelPickerMap(){
-  if (hotelPickerMap || !window.L) return;
-  const mapDiv = document.getElementById('hotelPickerMap');
-  if (!mapDiv) return;
-  const center = [13.1448, 123.7435];
-  hotelPickerMap = L.map(mapDiv).setView(center, 13);
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors',
-    maxZoom: 19
-  }).addTo(hotelPickerMap);
-  hotelPickerMap.on('click', function(e){
-    const lat = e.latlng.lat.toFixed(4);
-    const lng = e.latlng.lng.toFixed(4);
-    const f = document.getElementById('itineraryHotelForm');
-    f.latitude.value = lat;
-    f.longitude.value = lng;
-    if (hotelMarker) hotelMarker.remove();
-    hotelMarker = L.marker([parseFloat(lat), parseFloat(lng)], {
-      draggable: true,
-      title: 'Hotel'
-    }).addTo(hotelPickerMap);
-    hotelMarker.on('dragend', function(evt){
-      const p = this.getLatLng();
-      f.latitude.value = p.lat.toFixed(4);
-      f.longitude.value = p.lng.toFixed(4);
-    });
-    showSnackbar('Location selected!', 'success');
-  });
-}
-
-// Image preview handlers
-document.getElementById('destImage')?.addEventListener('change', function(e){
-  const file = e.target.files[0];
-  const prev = document.getElementById('destImagePreview');
-  prev.innerHTML = '';
-  if(!file) return;
-  const img = document.createElement('img');
-  img.style.maxWidth = '200px';
-  img.style.borderRadius = '6px';
-  img.src = URL.createObjectURL(file);
-  prev.appendChild(img);
-});
-
-document.getElementById('hotelImage')?.addEventListener('change', function(e){
-  const file = e.target.files[0];
-  const prev = document.getElementById('hotelImagePreview');
-  prev.innerHTML = '';
-  if(!file) return;
-  const img = document.createElement('img');
-  img.style.maxWidth = '200px';
-  img.style.borderRadius = '6px';
-  img.src = URL.createObjectURL(file);
-  prev.appendChild(img);
-});
-
-// Map picker button handlers
-document.getElementById('pickDestLocationBtn')?.addEventListener('click', ()=>{ initDestPickerMap(); showSnackbar('Click map to select destination location','info'); });
-document.getElementById('clearDestPickBtn')?.addEventListener('click', ()=>{ if (destMarker) { try{ destPickerMap.removeLayer(destMarker);}catch(e){} destMarker=null; } document.querySelector('input[name="latitude"]').value=''; document.querySelector('input[name="longitude"]').value=''; showSnackbar('Cleared map','success'); });
-
-document.getElementById('pickHotelLocationBtn')?.addEventListener('click', ()=>{ initHotelPickerMap(); showSnackbar('Click map to select hotel location','info'); });
-document.getElementById('clearHotelPickBtn')?.addEventListener('click', ()=>{ if (hotelMarker) { try{ hotelPickerMap.removeLayer(hotelMarker);}catch(e){} hotelMarker=null; } document.getElementById('itineraryHotelForm').latitude.value=''; document.getElementById('itineraryHotelForm').longitude.value=''; showSnackbar('Cleared map','success'); });
-
-document.getElementById('itineraryDestinationForm')?.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const f = e.target;
-  const editingId = f.dataset.editingId;
-  
-  let imagePath = '';
-  
-  // If editing, get the existing image first
-  if(editingId){
-    const r = await getJSON('../backend/api.php?action=list_itinerary_destinations');
-    const existing = r.destinations.find(d => d.id == editingId);
-    imagePath = existing?.image || '';
-  }
-  
-  // Handle image upload if file is selected
-  const imageFile = document.getElementById('destImage').files[0];
-  if(imageFile){
-    const formData = new FormData();
-    formData.append('image', imageFile);
-    try {
-      const uploadRes = await fetch('../backend/upload_itinerary_image.php', { method: 'POST', body: formData, credentials: 'include' });
-      const uploadData = await uploadRes.json();
-      if(uploadData.success){
-        imagePath = uploadData.path;
-      } else {
-        showSnackbar('⚠️ Image upload failed: '+(uploadData.error||'unknown'), 'error');
-        return;
-      }
-    } catch(err){
-      showSnackbar('❌ Upload error: '+err.message, 'error');
-      return;
-    }
-  }
-  
-  const data = {
-    name: f.name.value,
-    category: f.category.value,
-    latitude: parseFloat(f.latitude.value),
-    longitude: parseFloat(f.longitude.value),
-    description: f.description.value,
-    activities: f.activities.value,
-    image: imagePath
-  };
-  
-  if(!data.name || !data.latitude || !data.longitude){
-    showSnackbar('⚠️ Name and coordinates required', 'error');
-    return;
-  }
-  
-  let r;
-  if(editingId){
-    data.id = parseInt(editingId);
-    r = await postJSON('../backend/api.php?action=edit_itinerary_destination', data);
-  } else {
-    r = await postJSON('../backend/api.php?action=add_itinerary_destination', data);
-  }
-  
-  if(r.success){
-    showSnackbar(editingId ? '✓ Destination updated' : '✓ Destination added', 'success');
-    resetItineraryDestinationForm();
-    loadItineraryDestinations();
-  } else {
-    showSnackbar('❌ Error: '+(r.error||'failed'), 'error');
-  }
-});
-
-document.getElementById('itineraryHotelForm')?.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const f = e.target;
-  const editingId = f.dataset.editingId;
-  
-  let imagePath = '';
-  
-  // If editing, get the existing image first
-  if(editingId){
-    const r = await getJSON('../backend/api.php?action=list_itinerary_hotels');
-    const existing = r.hotels.find(h => h.id == editingId);
-    imagePath = existing?.image || '';
-  }
-  
-  // Handle image upload if file is selected
-  const imageFile = document.getElementById('hotelImage').files[0];
-  if(imageFile){
-    const formData = new FormData();
-    formData.append('image', imageFile);
-    try {
-      const uploadRes = await fetch('../backend/upload_itinerary_image.php', { method: 'POST', body: formData, credentials: 'include' });
-      const uploadData = await uploadRes.json();
-      if(uploadData.success){
-        imagePath = uploadData.path;
-      } else {
-        showSnackbar('⚠️ Image upload failed: '+(uploadData.error||'unknown'), 'error');
-        return;
-      }
-    } catch(err){
-      showSnackbar('❌ Upload error: '+err.message, 'error');
-      return;
-    }
-  }
-  
-  const data = {
-    name: f.name.value,
-    category: f.category.value,
-    latitude: parseFloat(f.latitude.value),
-    longitude: parseFloat(f.longitude.value),
-    rating: parseFloat(f.rating.value || 4.0),
-    ratePerNight: parseInt(f.ratePerNight.value || 0),
-    phone: f.phone.value,
-    address: f.address.value,
-    description: f.description.value,
-    features: f.features.value,
-    image: imagePath
-  };
-  
-  if(!data.name || !data.latitude || !data.longitude){
-    showSnackbar('⚠️ Name and coordinates required', 'error');
-    return;
-  }
-  
-  let r;
-  if(editingId){
-    data.id = parseInt(editingId);
-    r = await postJSON('../backend/api.php?action=edit_itinerary_hotel', data);
-  } else {
-    r = await postJSON('../backend/api.php?action=add_itinerary_hotel', data);
-  }
-  
-  if(r.success){
-    showSnackbar(editingId ? '✓ Hotel updated' : '✓ Hotel added', 'success');
-    resetItineraryHotelForm();
-    loadItineraryHotels();
-  } else {
-    showSnackbar('❌ Error: '+(r.error||'failed'), 'error');
-  }
-});
-
-// Load itinerary management data when tab is shown
-function loadItineraryManagementTab(){
-  loadItineraryDestinations();
-  loadItineraryHotels();
-}
 
 // ========== ML PREDICTIONS FUNCTIONS ==========
 
@@ -4870,11 +4588,78 @@ window.addEventListener('load', checkAdminSession);
 document.addEventListener('DOMContentLoaded', function(){
   try{
     const stored = localStorage.getItem('admin_current_tab');
-    if(stored && document.getElementById(stored)) showTab(stored);
-    else showTab('overview');
-  }catch(e){ showTab('overview'); }
+    if(stored && document.getElementById(stored)) {
+      showTab(stored);
+    } else {
+      showTab('overview');
+    }
+  }catch(e){ 
+    showTab('overview'); 
+  }
 });
+
+// Load Shop & Product Ratings Overview
+async function loadShopRatingsOverview() {
+  try {
+    const response = await fetch('/capstone/backend/ratings_api.php?action=get_ratings&target_type=shop&limit=1000');
+    if (!response.ok) throw new Error('Failed to load shop ratings');
+    
+    const data = await response.json();
+    const shopRatings = data.data || [];
+    
+    const response2 = await fetch('/capstone/backend/ratings_api.php?action=get_ratings&target_type=product&limit=1000');
+    const data2 = await response2.json();
+    const productRatings = data2.data || [];
+    
+    // Calculate averages
+    const avgShop = shopRatings.length > 0 ? 
+      (shopRatings.reduce((sum, r) => sum + (r.rating || 0), 0) / shopRatings.length).toFixed(1) : 0;
+    const avgProduct = productRatings.length > 0 ? 
+      (productRatings.reduce((sum, r) => sum + (r.rating || 0), 0) / productRatings.length).toFixed(1) : 0;
+    const total = shopRatings.length + productRatings.length;
+    
+    // Update UI
+    document.getElementById('dashShopAvgRating').textContent = avgShop;
+    document.getElementById('dashProductAvgRating').textContent = avgProduct;
+    document.getElementById('dashShopProductReviewCount').textContent = total;
+  } catch(e) {
+    console.error('Error loading shop ratings:', e);
+  }
+}
+
+// Load Destination Ratings Overview
+async function loadDestinationRatingsOverview() {
+  try {
+    const response = await fetch('/capstone/backend/ratings_api.php?action=get_ratings&target_type=destination&limit=1000');
+    if (!response.ok) throw new Error('Failed to load destination ratings');
+    
+    const data = await response.json();
+    const destRatings = data.data || [];
+    
+    // Calculate average
+    const avgDest = destRatings.length > 0 ? 
+      (destRatings.reduce((sum, r) => sum + (r.rating || 0), 0) / destRatings.length).toFixed(1) : 0;
+    
+    // Update UI
+    document.getElementById('dashDestAvgRating').textContent = avgDest;
+    document.getElementById('dashDestReviewCount').textContent = destRatings.length;
+  } catch(e) {
+    console.error('Error loading destination ratings:', e);
+  }
+}
+
+// Load ratings when shops or destinations tabs are shown
+const originalShowTab = window.showTab;
+window.showTab = function(tab) {
+  originalShowTab.call(this, tab);
+  if (tab === 'shops') {
+    loadShopRatingsOverview();
+  } else if (tab === 'destinations') {
+    loadDestinationRatingsOverview();
+  }
+};
 </script>
 
 </body>
 </html>
+

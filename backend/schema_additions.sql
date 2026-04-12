@@ -33,3 +33,6 @@ CREATE TABLE IF NOT EXISTS festivals_events (
   image VARCHAR(255) DEFAULT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Add metadata column to feedback table for admin feedback support
+ALTER TABLE feedback ADD COLUMN IF NOT EXISTS metadata JSON DEFAULT NULL;

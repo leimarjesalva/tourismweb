@@ -1,0 +1,14 @@
+{
+    "id": 11,
+    "timestamp": "2026-04-10 04:44:44",
+    "user_name": "Admin",
+    "user_email": "admin@localhost",
+    "target_type": "shop",
+    "target_id": "4",
+    "target_name": "Angeli's Est 1993",
+    "rating": 5,
+    "message": "adasd",
+    "anonymous": 0,
+    "feedback_type": "admin_review",
+    "metadata": "{\"quality\":1,\"value\":2,\"service\":2,\"submitted_by\":\"admin\"}"
+}

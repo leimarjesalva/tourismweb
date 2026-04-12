@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Feedback System Test</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0; padding: 20px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container { 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        h1 { color: #333; text-align: center; margin-top: 0; }
+        .section { margin: 30px 0; padding: 20px; background: #f5f5f5; border-radius: 8px; }
+        .section h2 { color: #667eea; margin-top: 0; }
+        button {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background 0.3s;
+            margin: 5px;
+        }
+        button:hover { background: #764ba2; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        
+        .input-group { margin: 15px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #333; }
+        input, select, textarea { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        textarea { min-height: 100px; resize: vertical; }
+        
+        .result { 
+            margin: 15px 0; 
+            padding: 15px; 
+            background: white; 
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .result.error { border-left-color: #dc3545; }
+        .result.success { border-left-color: #28a745; }
+        
+        .status { 
+            display: inline-block; 
+            padding: 4px 8px; 
+            border-radius: 3px; 
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .status.ok { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.loading { background: #d1ecf1; color: #0c5460; }
+        
+        .shop-selector { margin: 15px 0; }
+        .shop-option {
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .shop-option:hover { background: #e8f4f8; border-color: #667eea; }
+        .shop-option.selected { background: #667eea; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🧪 Feedback System Tester</h1>
+    
+    <!-- Database Status -->
+    <div class="section">
+        <h2>📊 Database Status</h2>
+        <button onclick="checkDatabaseStatus()">Check Status</button>
+        <div id="dbStatus"></div>
+    </div>
+    
+    <!-- Shop Selector -->
+    <div class="section">
+        <h2>🏪 Select a Shop</h2>
+        <button onclick="loadShops()">Load Shops with Feedback</button>
+        <div id="shopList" class="shop-selector"></div>
+        <div id="selectedShop"></div>
+    </div>
+    
+    <!-- Test Ratings API -->
+    <div class="section">
+        <h2>🔍 Test Ratings API</h2>
+        <div id="apiTestDiv"></div>
+    </div>
+    
+    <!-- Submit Test Feedback -->
+    <div class="section">
+        <h2>📝 Submit Test Feedback</h2>
+        <div class="input-group">
+            <label>Name:</label>
+            <input type="text" id="testName" value="Test User" />
+        </div>
+        <div class="input-group">
+            <label>Email:</label>
+            <input type="email" id="testEmail" value="test@example.com" />
+        </div>
+        <div class="input-group">
+            <label>Rating:</label>
+            <select id="testRating">
+                <option value="5">⭐⭐⭐⭐⭐ 5 - Excellent</option>
+                <option value="4">⭐⭐⭐⭐ 4 - Good</option>
+                <option value="3">⭐⭐⭐ 3 - Average</option>
+                <option value="2">⭐⭐ 2 - Poor</option>
+                <option value="1">⭐ 1 - Very Poor</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>Message:</label>
+            <textarea id="testMessage" placeholder="Your feedback...">Great shop with quality products!</textarea>
+        </div>
+        <button onclick="submitTestFeedback()">Submit Feedback</button>
+        <div id="submitResult"></div>
+    </div>
+    
+    <!-- Verify Feedback -->
+    <div class="section">
+        <h2>✅ Verify Feedback in API</h2>
+        <button onclick="verifyLatestFeedback()">Check Latest Feedback</button>
+        <div id="verifyResult"></div>
+    </div>
+    
+    <!-- Full Debug -->
+    <div class="section">
+        <h2>🔧 Full Debug Report</h2>
+        <button onclick="openDebugDashboard()">Open Debug Dashboard</button>
+    </div>
+</div>
+
+<script>
+let selectedShopId = null;
+
+// Check database status
+async function checkDatabaseStatus() {
+    const container = document.getElementById('dbStatus');
+    container.innerHTML = '<div class="result loading">⏳ Checking database...</div>';
+    
+    try {
+        const response = await fetch('/capstone/backend/debug_ratings.php');
+        const html = await response.text();
+        
+        // Extract key info from HTML
+        const shopMatch = html.match(/(\d+) shops/);
+        const feedbackMatch = html.match(/(\d+) feedback records/);
+        const shops = shopMatch ? shopMatch[1] : '?';
+        const feedback = feedbackMatch ? feedbackMatch[1] : '?';
+        
+        container.innerHTML = `
+            <div class="result success">
+                ✅ Database connected<br>
+                🏪 Shops: <strong>${shops}</strong><br>
+                📝 Feedback records: <strong>${feedback}</strong>
+            </div>
+        `;
+    } catch(e) {
+        container.innerHTML = `<div class="result error">❌ Error: ${e.message}</div>`;
+    }
+}
+
+// Load shops with feedback
+async function loadShops() {
+    const container = document.getElementById('shopList');
+    container.innerHTML = '<div class="result loading">⏳ Loading shops...</div>';
+    
+    try {
+        // Fetch debug page which includes shops with feedback
+        const response = await fetch('/capstone/backend/debug_ratings.php');
+        const html = await response.text();
+        
+        // For now, show a message to select from the main site
+        let shopsHtml = `
+            <p><strong>Shops with feedback are shown in the debug dashboard.</strong></p>
+            <p>To test, you can:</p>
+            <ol>
+                <li>Go to <a href="/capstone/frontend/index.html" target="_blank">the main site</a></li>
+                <li>Click on a shop to see its feedback modal</li>
+                <li>Submit feedback from there</li>
+            </ol>
+        `;
+        
+        container.innerHTML = shopsHtml;
+    } catch(e) {
+        container.innerHTML = `<div class="result error">❌ Error loading shops: ${e.message}</div>`;
+    }
+}
+
+// Test API call for selected shop
+async function testShopAPI(shopId) {
+    const container = document.getElementById('apiTestDiv');
+    selectedShopId = shopId;
+    
+    container.innerHTML = `<div class="result loading">⏳ Testing API for shop ${shopId}...</div>`;
+    
+    try {
+        const response = await fetch(`/capstone/backend/ratings_api.php?action=get_target_ratings&target_type=shop&target_id=${shopId}`);
+        const data = await response.json();
+        
+        const reviewCount = data.reviews ? data.reviews.length : 0;
+        const avgRating = data.statistics?.average_rating || 'N/A';
+        const totalReviews = data.statistics?.total_reviews || 0;
+        
+        let html = `<div class="result success">
+            ✅ API Response OK<br>
+            📊 Status: HTTP ${response.status}<br>
+            📝 Reviews returned: ${reviewCount}<br>
+            ⭐ Avg Rating: ${avgRating}/5<br>
+            👥 Total Reviews: ${totalReviews}<br><br>
+            <strong>Full Response:</strong><br>
+            <pre>${JSON.stringify(data, null, 2)}</pre>
+        </div>`;
+        
+        container.innerHTML = html;
+        
+        // Show the selected shop
+        document.getElementById('selectedShop').innerHTML = `<span class="status ok">Selected Shop ID: ${shopId}</span>`;
+    } catch(e) {
+        container.innerHTML = `<div class="result error">❌ Error: ${e.message}</div>`;
+    }
+}
+
+// Submit test feedback
+async function submitTestFeedback() {
+    const container = document.getElementById('submitResult');
+    
+    if (!selectedShopId) {
+        container.innerHTML = `<div class="result error">❌ Please select a shop first</div>`;
+        return;
+    }
+    
+    const payload = {
+        user_name: document.getElementById('testName').value,
+        user_email: document.getElementById('testEmail').value,
+        target_type: 'shop',
+        target_id: selectedShopId,
+        target_name: 'Test Shop',
+        rating: parseInt(document.getElementById('testRating').value),
+        message: document.getElementById('testMessage').value,
+        anonymous: 0,
+        feedback_type: 'review'
+    };
+    
+    container.innerHTML = '<div class="result loading">⏳ Submitting feedback...</div>';
+    
+    try {
+        const response = await fetch('/capstone/backend/ratings_api.php?action=submit_rating', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            container.innerHTML = `
+                <div class="result success">
+                    ✅ Feedback submitted successfully!<br>
+                    🆔 Feedback ID: ${data.rating_id}<br>
+                    💬 Message: ${data.message}
+                </div>
+            `;
+        } else {
+            container.innerHTML = `<div class="result error">❌ Error: ${data.error}</div>`;
+        }
+    } catch(e) {
+        container.innerHTML = `<div class="result error">❌ Error: ${e.message}</div>`;
+    }
+}
+
+// Verify latest feedback
+async function verifyLatestFeedback() {
+    const container = document.getElementById('verifyResult');
+    container.innerHTML = '<div class="result loading">⏳ Checking for latest feedback...</div>';
+    
+    try {
+        const response = await fetch('/capstone/backend/ratings_api.php?action=get_ratings&limit=5');
+        const data = await response.json();
+        
+        if (data.data && data.data.length > 0) {
+            let html = '<div class="result success">✅ Recent feedback found:<br><br>';
+            data.data.forEach(feedback => {
+                html += `
+                    📝 <strong>${feedback.user_name}</strong> - ${feedback.target_name}<br>
+                    ⭐ Rating: ${feedback.rating}/5<br>
+                    💬 "${feedback.message}"<br>
+                    🕐 ${feedback.created_at}<br><br>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        } else {
+            container.innerHTML = '<div class="result error">❌ No feedback found</div>';
+        }
+    } catch(e) {
+        container.innerHTML = `<div class="result error">❌ Error: ${e.message}</div>`;
+    }
+}
+
+// Open debug dashboard
+function openDebugDashboard() {
+    window.open('/capstone/backend/debug_ratings.php', '_blank');
+}
+
+// Auto-check status on load
+window.addEventListener('load', () => {
+    checkDatabaseStatus();
+});
+</script>
+
+</body>
+</html>

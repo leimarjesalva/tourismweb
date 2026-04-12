@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Shop Ratings Diagnostic</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .box {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .success { border-left-color: #28a745; }
+        .error { border-left-color: #dc3545; }
+        .warning { border-left-color: #ffc107; }
+        h1 { color: #333; }
+        code { background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
+        button { 
+            padding: 10px 20px; 
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        pre {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+
+<h1>🔍 Shop Ratings Diagnostic</h1>
+
+<div class="box">
+    <h2>Step 1: Check API Directly</h2>
+    <button onclick="testAPI()">Test API Response</button>
+    <div id="apiTest"></div>
+</div>
+
+<div class="box">
+    <h2>Step 2:  Load Main Site & Open Shop</h2>
+    <p><a href="/capstone/frontend/index.html" target="_blank"><button>Open Main Site →</button></a></p>
+    <p>Then:</p>
+    <ol>
+        <li>Open browser DevTools (F12)</li>
+        <li>Go to Console tab</li>
+        <li>Click on a shop</li>
+        <li>Look for debug messages starting with 🔄, 📡, 📦, etc.</li>
+        <li>Copy-paste all console messages here to diagnose</li>
+    </ol>
+</div>
+
+<div class="box">
+    <h2>Step 3: Console Output Analysis</h2>
+    <p>Paste console messages below:</p>
+    <textarea id="consoleLogs" style="width: 100%; height: 200px; font-family: monospace; padding: 10px; border: 1px solid #ddd; border-radius: 4px;"></textarea>
+    <button onclick="analyzeLogs()">Analyze Logs</button>
+    <div id="analyzed"></div>
+</div>
+
+<script>
+async function testAPI() {
+    const container = document.getElementById('apiTest');
+    container.innerHTML = '<p>⏳ Testing API...</p>';
+    
+    try {
+        // Test with shop ID 27 (from the image)
+        const response = await fetch('/capstone/backend/ratings_api.php?action=get_target_ratings&target_type=shop&target_id=27');
+        const data = await response.json();
+        
+        let html = `
+            <div class="box success">
+                <h3>✅ API Response OK</h3>
+                <p><strong>URL:</strong> <code>/capstone/backend/ratings_api.php?action=get_target_ratings&target_type=shop&target_id=27</code></p>
+                <p><strong>Status:</strong> ${response.status}</p>
+                <p><strong>Reviews returned:</strong> ${data.reviews ? data.reviews.length : 0}</p>
+                <p><strong>Statistics:</strong></p>
+                <pre>${JSON.stringify(data.statistics, null, 2)}</pre>
+                <p><strong>Full Response:</strong></p>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            </div>
+        `;
+        container.innerHTML = html;
+    } catch(e) {
+        container.innerHTML = `<div class="box error"><h3>❌ API Error</h3><p>${e.message}</p></div>`;
+    }
+}
+
+function analyzeLogs() {
+    const logs = document.getElementById('consoleLogs').value;
+    const container = document.getElementById('analyzed');
+    
+    if (!logs.trim()) {
+        container.innerHTML = '<div class="box warning"><p>Please paste console logs first</p></div>';
+        return;
+    }
+    
+    let html = '<div class="box">';
+    
+    // Check for key log messages
+    const checks = [
+        { key: '🔄 API Call', label: 'API call initiated' },
+        { key: '📡 HTTP Response', label: 'HTTP response received' },
+        { key: '📦 API Response', label: 'API data parsed' },
+        { key: '📊 Extracted', label: 'Data extraction successful' },
+        { key: '📝 No reviews', label: 'Empty state detected' },
+        { key: '🎨 Rendering', label: 'Reviews being rendered' },
+        { key: '✅', label: 'Success message' },
+        { key: '❌', label: 'Error detected' },
+    ];
+    
+    html += '<h3>Log Analysis</h3>';
+    checks.forEach(check => {
+        const found = logs.includes(check.key);
+        const icon = found ? '✅' : '❌';
+        const status = found ? '<span style="color: green;">Found</span>' : '<span style="color: red;">Missing</span>';
+        html += `<p>${icon} ${check.label}: ${status}</p>`;
+    });
+    
+    // Check for specific errors
+    if (logs.includes('Cannot read') || logs.includes('is not defined') ||  logs.includes('is null')) {
+        html += '<p style="color: red;">⚠️ FOUND JAVASCRIPT ERRORS - See details below</p>';
+    }
+    
+    html += '<p><strong>Raw logs:</strong></p>';
+    html += '<pre>' + logs + '</pre>';
+    html += '</div>';
+    
+    container.innerHTML = html;
+}
+
+// Auto-test on load
+window.addEventListener('load', () => {
+    testAPI();
+});
+</script>
+
+</body>
+</html>

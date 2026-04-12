@@ -246,56 +246,88 @@ const destinationDatabase = {
 };
 
 
-const noveltyShops = [
-  {
-    id: 1, name: 'Albay Gift & Souvenir Shop', rating: 4.8,
-    address: 'Rizal Street, Downtown Legazpi', distance: 0.5, phone: '(052) 480-1234',
-    description: 'Premium local crafts and Mayon souvenirs curated for tourists.',
-    specialties: ['Abaca products', 'Mayon postcards', 'Local crafts', 'Souvenirs'],
-    hours: '9 AM - 7 PM', landmark: 'Near Legazpi City Hall',
-    directions: 'From LCC Legazpi: Take Rizal Street going downtown. Shop is on the left side before City Hall, next to a convenience store.'
-  },
-  {
-    id: 2, name: 'Mayon View Souvenir Shop', rating: 4.9,
-    address: 'Embarcadero Road, Waterfront', distance: 1.5, phone: '(052) 480-5678',
-    description: 'Highest-rated shop with premium souvenirs and handmade art pieces.',
-    specialties: ['Premium souvenirs', 'Local handicrafts', 'Art pieces'],
-    hours: '10 AM - 8:30 PM', landmark: 'Inside Embarcadero Complex',
-    directions: 'From LCC Legazpi: Head to Embarcadero Road via Rizal Avenue. Turn left at the traffic light near the waterfront. Shop is inside the Embarcadero Complex facing the bay.'
-  },
-  {
-    id: 3, name: 'Legazpi Baybayin Souvenir Hub', rating: 4.7,
-    address: 'Rawis Street, Tourist Area', distance: 2.1, phone: '(052) 480-3456',
-    description: 'Cultural items and Mayon Volcano merchandise in prime tourist area.',
-    specialties: ['Cultural items', 'Mayon Volcano merch', 'Local art', 'Premium gifts'],
-    hours: '8 AM - 9 PM', landmark: 'Near Lignon Hill entrance',
-    directions: 'From LCC Legazpi: Go north on Rawis Street. Continue until you reach the Lignon Hill area. Shop is on your right before the hill entrance, across from a local bakery.'
-  },
-  {
-    id: 4, name: 'Bicolania Crafts & Souvenir', rating: 4.6,
-    address: 'Caedo Street, Commercial Area', distance: 1.2, phone: '(052) 480-2345',
-    description: 'Handmade crafts featuring authentic Bicol Express products and bamboo items.',
-    specialties: ['Handmade crafts', 'Bicol Express products', 'Bamboo items'],
-    hours: '10 AM - 8 PM', landmark: 'Next to Embarcadero Mall',
-    directions: 'From LCC Legazpi: Take Caedo Street towards commercial district. Shop is located right next to Embarcadero Mall, easy to spot from the main road.'
-  },
-  {
-    id: 5, name: 'Heritage Albay Shop', rating: 4.5,
-    address: 'Peñaranda Street, City Center', distance: 0.8, phone: '(052) 480-4567',
-    description: 'Heritage items and authentic abaca handbags, plus traditional Bicol delicacies.',
-    specialties: ['Heritage items', 'Abaca handbags', 'Bicol delicacies'],
-    hours: '9:30 AM - 6:30 PM', landmark: 'Across Plaza Independencia',
-    directions: 'From LCC Legazpi: Head to Peñaranda Street in the city center. Shop is directly across from Plaza Independencia, very accessible location with good parking.'
-  },
-  {
-    id: 6, name: 'Ibalong Cultural Shop', rating: 4.4,
-    address: 'Quezon Avenue, Downtown', distance: 0.9, phone: '(052) 480-6789',
-    description: 'Traditional crafts, literature, and local artwork celebrating Bicolano culture.',
-    specialties: ['Traditional crafts', 'Literature', 'Artwork'],
-    hours: '9 AM - 7 PM', landmark: 'Near Ibalong Monument',
-    directions: 'From LCC Legazpi: Take Quezon Avenue heading downtown. Shop is located near the Ibalong Monument, opposite to a local restaurant. Easy walking distance from city center.'
+// Load shops from database instead of hardcoded data
+let noveltyShops = [];
+
+async function loadNoveltyShops() {
+  try {
+    const response = await fetch('/capstone/backend/api.php?action=list_shops');
+    const data = await response.json();
+    if (data.shops) {
+      noveltyShops = data.shops.map(shop => ({
+        id: shop.id,
+        name: shop.name,
+        rating: 4.5, // Default rating since not in DB
+        address: shop.address,
+        distance: 1.0, // Default distance
+        phone: shop.contact,
+        description: shop.description,
+        specialties: ['Local products', 'Souvenirs'], // Default specialties
+        hours: '9 AM - 6 PM', // Default hours
+        landmark: shop.owner_name || '',
+        directions: '',
+        image: shop.image
+      }));
+      window.noveltyShops = noveltyShops;
+      renderNoveltyShops();
+    }
+  } catch (error) {
+    console.error('Error loading shops:', error);
+    // Fallback to hardcoded shops if API fails
+    noveltyShops = [
+      {
+        id: 1, name: 'Albay Gift & Souvenir Shop', rating: 4.8,
+        address: 'Rizal Street, Downtown Legazpi', distance: 0.5, phone: '(052) 480-1234',
+        description: 'Premium local crafts and Mayon souvenirs curated for tourists.',
+        specialties: ['Abaca products', 'Mayon postcards', 'Local crafts', 'Souvenirs'],
+        hours: '9 AM - 7 PM', landmark: 'Near Legazpi City Hall',
+        directions: 'From LCC Legazpi: Take Rizal Street going downtown. Shop is on the left side before City Hall, next to a convenience store.'
+      },
+      {
+        id: 2, name: 'Mayon View Souvenir Shop', rating: 4.9,
+        address: 'Embarcadero Road, Waterfront', distance: 1.5, phone: '(052) 480-5678',
+        description: 'Highest-rated shop with premium souvenirs and handmade art pieces.',
+        specialties: ['Premium souvenirs', 'Local handicrafts', 'Art pieces'],
+        hours: '10 AM - 8:30 PM', landmark: 'Inside Embarcadero Complex',
+        directions: 'From LCC Legazpi: Head to Embarcadero Road via Rizal Avenue. Turn left at the traffic light near the waterfront. Shop is inside the Embarcadero Complex facing the bay.'
+      },
+      {
+        id: 3, name: 'Legazpi Baybayin Souvenir Hub', rating: 4.7,
+        address: 'Rawis Street, Tourist Area', distance: 2.1, phone: '(052) 480-3456',
+        description: 'Cultural items and Mayon Volcano merchandise in prime tourist area.',
+        specialties: ['Cultural items', 'Mayon Volcano merch', 'Local art', 'Premium gifts'],
+        hours: '8 AM - 9 PM', landmark: 'Near Lignon Hill entrance',
+        directions: 'From LCC Legazpi: Go north on Rawis Street. Continue until you reach the Lignon Hill area. Shop is on your right before the hill entrance, across from a local bakery.'
+      },
+      {
+        id: 4, name: 'Bicolania Crafts & Souvenir', rating: 4.6,
+        address: 'Caedo Street, Commercial Area', distance: 1.2, phone: '(052) 480-2345',
+        description: 'Handmade crafts featuring authentic Bicol Express products and bamboo items.',
+        specialties: ['Handmade crafts', 'Bicol Express products', 'Bamboo items'],
+        hours: '10 AM - 8 PM', landmark: 'Next to Embarcadero Mall',
+        directions: 'From LCC Legazpi: Take Caedo Street towards commercial district. Shop is located right next to Embarcadero Mall, easy to spot from the main road.'
+      },
+      {
+        id: 5, name: 'Heritage Albay Shop', rating: 4.5,
+        address: 'Peñaranda Street, City Center', distance: 0.8, phone: '(052) 480-4567',
+        description: 'Heritage items and authentic abaca handbags, plus traditional Bicol delicacies.',
+        specialties: ['Heritage items', 'Abaca handbags', 'Bicol delicacies'],
+        hours: '9:30 AM - 6:30 PM', landmark: 'Across Plaza Independencia',
+        directions: 'From LCC Legazpi: Head to Peñaranda Street in the city center. Shop is directly across from Plaza Independencia, very accessible location with good parking.'
+      },
+      {
+        id: 6, name: 'Ibalong Cultural Shop', rating: 4.4,
+        address: 'Quezon Avenue, Downtown', distance: 0.9, phone: '(052) 480-6789',
+        description: 'Traditional crafts, literature, and local artwork celebrating Bicolano culture.',
+        specialties: ['Traditional crafts', 'Literature', 'Artwork'],
+        hours: '9 AM - 7 PM', landmark: 'Near Ibalong Monument',
+        directions: 'From LCC Legazpi: Take Quezon Avenue heading downtown. Shop is located near the Ibalong Monument, opposite to a local restaurant. Easy walking distance from city center.'
+      }
+    ];
+    window.noveltyShops = noveltyShops;
+    renderNoveltyShops();
   }
-];
+}
 
 // Expose for modal consumption and render guest-side shop cards
 if (typeof window !== 'undefined') {
@@ -325,9 +357,9 @@ function renderNoveltyShops() {
 }
 
 if (document.readyState === 'loading') {
-  window.addEventListener('DOMContentLoaded', renderNoveltyShops);
+  window.addEventListener('DOMContentLoaded', loadNoveltyShops);
 } else {
-  renderNoveltyShops();
+  loadNoveltyShops();
 }
 
 // ===== ENHANCED ROUTES WITH DETAILED DIRECTIONS =====
@@ -1466,9 +1498,14 @@ const shopsDatabase = {
 };
 
 function openShopModal(shopId) {
+  console.log('🔵 openShopModal called with shopId:', shopId);
+  
   // Try to get shop from cache first, then fallback to database
   let shop = shopsCache[shopId] || shopsDatabase[shopId];
-  if (!shop) return;
+  if (!shop) {
+    console.error('❌ Shop not found in cache or database');
+    return;
+  }
 
   document.getElementById('shopModalName').textContent = shop.name;
   document.getElementById('shopModalImage').src = shop.image || 'https://via.placeholder.com/800x400?text=' + encodeURIComponent(shop.name);
@@ -1539,6 +1576,90 @@ function openShopModal(shopId) {
   
   // Display all products by default
   displayShopProducts(shopId, null);
+  
+  // ========== LOAD SHOP RATINGS ==========
+  console.log('🔄 Loading ratings for shop ID:', shopId);
+  const displayDiv = document.getElementById('shopRatingDisplay');
+  
+  if (!displayDiv) {
+    console.error('❌ shopRatingDisplay div not found!');
+  } else {
+    displayDiv.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 20px; color: #999;">⏳ Loading reviews...</div>';
+    
+    // Fetch ratings from API
+    fetch(`/capstone/backend/ratings_api.php?action=get_target_ratings&target_type=shop&target_id=${shopId}`)
+      .then(response => {
+        console.log('📡 HTTP Response:', response.status);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+      })
+      .then(data => {
+        console.log('📦 API Response:', data);
+        
+        // Extract reviews and stats
+        const reviews = data.reviews || [];
+        const stats = data.statistics || {};
+        
+        console.log('📊 Extracted:', reviews.length, 'reviews');
+        
+        // Check if div still exists
+        if (!document.getElementById('shopRatingDisplay')) {
+          console.warn('⚠️ Display div disappeared');
+          return;
+        }
+        
+        // Update summary stats
+        const totalReviews = parseInt(stats.total_reviews) || 0;
+        const avgRating = parseFloat(stats.average_rating) || 0;
+        const positive = parseInt(stats.positive_reviews) || 0;
+        
+        console.log('📊 Stats: total=' + totalReviews + ', avg=' + avgRating);
+        
+        // Update summary card elements
+        const avgElem = document.getElementById('shopAvgRating');
+        const starElem = document.getElementById('shopStarDisplay');
+        const countElem = document.getElementById('shopReviewCount');
+        const posElem = document.getElementById('shopPositiveCount');
+        const totalElem = document.getElementById('shopTotalCount');
+        
+        if (avgElem) avgElem.textContent = totalReviews > 0 ? avgRating.toFixed(1) : '0.0';
+        if (starElem) starElem.innerHTML = totalReviews > 0 ? createSimpleStarDisplay(avgRating) : '☆☆☆☆☆';
+        if (countElem) countElem.textContent = totalReviews > 0 ? `Based on ${totalReviews} review${totalReviews !== 1 ? 's' : ''}` : 'No ratings yet';
+        if (posElem) posElem.textContent = totalReviews || '0';
+        if (totalElem) totalElem.textContent = totalReviews || '0';
+        
+        console.log('✅ Updated summary card');
+        
+        // Render reviews
+        const reviewDiv = document.getElementById('shopRatingDisplay');
+        if (reviewDiv) {
+          reviewDiv.innerHTML = '';
+          
+          if (reviews.length === 0) {
+            console.log('📝 No reviews - showing empty state');
+            reviewDiv.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; background: linear-gradient(135deg, rgba(249,250,251,0.5), rgba(248,249,255,0.5)); border-radius: 10px; border: 1px dashed #e2e8f0;"><p style="color: #999; margin: 0; font-size: 14px; font-weight: 600;">📝 No reviews yet. Be the first to review!</p></div>';
+          } else {
+            console.log('🎨 Rendering ' + reviews.length + ' review(s)');
+            reviews.forEach(review => {
+              try {
+                const card = createShopReviewCard(review);
+                reviewDiv.appendChild(card);
+              } catch(e) {
+                console.error('❌ Error rendering review:', e);
+              }
+            });
+            console.log('✅ All reviews rendered');
+          }
+        }
+      })
+      .catch(error => {
+        console.error('❌ API Error:', error);
+        const reviewDiv = document.getElementById('shopRatingDisplay');
+        if (reviewDiv) {
+          reviewDiv.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; background: rgba(239,68,68,0.1); border-radius: 10px; border: 1px solid rgba(239,68,68,0.3);"><p style="color: #ef4444; margin: 0; font-size: 14px;">⚠️ Error: ' + error.message + '</p></div>';
+        }
+      });
+  }
   
   // Show modal with proper flex centering
   const modal = document.getElementById('shopDetailModal');
@@ -2364,6 +2485,71 @@ function initHotelMap(hotels, userLocation, destinations) {
               </div>
             </div>
           `;
+
+// ========== HELPER FUNCTIONS FOR RATINGS ==========
+
+function createSimpleStarDisplay(rating) {
+  const fullStars = Math.floor(rating);
+  const hasHalf = rating % 1 !== 0;
+  let stars = '';
+  
+  for (let i = 0; i < fullStars; i++) {
+    stars += '<span style="color: #fbbf24; display: inline-block;">⭐</span>';
+  }
+  if (hasHalf) {
+    stars += '<span style="color: #fbbf24; display: inline-block; opacity: 0.6;">✨</span>';
+  }
+  for (let i = 0; i < 5 - fullStars - (hasHalf ? 1 : 0); i++) {
+    stars += '<span style="color: #d1d5db; display: inline-block;">☆</span>';
+  }
+  
+  return stars;
+}
+
+function createShopReviewCard(review) {
+  const card = document.createElement('div');
+  const ratingValue = parseInt(review.rating);
+  const ratingColor = ratingValue >= 4 ? '#10b981' : (ratingValue >= 3 ? '#f59e0b' : '#ef4444');
+  
+  card.style.cssText = `
+    background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(248,249,255,0.8) 100%);
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid ${ratingColor};
+    border-radius: 10px;
+    padding: 14px;
+    transition: all 0.3s;
+  `;
+
+  card.onmouseover = function() {
+    this.style.background = 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,249,255,0.95) 100%)';
+    this.style.boxShadow = '0 6px 12px rgba(102,126,234,0.1)';
+    this.style.transform = 'translateY(-2px)';
+  };
+
+  card.onmouseout = function() {
+    this.style.background = 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(248,249,255,0.8) 100%)';
+    this.style.boxShadow = 'none';
+    this.style.transform = 'translateY(0)';
+  };
+
+  const dateObj = new Date(review.created_at || new Date());
+  const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const guestName = review.anonymous === 1 ? '👤 Anonymous' : ('👤 ' + (review.user_name || 'Guest'));
+  const stars = createSimpleStarDisplay(review.rating);
+
+  card.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+      <div style="flex: 1;">
+        <div style="font-weight: 700; color: #0f172a; font-size: 0.95rem; margin-bottom: 4px;">${guestName}</div>
+        <div style="font-size: 0.75rem; color: #999;">${formattedDate}</div>
+      </div>
+      <div style="text-align: right; min-width: 60px; font-size: 13px;">${stars}</div>
+    </div>
+    <p style="margin: 10px 0 0 0; color: #475569; line-height: 1.5; font-size: 0.9rem;">${review.message}</p>
+  `;
+
+  return card;
+}
 
           marker.bindPopup(popupContent, { maxWidth: 300 });
 
