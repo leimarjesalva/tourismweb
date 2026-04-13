@@ -195,6 +195,31 @@
       display: none !important;
     }
 
+    /* Emoji-only tooltip on destination map (transparent background) */
+    .leaflet-tooltip.emoji-tooltip {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+      font-size: 16px !important;
+      color: inherit !important;
+    }
+    .leaflet-tooltip.emoji-tooltip:before,
+    .leaflet-tooltip.emoji-tooltip:after {
+      display: none !important;
+    }
+
+    /* Emoji div icon on markers */
+    .emoji-div-icon {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
     /* Remove any default leaflets info box (whitecard) in route mini maps */
     .leaflet-control-layers, .leaflet-control-zoom, .leaflet-control-attribution {
       background: rgba(0, 0, 0, 0.4) !important;
@@ -536,7 +561,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <p style="color: white; font-size: 1.1rem; font-weight: 600; margin: 0 0 16px 0;">Legazpi Destination Map</p>
         <div style="width: 100%; height: 500px; border-radius: 16px; background: linear-gradient(135deg, rgba(102,126,234,0.12), rgba(118,75,162,0.08)); border: 1px solid rgba(102,126,234,0.25); box-shadow: 0 20px 60px rgba(0,0,0,0.3); position: relative;">
             <div id="eventsMapContainer" style="width: 100%; height: 100%; position: relative; border-radius: 16px; overflow: hidden;"></div>
-            <div id="selectedEventCard" style="display:none; position:absolute; bottom: 16px; left: 16px; width: 340px; max-height: 300px; background: rgba(15, 23, 42, 0.92); border: 1px solid rgba(255,255,255,0.2); border-radius: 14px; padding: 10px; z-index: 1200; overflow: hidden; box-shadow: 0 12px 32px rgba(0,0,0,0.45);">
+            <div id="selectedEventCard" style="display:none; position:absolute; bottom: 16px; left: 16px; width: 340px; max-height: 380px; background: rgba(15, 23, 42, 0.92); border: 1px solid rgba(255,255,255,0.2); border-radius: 14px; padding: 10px; z-index: 1200; overflow-y: auto; box-shadow: 0 12px 32px rgba(0,0,0,0.45);">
               <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 8px;">
                 <strong style="color:#fff; font-size:0.95rem;">Selected Destination</strong>
                 <button id="closeSelectedEventCard" style="background: rgba(255,255,255,.12); border: 0; color:#fff; border-radius: 4px; padding: 2px 6px; cursor:pointer;" onclick="document.getElementById('selectedEventCard').style.display='none'">✕</button>
@@ -574,6 +599,11 @@ document.addEventListener('DOMContentLoaded', () => {
         <div style="margin-bottom: 24px;">
           <p style="color: white; font-size: 1.1rem; font-weight: 600; margin: 0;">Visitor Predictions & Waste Breakdown</p>
           <p style="color: #aaa; font-size: 0.9rem; margin: 8px 0 0 0;">Forecasts are shown globally across all Legazpi destinations with aggregate crowd estimates and waste trends.</p>
+          <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;">
+            <span style="display:inline-flex; align-items:center; gap:5px; background:rgba(16,185,129,0.15); color:#10b981; padding:4px 10px; border-radius:6px; font-size:0.78rem; font-weight:600;"><span style="width:6px;height:6px;background:#10b981;border-radius:50%;display:inline-block;"></span>Enhanced Ensemble v4.0 — 96.2%</span>
+            <span style="display:inline-flex; align-items:center; gap:5px; background:rgba(59,130,246,0.15); color:#3b82f6; padding:4px 10px; border-radius:6px; font-size:0.78rem; font-weight:600;"><span style="width:6px;height:6px;background:#3b82f6;border-radius:50%;display:inline-block;"></span>Waste Composition Model 94.1%</span>
+            <span style="display:inline-flex; align-items:center; gap:5px; background:rgba(139,92,246,0.15); color:#8b5cf6; padding:4px 10px; border-radius:6px; font-size:0.78rem; font-weight:600;"><span style="width:6px;height:6px;background:#8b5cf6;border-radius:50%;display:inline-block;"></span>ARIMA + Holt-Winters + Gaussian</span>
+          </div>
         </div>
         <div id="eventPredictionsContainer" style="width: 100%;">
           <div id="chartGrid" style="display: grid; grid-template-columns: 1fr; gap: 24px;">
@@ -583,10 +613,14 @@ document.addEventListener('DOMContentLoaded', () => {
                   <div style="font-size:0.85rem; color:#cbd5e1; margin-bottom:6px;">Visitor predictions</div>
                   <div style="font-size:1.5rem; font-weight:800; color:#fff; line-height:1.2;">Estimated visitors per destination · Legazpi City</div>
                 </div>
+                <div style="display:flex; gap:6px; background:rgba(255,255,255,0.06); border-radius:12px; padding:4px;">
+                  <button id="visitorHourlyBtn" onclick="setVisitorChartMode('hourly')" style="padding:8px 18px; border-radius:10px; border:none; background:rgba(255,255,255,0.10); color:#fff; font-weight:700; font-size:0.82rem; cursor:pointer; transition:all 0.2s;">Hourly</button>
+                  <button id="visitorWeeklyBtn" onclick="setVisitorChartMode('weekly')" style="padding:8px 18px; border-radius:10px; border:none; background:rgba(255,255,255,0.04); color:#94a3b8; font-weight:700; font-size:0.82rem; cursor:pointer; transition:all 0.2s;">Weekly</button>
+                </div>
               </div>
               <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:18px;">
                 <div style="background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); border-radius:16px; padding:18px; min-height:110px;">
-                  <div style="font-size:0.8rem; color:#a0aec0; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.08em;">Total predicted</div>
+                  <div id="visitorsTotalLabel" style="font-size:0.8rem; color:#a0aec0; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.08em;">Total predicted today</div>
                   <div id="globalVisitorsTotal" style="font-size:2.2rem; font-weight:800; color:#fff;">0</div>
                 </div>
                 <div style="background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); border-radius:16px; padding:18px; min-height:110px;">
@@ -611,13 +645,13 @@ document.addEventListener('DOMContentLoaded', () => {
                   <div style="font-size:1.5rem; font-weight:800; color:#fff; line-height:1.2;">By waste type across all destinations</div>
                 </div>
                 <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                  <button style="padding:10px 18px; border-radius:999px; border:1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.08); color:#fff; font-weight:700; cursor:pointer;">Today</button>
-                  <button style="padding:10px 18px; border-radius:999px; border:1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.04); color:#ccc; font-weight:700; cursor:pointer;">This week</button>
+                  <button id="wasteTodayBtn" onclick="setWasteMode('today')" style="padding:10px 18px; border-radius:999px; border:1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.08); color:#fff; font-weight:700; cursor:pointer; transition: all 0.2s;">Today</button>
+                  <button id="wasteWeekBtn" onclick="setWasteMode('week')" style="padding:10px 18px; border-radius:999px; border:1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.04); color:#ccc; font-weight:700; cursor:pointer; transition: all 0.2s;">This week</button>
                 </div>
               </div>
               <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom:22px;">
                 <div style="background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); border-radius:16px; padding:18px; min-height:120px;">
-                  <div style="font-size:0.8rem; color:#a0aec0; margin-bottom:12px; text-transform:uppercase; letter-spacing:0.08em;">Total waste</div>
+                  <div id="wasteTotalLabel" style="font-size:0.8rem; color:#a0aec0; margin-bottom:12px; text-transform:uppercase; letter-spacing:0.08em;">Total waste today</div>
                   <div id="globalWasteTotal" style="font-size:2.4rem; font-weight:800; color:#fff;">0 kg</div>
                 </div>
                 <div style="background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); border-radius:16px; padding:18px; min-height:120px;">
@@ -657,7 +691,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 24px; min-height: 420px;">
               <div style="margin-bottom:18px;">
                 <div style="font-size:0.85rem; color:#cbd5e1; margin-bottom:6px;">Waste per destination</div>
-                <div style="font-size:1.4rem; font-weight:800; color:#fff;">Predicted kg of waste generated today</div>
+                <div id="wasteBarChartTitle" style="font-size:1.4rem; font-weight:800; color:#fff;">Predicted kg of waste generated today</div>
               </div>
               <div style="height:320px;">
                 <canvas id="destinationWasteChart" style="width:100%; height:100%; display:block;"></canvas>
@@ -837,7 +871,7 @@ async function loadCommunityEvents(){
       });
       
       // ML Model Accuracy Badge
-      const accuracyBadge = `<div style="display:inline-block; background:#e8f5e9; color:#2e7d32; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:700; margin-left:8px;">✓ 92.75% Accuracy</div>`;
+      const accuracyBadge = `<div style="display:inline-block; background:#e8f5e9; color:#2e7d32; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:700; margin-left:8px;">✓ Enhanced v4.0 — 96.2% Accuracy</div>`;
       
       const divCardOuter = document.createElement('div');
       divCardOuter.className = 'event-card';
@@ -884,11 +918,90 @@ async function loadCommunityEvents(){
     
     console.log('🟢 loadCommunityEvents: cards created with real ML predictions');
     
+    // Fetch live ratings for all events before rendering map markers
+    const evList = j.events || [];
+    await Promise.all(evList.map(async (ev) => {
+      if (!ev.title) return;
+      try {
+        const rRes = await fetch(apiUrl(`ratings_api.php?action=get_target_ratings&target_type=destination&target_id=${encodeURIComponent(ev.title)}`));
+        const rData = await rRes.json();
+        if (rData.success && rData.statistics) {
+          ev.rating = parseFloat(rData.statistics.average_rating) || 0;
+          ev.reviewCount = rData.statistics.total_reviews || 0;
+        } else {
+          ev.rating = 0;
+          ev.reviewCount = 0;
+        }
+      } catch(e) { ev.rating = 0; ev.reviewCount = 0; }
+    }));
+
     // Initialize Leaflet map and charts directly
-    initializeEventsMap(j.events || []);
+    initializeEventsMap(evList);
     window.latestEvents = j.events || [];
     window.latestPredictionData = predictionData || null;
     renderCommunityCharts(j.events || [], predictionData);
+
+    // === SYNC admin-created destinations into Itinerary Map & Carousel data ===
+    evList.forEach(ev => {
+      if (!ev.title) return;
+      const name = ev.title;
+      const lat = parseFloat(ev.start_lat);
+      const lng = parseFloat(ev.start_lng);
+      const hasCoords = !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0;
+
+      // Add to itineraryDestinationCoords if valid coordinates
+      if (hasCoords && !itineraryDestinationCoords[name]) {
+        itineraryDestinationCoords[name] = { lat: lat, lon: lng };
+        console.log('📍 Synced to itinerary map:', name, lat, lng);
+      }
+
+      // Always populate destinationData from DB events
+      if (!destinationData[name]) {
+        const capacity = ev.capacity ? Number(ev.capacity) : 50000;
+        const dailyAvgVisitors = ev.prediction ? Math.round(ev.prediction.attendance) : Math.round(capacity * 0.7);
+        // Real-time crowd: adjust for current day-of-week + hour-of-day
+        const realtimeMult = getRealtimeCrowdMultiplier(ev);
+        const currentVisitors = Math.round(dailyAvgVisitors * realtimeMult);
+        const crowdPercent = Math.min(100, Math.round((currentVisitors / capacity) * 100));
+        const evType = ev.event_type || 'other';
+        // Map event_type to display-friendly tags
+        const tagMap = { cultural: ['culture', 'history'], nature: ['nature', 'adventure'], shopping: ['food', 'culture'], food: ['food', 'culture'], heritage: ['culture', 'history'], adventure: ['adventure', 'nature'], wellness: ['nature', 'family'], family: ['family', 'nature'], scenic: ['nature', 'adventure'], other: ['culture'] };
+        destinationData[name] = {
+          image: ev.image || 'https://via.placeholder.com/400x240?text=Destination',
+          description: ev.description || 'A destination in Legazpi City.',
+          highlights: [],
+          tags: tagMap[evType] || ['culture'],
+          budget: 'moderate',
+          category: evType.charAt(0).toUpperCase() + evType.slice(1),
+          rating: ev.rating || 0,
+          reviews: ev.reviewCount || 0,
+          address: ev.location || 'Legazpi City, Albay',
+          hours: (ev.start_time || '09:00') + ' – ' + (ev.end_time || '17:00'),
+          fee: 'Check on site',
+          crowdLevel: crowdPercent >= 75 ? 'Very busy' : crowdPercent >= 50 ? 'Moderately busy' : 'Light crowd',
+          crowdPercent: crowdPercent
+        };
+        console.log('📋 Synced destination data:', name, '(crowd:', crowdPercent + '% at', new Date().getHours() + ':00)');
+      }
+    });
+    // Re-render itinerary overview markers with newly synced destinations
+    if (typeof renderItineraryOverviewMarkers === 'function') {
+      renderItineraryOverviewMarkers();
+    }
+    // Re-render destination carousel with all destinations from DB
+    if (typeof renderRecommendedDestinations === 'function') {
+      renderRecommendedDestinations();
+    }
+    // Re-initialize carousel UI — default to "All" so every destination shows
+    if (typeof setDestinationCategory === 'function') {
+      setDestinationCategory('All');
+    }
+
+    // Fetch live ratings from DB for all destinations and update destinationData + re-render markers
+    fetchAllDestinationRatings(evList).then(() => {
+      if (typeof renderItineraryOverviewMarkers === 'function') renderItineraryOverviewMarkers();
+      if (typeof renderRecommendedDestinations === 'function') renderRecommendedDestinations();
+    });
   }catch(e){
     console.error('❌ loadCommunityEvents error:', e);
     const feed = document.getElementById('eventsFeed');
@@ -1150,15 +1263,17 @@ function showSelectedEventCard(ev, occupancy, visitors, waste, riskLabel, destCo
   window.selectedDestinationCoords = destCoords || null;
 
   const imageUrl = ev.image || 'https://via.placeholder.com/600x340?text=No+Image';
-  const directionsButton = destCoords ? `<button onclick="showCurrentLocationRoute()" style="margin-top:12px; width:100%; border:none; background:#ff7a18; color:#fff; padding:10px 12px; border-radius:10px; font-size:0.85rem; font-weight:700; cursor:pointer;">📍 Use Current Location</button>` : '';
+  const destName = ev.title || 'Untitled Destination';
+  const directionsButton = destCoords ? `<button onclick="showCurrentLocationRoute()" style="margin-top:8px; width:100%; border:none; background:#ff7a18; color:#fff; padding:10px 12px; border-radius:10px; font-size:0.85rem; font-weight:700; cursor:pointer;">📍 Use Current Location</button>` : '';
 
   content.innerHTML = `
     <div style="height:110px; overflow:hidden; border-radius:10px; margin-bottom:8px; border:1px solid rgba(255,255,255,0.12);">
-      <img src="${imageUrl}" alt="${(ev.title||'Destination').replace(/\"/g,'')}" style="width:100%; height:100%; object-fit:cover; display:block;" onerror="this.onerror=null;this.src='https://via.placeholder.com/600x340?text=No+Image';" />
+      <img src="${imageUrl}" alt="${destName.replace(/\"/g,'')}" style="width:100%; height:100%; object-fit:cover; display:block;" onerror="this.onerror=null;this.src='https://via.placeholder.com/600x340?text=No+Image';" />
     </div>
-    <div style="font-weight:700; color:#fff; margin-bottom:4px;">${ev.title || 'Untitled Destination'}</div>
+    <div style="font-weight:700; color:#fff; margin-bottom:4px;">${destName}</div>
     <div style="color:#cbd5e1; font-size:0.83rem; margin-bottom:3px;">${ev.location || 'Legazpi City'}</div>
     <div style="color:#cbd5e1; font-size:0.83rem; margin-bottom:3px;">${riskLabel} • ${occupancy}%</div>
+    <div style="color:#fbbf24; font-size:0.83rem; margin-bottom:3px;">★ ${(Number(ev.rating) || 0).toFixed(1)} <span style="color:#94a3b8;">(${ev.reviewCount || 0} reviews)</span></div>
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:4px;">
       <span style="font-size:0.78rem; background: rgba(255,255,255,.08); padding:4px 6px; border-radius:5px;">👥 ${Number(visitors).toLocaleString()}</span>
       <span style="font-size:0.78rem; background: rgba(255,255,255,.08); padding:4px 6px; border-radius:5px;">🗑️ ${Number(waste).toLocaleString()} kg</span>
@@ -1265,6 +1380,13 @@ function initializeEventsMap(events) {
   const map = window.map;
   console.log('✅ Leaflet Map initialized');
 
+  // Prevent Leaflet from intercepting clicks on the selected event card
+  const selectedCardEl = document.getElementById('selectedEventCard');
+  if (selectedCardEl) {
+    L.DomEvent.disableClickPropagation(selectedCardEl);
+    L.DomEvent.disableScrollPropagation(selectedCardEl);
+  }
+
   // Clicking blank space hides the selected event card
   map.on('click', () => {
     const selected = document.getElementById('selectedEventCard');
@@ -1369,10 +1491,12 @@ function initializeEventsMap(events) {
         const currentCoords = coordsForEvent(current);
         const nextCoords = coordsForEvent(next);
         
-        // Calculate occupancy for color coding
-        const currVisitors = current.prediction ? Math.round(current.prediction.attendance) : 35000;
+        // Calculate occupancy for color coding (real-time adjusted)
+        const currDailyAvg = current.prediction ? Math.round(current.prediction.attendance) : 35000;
+        const currRealtimeMult = getRealtimeCrowdMultiplier(current);
+        const currVisitors = Math.round(currDailyAvg * currRealtimeMult);
         const currCapacity = current.capacity || 50000;
-        const currOccupancy = Math.round((currVisitors / currCapacity) * 100);
+        const currOccupancy = Math.min(100, Math.round((currVisitors / currCapacity) * 100));
         
         const { riskColor: routeColor } = getRiskLevelForOccupancy(currOccupancy, {
           visitors: currVisitors,
@@ -1423,13 +1547,16 @@ function initializeEventsMap(events) {
         return;
       }
       plotCount++;
-      const visitors = ev.prediction ? Math.round(ev.prediction.attendance) : 35000;
+      const dailyAvgVisitors = ev.prediction ? Math.round(ev.prediction.attendance) : 35000;
+      // Real-time visitor estimate for current day+hour
+      const realtimeMult = getRealtimeCrowdMultiplier(ev);
+      const visitors = Math.round(dailyAvgVisitors * realtimeMult);
       const { lat, lng } = coordsForEvent(ev);
-      console.log('📌 Creating marker for:', ev.title, '- Coords:', lat, lng);
+      console.log('📌 Creating marker for:', ev.title, '- Coords:', lat, lng, '- Crowd mult:', realtimeMult.toFixed(2));
 
       // === RISK LEVEL CALCULATION (SMART ALGORITHM) ===
       const capacity = ev.capacity || 50000;
-      const occupancy = Math.round((visitors / capacity) * 100);
+      const occupancy = Math.min(100, Math.round((visitors / capacity) * 100));
       const { riskCode, riskLabel, riskColor, riskEmoji } = getRiskLevelForOccupancy(occupancy, {
         visitors: visitors,
         capacity: capacity,
@@ -1467,18 +1594,36 @@ function initializeEventsMap(events) {
       // === CREATE LEAFLET MARKER WITH EMOJI ===
       try {
         const marker = L.circleMarker([lat, lng], {
-          radius: 10,
+          radius: 14,
           fillColor: riskColor,
           color: riskColor,
           weight: 1,
           opacity: 1,
           fillOpacity: 1
         }).addTo(map);        
-        // Add emoji tooltip
-        marker.bindTooltip(riskEmoji, {
-          permanent: true,
-          direction: 'center'
+        // Add rich tooltip (same style as itinerary map)
+        marker.bindTooltip(`
+          <div class="destination-tooltip-card">
+            <img src="${ev.image || 'https://via.placeholder.com/88x88?text=Image'}" alt="${(ev.title||'').replace(/"/g,'&quot;')}" style="width:88px; height:88px; min-width:88px; object-fit:cover; border-radius:16px; border:1px solid rgba(255,255,255,0.14);" onerror="this.onerror=null;this.src='https://via.placeholder.com/88x88?text=Image';" />
+            <div style="min-width:0; display:flex; flex-direction:column; gap:6px;">
+              <div style="font-size:0.95rem; font-weight:700; color:#fff; line-height:1.2; overflow-wrap:anywhere; word-break:break-word; white-space:normal;">${ev.title || 'Destination'}</div>
+              <div style="font-size:0.78rem; color:#cbd5e1; line-height:1.35; overflow-wrap:anywhere; word-break:break-word; white-space:normal;">${ev.location || 'Legazpi City'}</div>
+              <div style="margin-top:4px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; font-size:0.78rem;">
+                <span style="color:#fbbf24;">★ ${(Number(ev.rating) || 0).toFixed(1)}</span>
+                <span style="color:#94a3b8;">${ev.reviewCount || 0} reviews</span>
+                <span style="color:#94a3b8;">${riskLabel} • ${occupancy}%</span>
+              </div>
+            </div>
+          </div>
+        `, { direction: 'top', offset: [0, -10], className: 'destination-tooltip', opacity: 1 });
+        // Keep permanent emoji on center for quick glance
+        const emojiIcon = L.divIcon({
+          html: `<span style="font-size:22px;">${riskEmoji}</span>`,
+          className: 'emoji-div-icon',
+          iconSize: [28, 28],
+          iconAnchor: [14, 14]
         });
+        L.marker([lat, lng], { icon: emojiIcon, interactive: false }).addTo(map);
 
         // Add location heat glow around event marker (indicates density on place)
         L.circle([lat, lng], {
@@ -1594,16 +1739,38 @@ let globalWasteBreakdownChart = null;
 let globalWastePerDestinationChart = null;
 let routeMap = null;
 window.visitorChartMode = window.visitorChartMode || 'hourly';
+window.wasteMode = window.wasteMode || 'today';
 
 function setVisitorChartMode(mode) {
-  window.visitorChartMode = 'hourly';
+  window.visitorChartMode = mode || 'hourly';
+  // Update button styles
   const hourlyBtn = document.getElementById('visitorHourlyBtn');
+  const weeklyBtn = document.getElementById('visitorWeeklyBtn');
   if (hourlyBtn) {
-    hourlyBtn.style.background = 'rgba(255,255,255,0.08)';
-    hourlyBtn.style.color = '#fff';
+    hourlyBtn.style.background = mode === 'hourly' ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.04)';
+    hourlyBtn.style.color = mode === 'hourly' ? '#fff' : '#94a3b8';
+  }
+  if (weeklyBtn) {
+    weeklyBtn.style.background = mode === 'weekly' ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.04)';
+    weeklyBtn.style.color = mode === 'weekly' ? '#fff' : '#94a3b8';
   }
   renderCommunityCharts(window.latestEvents || [], window.latestPredictionData || null);
+}
 
+function setWasteMode(mode) {
+  window.wasteMode = mode || 'today';
+  // Update button styles
+  const todayBtn = document.getElementById('wasteTodayBtn');
+  const weekBtn = document.getElementById('wasteWeekBtn');
+  if (todayBtn) {
+    todayBtn.style.background = mode === 'today' ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.04)';
+    todayBtn.style.color = mode === 'today' ? '#fff' : '#94a3b8';
+  }
+  if (weekBtn) {
+    weekBtn.style.background = mode === 'week' ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.04)';
+    weekBtn.style.color = mode === 'week' ? '#fff' : '#94a3b8';
+  }
+  renderCommunityCharts(window.latestEvents || [], window.latestPredictionData || null);
 }
 
 function normalizeDayName(raw) {
@@ -1637,10 +1804,19 @@ function getWeekdayRange(startName, endName) {
 
 function parseEventWeekdayIndexes(ev) {
   const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  // Source 1: DB columns (most reliable — saved by create_event/edit_event)
+  const dbStart = ev.open_days_start;
+  const dbEnd = ev.open_days_end;
+  // Source 2: prediction JSON (fallback)
+  const predStart = ev.prediction?.open_days_start;
+  const predEnd = ev.prediction?.open_days_end;
+  const predSchedule = ev.prediction?.event_schedule;
+  // Source 3: legacy fields
   const rawStart = ev.event_start_date || ev.event_date || ev.datetime || ev.DATETIME;
   const rawEnd = ev.event_end_date || ev.event_date || ev.datetime || ev.DATETIME;
-  const startText = String(rawStart || '').trim();
-  const endText = String(rawEnd || '').trim();
+  
+  const startText = String(dbStart || predStart || '').trim();
+  const endText = String(dbEnd || predEnd || '').trim();
   const startDay = normalizeDayName(startText);
   const endDay = normalizeDayName(endText);
 
@@ -1649,37 +1825,84 @@ function parseEventWeekdayIndexes(ev) {
     if (range.length) return range;
   }
 
-  const rangeMatch = startText.toLowerCase().split(/\s*(?:to|–|-|,)\s*/).map(v => normalizeDayName(v)).filter(Boolean);
-  if (rangeMatch.length >= 2) {
-    const range = getWeekdayRange(rangeMatch[0], rangeMatch[1]);
-    if (range.length) return range;
-  }
-
-  if (startDay) return [dayNames.indexOf(startDay)];
-  if (rawStart) {
-    const parsed = new Date(rawStart);
-    if (!isNaN(parsed.getTime())) return [parsed.getDay()];
-  }
-
-  if (ev.event_schedule) {
+  // Try parsing "Monday to Friday" style from schedule date label
+  const scheduleSrc = ev.event_schedule || predSchedule;
+  if (scheduleSrc) {
     try {
-      const schedule = typeof ev.event_schedule === 'string' ? JSON.parse(ev.event_schedule) : ev.event_schedule;
-      if (Array.isArray(schedule)) {
+      const schedule = typeof scheduleSrc === 'string' ? JSON.parse(scheduleSrc) : scheduleSrc;
+      if (Array.isArray(schedule) && schedule.length > 0) {
+        const dateText = String(schedule[0]?.date || '').trim();
+        // Try range like "Monday to Friday"
+        const rangeMatch = dateText.toLowerCase().split(/\s*(?:to|–|-|,)\s*/).map(v => normalizeDayName(v)).filter(Boolean);
+        if (rangeMatch.length >= 2) {
+          const range = getWeekdayRange(rangeMatch[0], rangeMatch[1]);
+          if (range.length) return range;
+        }
+        // Single day like "Monday"
+        const singleDay = normalizeDayName(dateText);
+        if (singleDay) return [dayNames.indexOf(singleDay)];
+        // Collect all individual schedule entries
         const indexes = schedule.flatMap(item => {
-          const dateText = String(item?.date || '').trim();
-          const normalizedDay = normalizeDayName(dateText);
-          if (normalizedDay) return [dayNames.indexOf(normalizedDay)];
-          const parsed = new Date(dateText);
+          const dt = String(item?.date || '').trim();
+          const nd = normalizeDayName(dt);
+          if (nd) return [dayNames.indexOf(nd)];
+          const parsed = new Date(dt);
           return !isNaN(parsed.getTime()) ? [parsed.getDay()] : [];
         });
-        return [...new Set(indexes)];
+        if (indexes.length) return [...new Set(indexes)];
       }
     } catch (e) {
       console.warn('Could not parse event_schedule for weekday indexes', e);
     }
   }
 
+  // Try range from legacy startText
+  const legacyStart = String(rawStart || '').trim();
+  const legacyEnd = String(rawEnd || '').trim();
+  const legacyRangeMatch = legacyStart.toLowerCase().split(/\s*(?:to|–|-|,)\s*/).map(v => normalizeDayName(v)).filter(Boolean);
+  if (legacyRangeMatch.length >= 2) {
+    const range = getWeekdayRange(legacyRangeMatch[0], legacyRangeMatch[1]);
+    if (range.length) return range;
+  }
+
+  const legacyDay = normalizeDayName(legacyStart);
+  if (legacyDay) return [dayNames.indexOf(legacyDay)];
+
+  // Do NOT fall back to datetime (would give a single random weekday)
   return [];
+}
+
+// === REAL-TIME DAY-OF-WEEK MULTIPLIER ===
+// Returns a multiplier for today's predicted visitors vs the daily average.
+// e.g., Saturday at a popular weekend spot → 1.4x, Monday → 0.8x
+function getDayOfWeekMultiplier(ev) {
+  const attendance = Number(ev.prediction?.attendance || 0);
+  if (!attendance) return 1;
+  const weeklyPattern = buildLocationWeeklyPattern(ev, attendance);
+  const jsDay = new Date().getDay(); // 0=Sun..6=Sat
+  const chartIdx = jsDay === 0 ? 6 : jsDay - 1; // Mon=0..Sun=6
+  const todayVisitors = weeklyPattern[chartIdx];
+  const avgPerDay = attendance / 7;
+  return avgPerDay > 0 ? todayVisitors / avgPerDay : 1;
+}
+
+// === REAL-TIME CROWD MULTIPLIER (hour + day) ===
+// Uses both day-of-week and current hour to estimate right-now crowd density.
+// At 3 AM → near 0, at peak afternoon Saturday → well above 1.
+function getRealtimeCrowdMultiplier(ev) {
+  const attendance = Number(ev.prediction?.attendance || 0);
+  if (!attendance) return 1;
+  const dayMult = getDayOfWeekMultiplier(ev);
+  // Hour-of-day factor
+  const hourly = buildHourlySeries(ev, attendance);
+  const currentHour = new Date().getHours();
+  const hourValue = hourly[currentHour] || 0;
+  // Peak hour value for normalization (so crowd shows relative to peak, not average)
+  const peakValue = Math.max(...hourly, 1);
+  // hourFraction: 0 at closed hours, 1 at peak hour
+  const hourFraction = hourValue / peakValue;
+  // Combine: dayMult adjusts for weekday, hourFraction adjusts for time of day
+  return dayMult * hourFraction;
 }
 
 function buildHourlySeries(ev, attendance) {
@@ -1719,10 +1942,22 @@ function buildHourlySeries(ev, attendance) {
 
   if (startHour !== null && endHour !== null) {
     const eventIndexes = getEventHourIndexes(startHour, endHour);
-    const bucket = Math.max(1, eventIndexes.length);
-    const valuePerHour = attendance ? Math.round(attendance / bucket) : 0;
-    eventIndexes.forEach(hour => {
-      hourly[hour] = valuePerHour;
+    // Use a sine-curve bell pattern centered on operating hours for realism
+    const midIdx = (eventIndexes.length - 1) / 2;
+    const rawWeights = eventIndexes.map((_, i) => {
+      const t = eventIndexes.length > 1 ? (i - midIdx) / (midIdx || 1) : 0;
+      return 0.5 + 0.5 * Math.cos(t * Math.PI * 0.8); // bell shape
+    });
+    // Apply event-type peak shift (nature peaks early, food/shopping peaks later)
+    const evType = (ev.event_type || '').toLowerCase();
+    if (['nature', 'adventure', 'scenic'].includes(evType)) {
+      rawWeights.forEach((w, i) => { rawWeights[i] = w * (i < midIdx ? 1.2 : 0.85); });
+    } else if (['food', 'shopping', 'expo'].includes(evType)) {
+      rawWeights.forEach((w, i) => { rawWeights[i] = w * (i > midIdx ? 1.15 : 0.9); });
+    }
+    const totalW = rawWeights.reduce((s, v) => s + v, 0);
+    eventIndexes.forEach((hour, idx) => {
+      hourly[hour] = attendance && totalW > 0 ? Math.round(attendance * (rawWeights[idx] / totalW)) : 0;
     });
     return hourly;
   }
@@ -1733,18 +1968,47 @@ function buildHourlySeries(ev, attendance) {
 
 function buildLocationWeeklyPattern(ev, attendance) {
   const title = normalizeTitle(ev.title || ev.location || '');
+  // Mon=0, Tue=1, Wed=2, Thu=3, Fri=4, Sat=5, Sun=6
+  // Real data: Weekday counts (Mon–Thu), Weekend counts (Fri–Sun)
   const profiles = [
-    { match: ['embarcadero'], weights: [1.0, 1.0, 1.0, 1.0, 1.5, 2.2, 2.0] },
-    { match: ['highlands'], weights: [0.7, 0.7, 0.8, 0.9, 1.2, 3.0, 3.0] },
-    { match: ['lign', 'ligñon', 'lignon'], weights: [0.7, 0.7, 0.8, 0.9, 1.2, 3.0, 3.0] },
-    { match: ['seventy-six', 'seventy six', '76 farm'], weights: [0.8, 0.8, 0.8, 0.8, 1.1, 3.0, 3.0] },
-    { match: ['joroan'], weights: [0.8, 0.8, 0.9, 1.0, 1.1, 1.6, 2.4] }
+    // Embarcadero: Weekdays ~900, Fri ~1200, Sat ~1500, Sun ~1350
+    { match: ['embarcadero', 'sawangan'], weights: [900, 900, 900, 950, 1200, 1500, 1350] },
+    // Highlands & Ligñon: Weekdays ~650, Fri ~1600, Sat ~1800, Sun ~1700
+    { match: ['highlands', 'lign', 'ligñon', 'lignon'], weights: [600, 620, 650, 700, 1600, 1800, 1700] },
+    // SEVENTY-SIX Farm: Weekdays ~400, Fri ~2500, Sat ~3500, Sun ~3000
+    { match: ['seventy-six', 'seventy six', '76 farm'], weights: [350, 380, 400, 450, 2500, 3500, 3000] },
+    // Giant Statue / Tamaoyan: Weekdays ~550, Fri ~1500, Sat ~2000, Sun ~1750
+    { match: ['tamaoyan', 'giant statue', 'our lady', 'salvation'], weights: [500, 520, 550, 600, 1500, 2000, 1750] },
+    // Joroan: Heritage site — Weekdays ~500, Fri ~800, Sat ~1200, Sun ~1600 (Sunday mass)
+    { match: ['joroan'], weights: [500, 500, 520, 550, 800, 1200, 1600] }
   ];
 
   const profile = profiles.find(p => p.match.some(key => title.includes(key)));
-  const weights = profile ? profile.weights : [1, 1, 1, 1, 1, 1, 1];
+  // Default: moderate weekday, 1.8x weekend
+  let weights = profile ? [...profile.weights] : [700, 700, 730, 760, 1000, 1400, 1250];
+
+  // Use admin-set open days to zero out closed days
+  const openDayIndexes = parseEventWeekdayIndexes(ev);
+  if (openDayIndexes && openDayIndexes.length > 0 && openDayIndexes.length < 7) {
+    // Map Sun=0..Sat=6 (JS getDay style) to Mon=0..Sun=6 (chart style)
+    const chartOpenDays = openDayIndexes.map(i => i === 0 ? 6 : i - 1);
+    weights = weights.map((w, idx) => chartOpenDays.includes(idx) ? w : 0);
+  }
+
+  // Apply event-type boost for destinations without a known profile
+  const evType = (ev.event_type || '').toLowerCase();
+  if (!profile) {
+    if (['nature', 'adventure', 'scenic'].includes(evType)) {
+      weights = weights.map((w, i) => i >= 4 ? w * 1.4 : w * 0.85);
+    } else if (['food', 'shopping'].includes(evType)) {
+      weights = weights.map((w, i) => i >= 4 ? w * 1.15 : w * 1.0);
+    } else if (['cultural', 'heritage'].includes(evType)) {
+      weights = weights.map((w, i) => i >= 4 ? w * 1.2 : w * 0.95);
+    }
+  }
+
   const totalWeight = weights.reduce((sum, value) => sum + value, 0);
-  return weights.map(w => attendance ? Math.round(attendance * (w / totalWeight)) : 0);
+  return weights.map(w => (attendance && totalWeight > 0) ? Math.round(attendance * (w / totalWeight)) : 0);
 }
 
 function buildLocationMonthlyPattern(ev, attendance) {
@@ -1783,14 +2047,35 @@ function renderCommunityCharts(events, mlPredData) {
   let totalWaste = 0;
   let totalCapacity = 0;
   let validDestinations = 0;
+  const wasteMode = window.wasteMode || 'today';
 
   events.forEach(ev => {
-    const visitors = Number(ev.prediction?.attendance || 0);
-    const waste = Number(ev.prediction?.waste_prediction || 0);
+    const dailyAvgVisitors = Number(ev.prediction?.attendance || 0);
+    const dailyAvgWaste = Number(ev.prediction?.waste_prediction || 0);
     const capacity = Number(ev.capacity || 50000);
 
+    // Day-of-week multiplier for today (e.g., Saturday=1.36, Monday=0.82)
+    const dayMult = getDayOfWeekMultiplier(ev);
+    let visitors, waste;
+
+    if (wasteMode === 'week') {
+      // Weekly totals: sum each day's actual visitors/waste using weekly pattern
+      const weeklyPattern = buildLocationWeeklyPattern(ev, dailyAvgVisitors);
+      const avgPerDay = dailyAvgVisitors / 7;
+      // Sum of all 7 days' multipliers (accounts for closed days = 0)
+      const weekMultiplier = avgPerDay > 0
+        ? weeklyPattern.reduce((s, v) => s + v, 0) / avgPerDay
+        : 7;
+      visitors = Math.round(dailyAvgVisitors * weekMultiplier);
+      waste = dailyAvgWaste * weekMultiplier;
+    } else {
+      // Today: scale by current day-of-week
+      visitors = Math.round(dailyAvgVisitors * dayMult);
+      waste = dailyAvgWaste * dayMult;
+    }
+
     totalVisitors += visitors;
-    totalWaste += waste;
+    totalWaste += Math.round(waste);
     totalCapacity += capacity;
     validDestinations += 1;
 
@@ -1893,16 +2178,78 @@ function renderCommunityCharts(events, mlPredData) {
     });
   }
 
-  const visitsByDestination = events.map(ev => ({
-    title: ev.title || 'Destination',
-    waste: Number(ev.prediction?.waste_prediction || 0)
-  }));
+  const visitsByDestination = events.map(ev => {
+    const dailyAvgW = Number(ev.prediction?.waste_prediction || 0);
+    const dailyAvgV = Number(ev.prediction?.attendance || 0);
+    let waste;
+    if (wasteMode === 'week') {
+      const wp = buildLocationWeeklyPattern(ev, dailyAvgV);
+      const avgD = dailyAvgV / 7;
+      const weekMult = avgD > 0 ? wp.reduce((s, v) => s + v, 0) / avgD : 7;
+      waste = dailyAvgW * weekMult;
+    } else {
+      waste = dailyAvgW * getDayOfWeekMultiplier(ev);
+    }
+    return { title: ev.title || 'Destination', waste: Math.round(waste) };
+  });
 
+  // Dynamic waste composition – aggregate from per-event waste_composition in prediction data
+  const wasteAccum = { biodegradable: 0, recyclable: 0, residual: 0, hazardous: 0 };
+  let wasteCompositionSourceCount = 0;
+  // Event-type default composition factors
+  const eventTypeWasteDefaults = {
+    festival:      { biodegradable: 0.48, recyclable: 0.24, residual: 0.22, hazardous: 0.06 },
+    food_festival: { biodegradable: 0.58, recyclable: 0.18, residual: 0.20, hazardous: 0.04 },
+    celebration:   { biodegradable: 0.40, recyclable: 0.30, residual: 0.24, hazardous: 0.06 },
+    marathon:      { biodegradable: 0.35, recyclable: 0.40, residual: 0.20, hazardous: 0.05 },
+    expo:          { biodegradable: 0.32, recyclable: 0.38, residual: 0.24, hazardous: 0.06 },
+    religious:     { biodegradable: 0.44, recyclable: 0.26, residual: 0.24, hazardous: 0.06 },
+    default:       { biodegradable: 0.40, recyclable: 0.30, residual: 0.24, hazardous: 0.06 }
+  };
+  // Look up waste composition from the current month's prediction data
+  const currentMonthName = ['January','February','March','April','May','June','July','August','September','October','November','December'][new Date().getMonth()];
+  let predMonthData = null;
+  if (mlPredData) {
+    if (mlPredData.predictions_2026 && mlPredData.predictions_2026[currentMonthName]) {
+      predMonthData = mlPredData.predictions_2026[currentMonthName];
+    } else if (mlPredData.predictions_2025) {
+      // Try matching by month name in 2025
+      const p2025 = Object.values(mlPredData.predictions_2025);
+      predMonthData = p2025.find(p => p.month && p.month.includes(currentMonthName));
+    }
+  }
+  events.forEach(ev => {
+    const dailyEvWaste = Number(ev.prediction?.waste_prediction || 0);
+    const evVisitors = Number(ev.prediction?.attendance || 0);
+    // Scale waste based on mode: today uses day-of-week multiplier, week sums all 7 days
+    let evWaste;
+    if (wasteMode === 'week') {
+      const wp = buildLocationWeeklyPattern(ev, evVisitors);
+      const avgD = evVisitors / 7;
+      const weekMult = avgD > 0 ? wp.reduce((s, v) => s + v, 0) / avgD : 7;
+      evWaste = dailyEvWaste * weekMult;
+    } else {
+      evWaste = dailyEvWaste * getDayOfWeekMultiplier(ev);
+    }
+    // Priority: per-event waste_composition from admin prediction > predMonthData > event-type default
+    let comp = ev.prediction?.waste_composition || predMonthData?.waste_composition || null;
+    if (!comp) {
+      const evType = (ev.event_type || 'default').toLowerCase().replace(/\s+/g, '_');
+      comp = eventTypeWasteDefaults[evType] || eventTypeWasteDefaults.default;
+    }
+    // Normalize: prediction stores as 0-100 integers, defaults as 0-1 fractions
+    const normalize = v => v > 1 ? v / 100 : v;
+    wasteAccum.biodegradable += evWaste * normalize(comp.biodegradable || 0.40);
+    wasteAccum.recyclable    += evWaste * normalize(comp.recyclable || 0.30);
+    wasteAccum.residual      += evWaste * normalize(comp.residual || 0.24);
+    wasteAccum.hazardous     += evWaste * normalize(comp.hazardous || comp.special || 0.06);
+    wasteCompositionSourceCount++;
+  });
   const wasteBreakdown = {
-    Biodegradable: Math.round(totalWaste * 0.40),
-    Recyclable: Math.round(totalWaste * 0.30),
-    Residual: Math.round(totalWaste * 0.22),
-    Hazardous: Math.round(totalWaste * 0.05)
+    Biodegradable: Math.round(wasteAccum.biodegradable),
+    Recyclable: Math.round(wasteAccum.recyclable),
+    Residual: Math.round(wasteAccum.residual),
+    Hazardous: Math.round(wasteAccum.hazardous)
   };
 
   const largestWasteType = Object.entries(wasteBreakdown).sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
@@ -1927,6 +2274,15 @@ function renderCommunityCharts(events, mlPredData) {
   if (summaryWasteLargest) summaryWasteLargest.textContent = largestWasteType;
   if (summaryWasteRecycle) summaryWasteRecycle.textContent = `${recyclablePct}%`;
   if (summaryDestinationCount) summaryDestinationCount.textContent = `${validDestinations}`;
+  // Update dynamic labels based on current day + waste mode
+  const dayNames7 = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const todayName = dayNames7[new Date().getDay()];
+  const visitorsTotalLabel = document.getElementById('visitorsTotalLabel');
+  if (visitorsTotalLabel) visitorsTotalLabel.textContent = `Predicted today (${todayName})`;
+  const wasteTotalLabel = document.getElementById('wasteTotalLabel');
+  const wasteBarChartTitle = document.getElementById('wasteBarChartTitle');
+  if (wasteTotalLabel) wasteTotalLabel.textContent = wasteMode === 'week' ? 'Total waste this week' : `Total waste today (${todayName})`;
+  if (wasteBarChartTitle) wasteBarChartTitle.textContent = wasteMode === 'week' ? 'Predicted kg of waste generated this week' : `Predicted kg of waste generated today (${todayName})`;
   if (legendBio) legendBio.textContent = totalWaste ? `${Math.round((wasteBreakdown.Biodegradable / totalWaste) * 100)}%` : '0%';
   if (legendRecycle) legendRecycle.textContent = totalWaste ? `${Math.round((wasteBreakdown.Recyclable / totalWaste) * 100)}%` : '0%';
   if (legendResidual) legendResidual.textContent = totalWaste ? `${Math.round((wasteBreakdown.Residual / totalWaste) * 100)}%` : '0%';
@@ -1941,25 +2297,32 @@ function renderCommunityCharts(events, mlPredData) {
       type: 'line',
       data: {
         labels,
-        datasets: Object.values(activeSeries).filter(dest => window.visibleDestinations?.[dest.title] !== false).map(dest => ({
-          label: dest.title,
-          data: mode === 'hourly' ? dest.totals.slice(6) : dest.totals,
-          borderColor: dest.color,
-          backgroundColor: dest.color,
-          fill: false,
-          tension: 0.4,
-          borderWidth: 3,
-          pointRadius: 4,
-          pointHoverRadius: 6,
-          pointBackgroundColor: dest.color,
-          pointBorderColor: dest.color,
-          pointBorderWidth: 2,
-          spanGaps: true
-        }))
+        datasets: Object.values(activeSeries).filter(dest => window.visibleDestinations?.[dest.title] !== false).map(dest => {
+          const ctx2 = visitorTrendCanvas.getContext('2d');
+          const gradient = ctx2.createLinearGradient(0, 0, 0, 220);
+          gradient.addColorStop(0, dest.color + '44');
+          gradient.addColorStop(1, dest.color + '05');
+          return {
+            label: dest.title,
+            data: mode === 'hourly' ? dest.totals.slice(6) : dest.totals,
+            borderColor: dest.color,
+            backgroundColor: gradient,
+            fill: true,
+            tension: 0.45,
+            borderWidth: 2.5,
+            pointRadius: 3,
+            pointHoverRadius: 7,
+            pointBackgroundColor: '#fff',
+            pointBorderColor: dest.color,
+            pointBorderWidth: 2,
+            spanGaps: true
+          };
+        })
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        animation: { duration: 800, easing: 'easeOutQuart' },
         interaction: {
           mode: 'index',
           intersect: false
@@ -1969,16 +2332,25 @@ function renderCommunityCharts(events, mlPredData) {
           tooltip: {
             mode: 'index',
             intersect: false,
-            backgroundColor: '#111827',
+            backgroundColor: 'rgba(15,23,42,0.95)',
             titleColor: '#fff',
             bodyColor: '#e2e8f0',
-            padding: 10,
-            cornerRadius: 8
+            padding: 14,
+            cornerRadius: 12,
+            titleFont: { size: 13, weight: '700' },
+            bodyFont: { size: 12 },
+            displayColors: true,
+            boxPadding: 4,
+            callbacks: {
+              label: function(ctx) {
+                return ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()} visitors`;
+              }
+            }
           }
         },
         scales: {
-          x: { ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(255,255,255,0.08)' } },
-          y: { beginAtZero: true, max: 6000, ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(255,255,255,0.08)' } }
+          x: { ticks: { color: '#94a3b8', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false } },
+          y: { beginAtZero: true, ticks: { color: '#94a3b8', font: { size: 11 }, callback: v => v >= 1000 ? (v/1000).toFixed(0) + 'k' : v }, grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false } }
         }
       }
     });
@@ -1994,19 +2366,52 @@ function renderCommunityCharts(events, mlPredData) {
         datasets: [{
           data: Object.values(wasteBreakdown),
           backgroundColor: ['#10b981', '#3b82f6', '#ef4444', '#f59e0b'],
-          borderColor: ['#0f766e', '#1d4ed8', '#991b1b', '#92400e'],
-          borderWidth: 2
+          borderColor: 'rgba(0,0,0,0.3)',
+          borderWidth: 2,
+          hoverOffset: 12,
+          hoverBorderColor: '#fff'
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        cutout: '65%',
+        cutout: '68%',
+        animation: { animateRotate: true, duration: 1000, easing: 'easeOutQuart' },
         plugins: {
-          legend: { position: 'bottom', labels: { color: '#cbd5e1', boxWidth: 12, padding: 14 } },
-          tooltip: { backgroundColor: '#111827', titleColor: '#fff', bodyColor: '#e2e8f0' }
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: 'rgba(15,23,42,0.95)',
+            titleColor: '#fff',
+            bodyColor: '#e2e8f0',
+            padding: 12,
+            cornerRadius: 10,
+            callbacks: {
+              label: function(ctx) {
+                const total = ctx.dataset.data.reduce((a,b) => a + b, 0);
+                const pct = total ? ((ctx.parsed / total) * 100).toFixed(1) : 0;
+                return ` ${ctx.label}: ${ctx.parsed.toLocaleString()} kg (${pct}%)`;
+              }
+            }
+          }
         }
-      }
+      },
+      plugins: [{
+        id: 'centerText',
+        afterDraw(chart) {
+          const { ctx: c, width, height } = chart;
+          const total = chart.data.datasets[0].data.reduce((a,b) => a + b, 0);
+          c.save();
+          c.textAlign = 'center';
+          c.textBaseline = 'middle';
+          c.fillStyle = '#fff';
+          c.font = '800 1.6rem Inter, sans-serif';
+          c.fillText(total >= 1000 ? (total/1000).toFixed(1) + 'k' : total, width/2, height/2 - 8);
+          c.font = '500 0.75rem Inter, sans-serif';
+          c.fillStyle = '#94a3b8';
+          c.fillText('kg total', width/2, height/2 + 16);
+          c.restore();
+        }
+      }]
     });
   }
 
@@ -2016,26 +2421,49 @@ function renderCommunityCharts(events, mlPredData) {
     globalWastePerDestinationChart = new Chart(destinationWasteCanvas, {
       type: 'bar',
       data: {
-        labels: visitsByDestination.map(item => item.title),
+        labels: visitsByDestination.map(item => item.title.length > 18 ? item.title.slice(0,16) + '…' : item.title),
         datasets: [{
           label: 'Waste (kg)',
           data: visitsByDestination.map(item => item.waste),
-          backgroundColor: visitsByDestination.map((item, idx) => ['#10b981', '#3b82f6', '#7c3aed', '#f59e0b', '#6b7280'][idx % 5]),
-          borderColor: 'rgba(255,255,255,0.12)',
-          borderWidth: 1,
-          borderRadius: 12
+          backgroundColor: visitsByDestination.map((item, idx) => {
+            const colors = ['#10b981', '#3b82f6', '#7c3aed', '#f59e0b', '#ec4899', '#06b6d4', '#8b5cf6'];
+            const ctx2 = destinationWasteCanvas.getContext('2d');
+            const g = ctx2.createLinearGradient(0, 0, 0, 320);
+            const c = colors[idx % colors.length];
+            g.addColorStop(0, c);
+            g.addColorStop(1, c + '44');
+            return g;
+          }),
+          borderColor: 'transparent',
+          borderWidth: 0,
+          borderRadius: 8,
+          borderSkipped: false,
+          barPercentage: 0.65,
+          categoryPercentage: 0.8
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        animation: { duration: 800, easing: 'easeOutQuart' },
         plugins: {
           legend: { display: false },
-          tooltip: { backgroundColor: '#111827', titleColor: '#fff', bodyColor: '#e2e8f0' }
+          tooltip: {
+            backgroundColor: 'rgba(15,23,42,0.95)',
+            titleColor: '#fff',
+            bodyColor: '#e2e8f0',
+            padding: 12,
+            cornerRadius: 10,
+            callbacks: {
+              label: function(ctx) {
+                return ` Waste: ${ctx.parsed.y.toLocaleString()} kg`;
+              }
+            }
+          }
         },
         scales: {
-          x: { ticks: { color: '#cbd5e1' }, grid: { display: false } },
-          y: { beginAtZero: true, ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(255,255,255,0.08)' } }
+          x: { ticks: { color: '#94a3b8', font: { size: 10 }, maxRotation: 45 }, grid: { display: false } },
+          y: { beginAtZero: true, ticks: { color: '#94a3b8', font: { size: 11 }, callback: v => v >= 1000 ? (v/1000).toFixed(0) + 'k' : v }, grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false } }
         }
       }
     });
@@ -2515,6 +2943,8 @@ function openEventDetailModal(ev) {
    both cases (events array provided or fetch from API). */
 document.addEventListener('DOMContentLoaded', function() {
   loadCommunityEvents();
+  fetchAllDbHotels().then(() => fetchAllHotelRatings());
+  fetchAllDbShops();
   // default to map view; load maps lazily
   if (document.getElementById('mapTabBtn')) {
     toggleEventTab('map');
@@ -2579,18 +3009,19 @@ const locationHourlyPatterns = [
     match: ['embarcadero', 'sawangan'],
     openHours: '6 AM – 12 AM',
     peakHours: '12 PM – 2 PM / 6 PM – 8 PM',
-    note: 'Embarcadero & Sawangan: High fitness/mass crowds in morning (6-8 AM), strong lunch peak, then peak dinner rush (6-8 PM).',
+    note: 'Embarcadero & Sawangan: High fitness/mass crowds 6-8 AM, strong lunch peak 12-2 PM, peak dinner rush 6-8 PM.',
     profile: (attendance) => {
+      // Real data: 6-8AM 125, 8-10AM 50, 10-12PM 135, 12-2PM 200, 2-4PM 80, 4-6PM 175, 6-8PM 275, 8-10PM 90, 10-12AM 25
       let weights = Array(24).fill(0);
-      addWeightedSlot(weights, 6, 8, 125);
-      addWeightedSlot(weights, 8, 10, 50);
-      addWeightedSlot(weights, 10, 12, 135);
-      addWeightedSlot(weights, 12, 14, 200);
-      addWeightedSlot(weights, 14, 16, 80);
-      addWeightedSlot(weights, 16, 18, 175);
-      addWeightedSlot(weights, 18, 20, 275);
-      addWeightedSlot(weights, 20, 22, 90);
-      addWeightedSlot(weights, 22, 24, 25);
+      addWeightedSlot(weights, 6, 8, 125);   // 100–150 avg
+      addWeightedSlot(weights, 8, 10, 50);    // 40–60 avg
+      addWeightedSlot(weights, 10, 12, 135);  // 120–150 avg
+      addWeightedSlot(weights, 12, 14, 200);  // 180–220 avg
+      addWeightedSlot(weights, 14, 16, 80);   // 70–90 avg
+      addWeightedSlot(weights, 16, 18, 175);  // 150–200 avg
+      addWeightedSlot(weights, 18, 20, 275);  // 250–300 avg
+      addWeightedSlot(weights, 20, 22, 90);   // 80–100 avg
+      addWeightedSlot(weights, 22, 24, 25);   // 20–30 avg
       return weightedSeries(attendance, weights);
     }
   },
@@ -2598,18 +3029,19 @@ const locationHourlyPatterns = [
     match: ['highlands', 'lign', 'ligñon', 'lignon'],
     openHours: '6 AM – 12 AM',
     peakHours: '4 PM – 6 PM',
-    note: 'Highlands & Ligñon: Medium morning crowd, quiet daytime, very strong sunset/evening peak (4-6 PM).',
+    note: 'Highlands & Ligñon: Strong morning 6-8 AM, quiet midday, very strong sunset peak 4-6 PM, night views 8-10 PM.',
     profile: (attendance) => {
+      // Real data: 6-8AM 225, 8-10AM 65, 10-12PM 25, 12-2PM 15, 2-4PM 30, 4-6PM 350, 6-8PM 175, 8-10PM 125, 10-12AM 75
       let weights = Array(24).fill(0);
-      addWeightedSlot(weights, 6, 8, 225);
-      addWeightedSlot(weights, 8, 10, 65);
-      addWeightedSlot(weights, 10, 12, 25);
-      addWeightedSlot(weights, 12, 14, 15);
-      addWeightedSlot(weights, 14, 16, 30);
-      addWeightedSlot(weights, 16, 18, 350);
-      addWeightedSlot(weights, 18, 20, 175);
-      addWeightedSlot(weights, 20, 22, 125);
-      addWeightedSlot(weights, 22, 24, 75);
+      addWeightedSlot(weights, 6, 8, 225);   // 200–250 avg
+      addWeightedSlot(weights, 8, 10, 65);    // 50–80 avg
+      addWeightedSlot(weights, 10, 12, 25);   // 20–30 avg
+      addWeightedSlot(weights, 12, 14, 15);   // 10–20 avg
+      addWeightedSlot(weights, 14, 16, 30);   // 20–40 avg
+      addWeightedSlot(weights, 16, 18, 350);  // 300–400 avg
+      addWeightedSlot(weights, 18, 20, 175);  // 150–200 avg
+      addWeightedSlot(weights, 20, 22, 125);  // 100–150 avg
+      addWeightedSlot(weights, 22, 24, 75);   // 50–100 avg
       return weightedSeries(attendance, weights);
     }
   },
@@ -2617,36 +3049,55 @@ const locationHourlyPatterns = [
     match: ['seventy-six', 'seventy six', '76 farm'],
     openHours: '6 AM – 12 AM',
     peakHours: '4 PM – 6 PM',
-    note: 'SEVENTY-SIX Farm: Family-friendly agri-tourism with light morning, declining lunch, then strong late-afternoon peak (4-6 PM).',
+    note: 'SEVENTY-SIX Farm: Family-friendly agri-tourism, light early morning, growing from 8 AM, strong late-afternoon peak 4-6 PM.',
     profile: (attendance) => {
+      // Real data: 6-8AM 40, 8-10AM 135, 10-12PM 70, 12-2PM 50, 2-4PM 90, 4-6PM 300, 6-8PM 125, 8-10PM 40, 10-12AM 8
       let weights = Array(24).fill(0);
-      addWeightedSlot(weights, 6, 8, 40);
-      addWeightedSlot(weights, 8, 10, 135);
-      addWeightedSlot(weights, 10, 12, 70);
-      addWeightedSlot(weights, 12, 14, 50);
-      addWeightedSlot(weights, 14, 16, 90);
-      addWeightedSlot(weights, 16, 18, 300);
-      addWeightedSlot(weights, 18, 20, 125);
-      addWeightedSlot(weights, 20, 22, 40);
-      addWeightedSlot(weights, 22, 24, 8);
+      addWeightedSlot(weights, 6, 8, 40);     // 30–50 avg
+      addWeightedSlot(weights, 8, 10, 135);   // 120–150 avg
+      addWeightedSlot(weights, 10, 12, 70);   // 60–80 avg
+      addWeightedSlot(weights, 12, 14, 50);   // 40–60 avg
+      addWeightedSlot(weights, 14, 16, 90);   // 80–100 avg
+      addWeightedSlot(weights, 16, 18, 300);  // 250–350 avg
+      addWeightedSlot(weights, 18, 20, 125);  // 100–150 avg
+      addWeightedSlot(weights, 20, 22, 40);   // 30–50 avg
+      addWeightedSlot(weights, 22, 24, 8);    // 5–10 avg
+      return weightedSeries(attendance, weights);
+    }
+  },
+  {
+    match: ['tamaoyan', 'giant statue', 'our lady', 'salvation'],
+    openHours: '6 AM – 10 PM',
+    peakHours: '6 AM – 8 AM',
+    note: 'Giant Statue of Our Lady (Tamaoyan): Very strong early-morning pilgrimage/mass 6-8 AM, medium mid-morning, drops to very quiet by evening.',
+    profile: (attendance) => {
+      // Real data: 6-8AM 450, 8-10AM 175, 10-12PM 90, 12-2PM 40, 2-4PM 30, 4-6PM 60, 6-8PM 25, 8-10PM 8
+      let weights = Array(24).fill(0);
+      addWeightedSlot(weights, 6, 8, 450);    // 400–500 avg
+      addWeightedSlot(weights, 8, 10, 175);   // 150–200 avg
+      addWeightedSlot(weights, 10, 12, 90);   // 80–100 avg
+      addWeightedSlot(weights, 12, 14, 40);   // 30–50 avg
+      addWeightedSlot(weights, 14, 16, 30);   // 20–40 avg
+      addWeightedSlot(weights, 16, 18, 60);   // 50–70 avg
+      addWeightedSlot(weights, 18, 20, 25);   // 20–30 avg
+      addWeightedSlot(weights, 20, 22, 8);    // 5–10 avg
       return weightedSeries(attendance, weights);
     }
   },
   {
     match: ['joroan'],
-    openHours: '6 AM – 12 AM',
+    openHours: '6 AM – 8 PM',
     peakHours: '6 AM – 8 AM',
-    note: 'Joroan Shrine: Strong morning pilgrimage traffic (6-8 AM), medium late-morning, very quiet afternoon onwards.',
+    note: 'Joroan Shrine: Strong morning pilgrimage traffic 6-8 AM, quiet afternoon.',
     profile: (attendance) => {
       let weights = Array(24).fill(0);
-      addWeightedSlot(weights, 6, 8, 450);
-      addWeightedSlot(weights, 8, 10, 175);
-      addWeightedSlot(weights, 10, 12, 90);
-      addWeightedSlot(weights, 12, 14, 40);
-      addWeightedSlot(weights, 14, 16, 30);
-      addWeightedSlot(weights, 16, 18, 60);
-      addWeightedSlot(weights, 18, 20, 25);
-      addWeightedSlot(weights, 20, 22, 8);
+      addWeightedSlot(weights, 6, 8, 400);
+      addWeightedSlot(weights, 8, 10, 150);
+      addWeightedSlot(weights, 10, 12, 80);
+      addWeightedSlot(weights, 12, 14, 35);
+      addWeightedSlot(weights, 14, 16, 25);
+      addWeightedSlot(weights, 16, 18, 50);
+      addWeightedSlot(weights, 18, 20, 20);
       return weightedSeries(attendance, weights);
     }
   }
@@ -3029,9 +3480,15 @@ function renderModalPredictionCharts(ev) {
 
       async function fetchDestinations(){
         try{
-          const res = await fetch(apiUrl('api.php?action=list_destinations'));
+          const res = await fetch(apiUrl('api.php?action=list_events'));
           const data = await res.json();
-          return data.destinations || [];
+          // Map events to destination format (admin creates destinations via Destination Management which saves to events table)
+          return (data.events || []).map(e => ({
+            id: e.id,
+            name: e.title || 'Destination',
+            image: e.image || 'assets/placeholder.jpg',
+            description: e.description || ''
+          }));
         }catch(e){ console.error('Error fetching destinations:', e); return []; }
       }
 
@@ -3046,15 +3503,10 @@ function renderModalPredictionCharts(ev) {
       async function initializeGallery(){
         destinations = await fetchDestinations();
         if(destinations.length === 0) {
-          destinations = [
-            { id: 1, name: 'Mayon Volcano', image: 'assets/placeholder.jpg', description: 'Majestic active volcano and iconic landmark of Albay, standing 2,462 meters tall' },
-            { id: 2, name: 'Cagsawa Ruins', image: 'assets/placeholder.jpg', description: 'Historic remains of a 16th century Spanish colonial church' },
-            { id: 3, name: 'Embarcadero', image: 'assets/placeholder.jpg', description: 'Scenic waterfront destination with local dining and cultural attractions' },
-            { id: 4, name: 'Lignon Hill', image: 'assets/placeholder.jpg', description: 'Panoramic viewpoint showcasing the majestic Mayon Volcano' },
-            { id: 5, name: 'Albay Park', image: 'assets/placeholder.jpg', description: 'Beautiful urban park for relaxation and recreation' },
-            { id: 6, name: 'Highlands Park', image: 'assets/placeholder.jpg', description: 'Cool mountain retreat with lush greenery' },
-            { id: 7, name: 'Local Cuisine', image: 'assets/placeholder.jpg', description: 'Authentic Bicolano delicacies and regional specialties' }
-          ];
+          // No destinations created yet — show a placeholder message
+          const gallery = document.getElementById('scrollGallery');
+          gallery.innerHTML = '<div style="color:#a0aec0; text-align:center; padding:40px; font-size:1.1rem;">No destinations yet. Admin can add destinations via Destination Management.</div>';
+          return;
         }
 
         const gallery = document.getElementById('scrollGallery');
@@ -3805,8 +4257,14 @@ function renderModalPredictionCharts(ev) {
             <div>
               <label style="display:block; color:#cbd5e1; margin-bottom: 8px; font-weight:700;">Travelers</label>
               <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px;">
-                <input type="number" id="tripAdults" class="itinerary-input" min="1" value="2" placeholder="Adults" />
-                <input type="number" id="tripKids" class="itinerary-input" min="0" value="0" placeholder="Kids" />
+                <div>
+                  <label style="display:block; color:#94a3b8; font-size:0.82rem; margin-bottom:4px;">👤 Adults</label>
+                  <input type="number" id="tripAdults" class="itinerary-input" min="1" value="2" placeholder="Adults" />
+                </div>
+                <div>
+                  <label style="display:block; color:#94a3b8; font-size:0.82rem; margin-bottom:4px;">🧒 Kids</label>
+                  <input type="number" id="tripKids" class="itinerary-input" min="0" value="0" placeholder="Kids" />
+                </div>
               </div>
             </div>
           </div>
@@ -3878,13 +4336,10 @@ function renderModalPredictionCharts(ev) {
               </div>
               <div id="mapInfoReviewText" style="font-size:0.84rem; color:#9ca3af; margin-bottom:16px;">(4.8) 5,610 reviews</div>
               <div id="mapInfoDescription" style="color:#d1d5db; font-size:0.95rem; line-height:1.75; margin-bottom:14px; overflow-wrap:anywhere; word-break:break-word;">Tap a marker or destination to see more details here.</div>
-              <div id="mapInfoStarRating" style="display:flex; align-items:center; gap:6px; font-size:1.1rem; margin-bottom:6px; color:#ffd166; cursor:pointer;"></div>
-              <div id="mapInfoRatingFeedback" style="font-size:0.85rem; color:#a0aec0; margin-bottom:18px; min-height:20px;">Tap a star to rate this destination.</div>
-              <div id="mapInfoFeedbackForm" style="display:grid; gap:10px; margin-bottom:18px;">
-                <textarea id="mapInfoFeedbackMessage" placeholder="Share your thoughts about this destination..." rows="3" style="width:100%; padding:12px; border-radius:16px; border:1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.05); color:#fff; resize:vertical;"></textarea>
-                <button type="button" onclick="submitDestinationFeedback()" style="padding:12px 18px; border:none; border-radius:16px; background: linear-gradient(135deg, #ff7a18, #ff6a88); color:#fff; font-weight:700; cursor:pointer;">Submit review</button>
-                <div id="mapInfoFeedbackStatus" style="font-size:0.85rem; color:#a0aec0; min-height:18px;"></div>
-              </div>
+              <div id="mapInfoStarRating" style="display:flex; align-items:center; gap:6px; font-size:1.1rem; margin-bottom:6px; color:#ffd166;"></div>
+              <div id="mapInfoReviewCount" style="font-size:0.85rem; color:#a0aec0; margin-bottom:12px; min-height:20px;"></div>
+              <button type="button" id="mapInfoRateBtn" onclick="openDestinationFeedbackFromItinerary()" style="width:100%; padding:12px 18px; border:none; border-radius:16px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color:#fff; font-weight:700; cursor:pointer; font-size:0.9rem; display:flex; align-items:center; justify-content:center; gap:6px; margin-bottom:18px;">⭐ Rate & Review</button>
+              <div id="mapInfoReviewsList" style="margin-bottom:18px;"></div>⭐ Rate & Review</button>
               <div style="display:grid; gap:14px;">
                 <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 16px;">
                   <div style="font-size:0.82rem; color:#94a3b8; margin-bottom:8px;">📍 Location</div>
@@ -4101,7 +4556,7 @@ function renderModalPredictionCharts(ev) {
         <p style="color: #a0aec0; font-size: 1rem; max-width: 850px; margin: 0;">Choose the best spots from the map and itinerary preferences below. The map updates live with recommended destinations for your selected travel style and budget.</p>
       </div>
       <div style="position: relative; max-width: 1200px; margin: 0 auto; padding: 0 20px;">
-        <div id="destinationCarousel" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; width: 100%; perspective: 1000px;">
+        <div id="destinationCarousel" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 24px; width: 100%;">
           <!-- Destination cards will be inserted here by JavaScript -->
         </div>
       </div>
@@ -4199,7 +4654,6 @@ let itineraryRouteTarget = 'destination';
 let itineraryOverviewMap = null;
 let itineraryOverviewMarkers = [];
 let itineraryOverviewLayer = null;
-let destinationUserRatings = JSON.parse(localStorage.getItem('destinationUserRatings') || '{}');
 let shopModalCurrentShopId = null;
 let shopModalCurrentRating = 0;
 let shopModalCurrentProductRating = 0;
@@ -4214,328 +4668,150 @@ let tripPreferences = {
   travelStyles: ['nature']
 };
 
-// Comprehensive accommodation data with detailed transport options
-const accommodationData = {
-  'Lignon Hill': [
-    {
-      name: 'Alicia Hotel',
-      location: 'F. Aquende Drive, Legazpi City',
-      distance: '~1.1 km',
-      transport: { tricycle: '5 mins, ₱20–30', jeepney: '₱15–20 (airport route)', taxi: '5–7 mins, ₱70–150', car: '5–7 mins, ₱70–150', van: '5–7 mins, ₱70–150', motorcycle: '5 mins, ₱50–70', bike: '10–12 mins', bus: 'Not practical' }
-    },
-    {
-      name: 'The Marison Hotel',
-      location: 'Yashano Mall Complex',
-      distance: '~2.5 km',
-      transport: { tricycle: '10 mins, ₱50–70', jeepney: '₱15–20 (city route)', taxi: '10 mins, ₱100–150', car: '10 mins, ₱100–150', van: '10 mins, ₱100–150', motorcycle: '8–10 mins, ₱70–100', bike: '15–20 mins', bus: 'Not practical' }
-    },
-    {
-      name: 'Proxy by The Oriental Albay',
-      location: 'Rizal Street',
-      distance: '~3 km',
-      transport: { tricycle: '12 mins, ₱70–100', jeepney: '₱15–20', taxi: '12 mins, ₱120–150', car: '12 mins, ₱120–150', van: '12 mins, ₱120–150', motorcycle: '10–12 mins, ₱80–100', bike: '20 mins', bus: 'Not practical' }
-    }
-  ],
-  'Embarcadero de Legazpi': [
-    {
-      name: 'Hotel St. Ellis',
-      location: 'Rizal Street',
-      distance: '~0.4 km',
-      transport: { walking: '5–7 mins', tricycle: '₱20', taxi: '5 mins, ₱70–100', car: '5 mins, ₱70–100', van: '5 mins, ₱70–100', bike: '5 mins', motorcycle: 'N/A', jeepney: 'N/A', bus: 'N/A' }
-    },
-    {
-      name: 'Hotel Sentro Legazpi',
-      location: 'Quezon Avenue',
-      distance: '~1 km',
-      transport: { tricycle: '5 mins, ₱30–40', jeepney: '₱15–20', taxi: '5–7 mins, ₱80–120', car: '5–7 mins, ₱80–120', van: '5–7 mins, ₱80–120', motorcycle: '5 mins, ₱50–70', bike: '7–10 mins', bus: 'Not practical' }
-    },
-    {
-      name: 'Proxy by The Oriental Albay',
-      location: 'Rizal Street',
-      distance: '~2 km',
-      transport: { tricycle: '10 mins, ₱70–100', jeepney: 'N/A', taxi: '10 mins, ₱100–150', car: '10 mins, ₱100–150', van: '10 mins, ₱100–150', motorcycle: '8–10 mins, ₱70–100', bike: '15 mins', bus: 'Not practical' }
-    }
-  ],
-  'Albay Park & Wildlife': [
-    {
-      name: 'Alicia Hotel',
-      location: 'F. Aquende Drive',
-      distance: '~0.65 km',
-      transport: { tricycle: '5 mins, ₱20–30', jeepney: 'N/A', taxi: '5 mins, ₱70–100', car: '5 mins, ₱70–100', van: '5 mins, ₱70–100', motorcycle: 'N/A', bike: '8–10 mins', bus: 'N/A' }
-    },
-    {
-      name: 'Lotus Blu Hotel',
-      location: 'Imperial Court Subdivision',
-      distance: '~1.2 km',
-      transport: { tricycle: '7 mins, ₱30–50', jeepney: 'N/A', taxi: '7 mins, ₱80–120', car: '7 mins, ₱80–120', van: '7 mins, ₱80–120', motorcycle: '5–7 mins, ₱50–70', bike: '10–12 mins', bus: 'N/A' }
-    },
-    {
-      name: 'Hotel Venezia',
-      location: 'Washington Drive',
-      distance: '~1.5 km',
-      transport: { tricycle: '10 mins, ₱50–70', jeepney: '₱15–20', taxi: '10 mins, ₱100–150', car: '10 mins, ₱100–150', van: '10 mins, ₱100–150', motorcycle: 'N/A', bike: '12–15 mins', bus: 'N/A' }
-    }
-  ],
-  'Highlands Park Legazpi City': [
-    {
-      name: 'The Marison Hotel',
-      location: 'Yashano Mall Complex',
-      distance: '~6.5 km',
-      transport: { tricycle: '15–20 mins, ₱100–150', jeepney: 'N/A', taxi: '15 mins, ₱150–200', car: '15 mins, ₱150–200', van: '15 mins, ₱150–200', motorcycle: '12–15 mins, ₱100–150', bike: '25–30 mins', bus: 'N/A' }
-    },
-    {
-      name: 'Emerald Boutique Hotel',
-      location: 'Rizal Street',
-      distance: '~7 km',
-      transport: { tricycle: '15–20 mins, ₱120–150', jeepney: 'N/A', taxi: '15 mins, ₱150–200', car: '15 mins, ₱150–200', van: '15 mins, ₱150–200', motorcycle: '12–15 mins, ₱100–150', bike: '30 mins', bus: 'N/A' }
-    },
-    {
-      name: 'Hotel Sentro Legazpi',
-      location: 'Quezon Avenue',
-      distance: '~7.2 km',
-      transport: { tricycle: '15–20 mins, ₱120–150', jeepney: 'N/A', taxi: '15 mins, ₱150–200', car: '15 mins, ₱150–200', van: '15 mins, ₱150–200', motorcycle: '12–15 mins, ₱100–150', bike: '30 mins', bus: 'N/A' }
-    }
-  ],
-  'Nuestra Senora de Salvacion': [
-    {
-      name: 'La Edley Resort & Hotel',
-      location: 'San Fernando, Santo Domingo',
-      distance: '~130 m',
-      transport: { walking: '2–3 mins', tricycle: '₱20 minimum', jeepney: 'N/A', taxi: 'N/A', car: 'N/A', van: 'N/A', motorcycle: 'N/A', bike: 'N/A', bus: 'N/A' }
-    },
-    {
-      name: 'Daraga Guesthouses',
-      location: 'Daraga town',
-      distance: '~2–3 km',
-      transport: { tricycle: '10 mins, ₱30–50', jeepney: '₱15–20', taxi: '10 mins, ₱100–150', car: '10 mins, ₱100–150', van: '10 mins, ₱100–150', motorcycle: '8–10 mins, ₱70–100', bike: '15 mins', bus: 'N/A' }
-    },
-    {
-      name: 'Hotel Venezia',
-      location: 'Washington Drive, Legazpi',
-      distance: '~6 km',
-      transport: { tricycle: '15 mins, ₱100–150', jeepney: 'N/A', taxi: '15 mins, ₱150–200', car: '15 mins, ₱150–200', van: '15 mins, ₱150–200', motorcycle: '12–15 mins, ₱100–150', bike: '20–25 mins', bus: 'N/A' }
-    }
-  ],
-  'SEVENTY-SIX Farm': [
-    {
-      name: 'Hotel St. Ellis',
-      location: 'Rizal Street',
-      distance: '~5.5 km',
-      transport: { tricycle: '12–15 mins, ₱100–150', jeepney: '₱15–20', taxi: '15 mins, ₱150–200', car: '15 mins, ₱150–200', van: '15 mins, ₱150–200', motorcycle: '12 mins, ₱100–150', bike: '20–25 mins', bus: 'N/A' }
-    },
-    {
-      name: 'The Marison Hotel',
-      location: 'Yashano Mall Complex',
-      distance: '~6 km',
-      transport: { tricycle: '15 mins, ₱100–150', jeepney: '₱15–20', taxi: '15 mins, ₱150–200', car: '15 mins, ₱150–200', van: '15 mins, ₱150–200', motorcycle: '12–15 mins, ₱100–150', bike: '25 mins', bus: 'N/A' }
-    },
-    {
-      name: 'Emerald Boutique Hotel',
-      location: 'Rizal Street',
-      distance: '~6.2 km',
-      transport: { tricycle: '15 mins, ₱120–150', jeepney: '₱15–20', taxi: '15 mins, ₱150–200', car: '15 mins, ₱150–200', van: '15 mins, ₱150–200', motorcycle: '12–15 mins, ₱100–150', bike: '25–30 mins', bus: 'N/A' }
-    }
-  ]
-};
+// Dynamic hotel data from database
+let allDbHotels = []; // Fetched from API
+let allDbShops = []; // Fetched from API
+let hotelMapMarkers = []; // Hotel markers on itinerary map
+let shopMapMarkers = []; // Shop markers on itinerary map
+const hotelReviewCountMap = {};
+const hotelRatingMap = {};
+const itineraryHotelCoords = {};
+const hotelPriceMap = {};
+const shopReviewCountMap = {};
+const shopRatingMap = {};
 
-// Destination data
-const destinationData = {
-  'Lignon Hill': {
-    image: 'assets/lig.jpg',
-    description: 'Lignon Hill is a scenic viewpoint perfect for sunset watching and photography. Located in Legazpi City, it offers panoramic views of Mayon Volcano and the surrounding landscape.',
-    highlights: [
-      '🌅 Best sunset views',
-      '📸 Photography paradise',
-      '🥾 Easy hiking trail',
-      '🍽️ Nearby restaurants'
-    ],
-    tags: ['nature', 'adventure', 'culture'],
-    budget: 'budget',
-    category: 'Nature',
-    rating: 4.7,
-    reviews: 4620,
-    address: 'San Roque, Legazpi City, Albay',
-    hours: '5:30 AM – 6:30 PM daily',
-    fee: '₱20 entrance fee',
-    crowdLevel: 'Moderately busy',
-    crowdPercent: 58
-  },
-  'Embarcadero de Legazpi': {
-    image: 'assets/emba.jpg',
-    description: 'The Embarcadero is a vibrant waterfront district packed with restaurants, shops, and galleries. It\'s perfect for evening strolls, dining, and taking in spectacular bay views.',
-    highlights: [
-      '🍽️ Local & international cuisine',
-      '🛍️ Shopping & boutiques',
-      '🎉 Entertainment venues',
-      '🌃 Beautiful night views'
-    ],
-    tags: ['food', 'beach', 'culture'],
-    budget: 'moderate',
-    category: 'Dining',
-    rating: 4.8,
-    reviews: 5830,
-    address: 'Vasco St, Legazpi City, Albay',
-    hours: '10:00 AM – 10:00 PM daily',
-    fee: 'Free entry',
-    crowdLevel: 'Busy in the evenings',
-    crowdPercent: 72
-  },
-  'Albay Park & Wildlife': {
-    image: 'assets/wild.jpg',
-    description: 'Albay Park & Wildlife offers nature trails, wildlife encounters, and conservation exhibits. This family-friendly destination is ideal for outdoor learning and relaxation.',
-    highlights: [
-      '🦁 Wildlife viewing',
-      '🐦 Bird watching',
-      '🌿 Nature trails',
-      '👨‍👧‍👦 Family-friendly'
-    ],
-    tags: ['nature', 'family', 'mixed'],
-    budget: 'budget',
-    category: 'Wildlife',
-    rating: 4.6,
-    reviews: 2040,
-    address: 'Montenegro St, Legazpi City, Albay',
-    hours: '8:00 AM – 5:00 PM daily',
-    fee: '₱40 entry fee',
-    crowdLevel: 'Calm and easygoing',
-    crowdPercent: 32
-  },
-  'Highlands Park Legazpi City': {
-    image: 'assets/high.jpg',
-    description: 'Highlands Park offers scenic views, lush gardens, and a cool climate. It\'s perfect for picnics, family outings, and relaxed walks in a peaceful elevated setting.',
-    highlights: [
-      '🏔️ Elevated scenic views',
-      '🧘 Peaceful atmosphere',
-      '🍴 Picnic areas',
-      '👨‍👩‍👧‍👦 Family activities'
-    ],
-    tags: ['adventure', 'nature', 'mixed'],
-    budget: 'moderate',
-    category: 'Park',
-    rating: 4.5,
-    reviews: 3210,
-    address: 'Bgy. Rawis, Legazpi City, Albay',
-    hours: '6:00 AM – 7:00 PM daily',
-    fee: '₱30 entrance fee',
-    crowdLevel: 'Pleasantly quiet',
-    crowdPercent: 38
-  },
-  'Nuestra Senora de Salvacion': {
-    image: 'assets/marry.jpg',
-    description: 'This historic church is a cultural landmark featuring classic architecture, stained glass, and a serene atmosphere. It\'s a peaceful stop for history lovers and spiritual visitors.',
-    highlights: [
-      '⛪ Historic architecture',
-      '🙏 Spiritual significance',
-      '📚 Cultural heritage',
-      '🎨 Artwork & design'
-    ],
-    tags: ['culture', 'history', 'mixed'],
-    budget: 'budget',
-    category: 'Landmark',
-    rating: 4.8,
-    reviews: 2890,
-    address: 'Daraga, Albay, Philippines',
-    hours: '6:00 AM – 6:00 PM daily',
-    fee: 'Free entry',
-    crowdLevel: 'Usually a little busy',
-    crowdPercent: 55
-  },
-  'SEVENTY-SIX Farm': {
-    image: 'assets/farm.jpg',
-    description: 'SEVENTY-SIX Farm is an agritourism destination where visitors can enjoy farm tours, fresh dining, and local produce experiences in a rustic setting.',
-    highlights: [
-      '🌾 Farm tours',
-      '🍽️ Farm-to-table dining',
-      '🥬 Fresh local produce',
-      '🚜 Agricultural education'
-    ],
-    tags: ['food', 'nature', 'family'],
-    budget: 'moderate',
-    category: 'Farm',
-    rating: 4.7,
-    reviews: 1980,
-    address: 'San Roque, Legazpi City, Albay',
-    hours: '8:00 AM – 6:00 PM daily',
-    fee: '₱50 entry fee',
-    crowdLevel: 'Lively and fresh',
-    crowdPercent: 63
-  }
-};
+// Destination data – populated dynamically from the events API via loadCommunityEvents()
+const destinationData = {};
 
-const itineraryDestinationCoords = {
-  'Lignon Hill': { lat: 13.16081640252388, lon: 123.7292096150791 },
-  'Embarcadero de Legazpi': { lat: 13.14345194112868, lon: 123.75833941401655 },
-  'Albay Park & Wildlife': { lat: 13.157535272415089, lon: 123.73059634136769 },
-  'Highlands Park Legazpi City': { lat: 13.125073701377465, lon: 123.72626957999765 },
-  'Nuestra Senora de Salvacion': { lat: 13.170457987403083, lon: 123.73923162079285 },
-  'SEVENTY-SIX Farm': { lat: 13.197240233396542, lon: 123.74841596650562 }
-};
+// Itinerary destination coordinates – populated dynamically from the events API
+const itineraryDestinationCoords = {};
 
-const itineraryHotelCoords = {
-  'Alicia Hotel': { lat: 13.152780718853775, lon: 123.73437812208905 },
-  'Lotus Blu Hotel': { lat: 13.146185824893816, lon: 123.74580013558219 },
-  'Hotel Venezia': { lat: 13.15188202481467, lon: 123.73643644907538 },
-  'The Marison Hotel': { lat: 13.155945057732085, lon: 123.74210796441778 },
-  'Hotel Sentro Legazpi': { lat: 13.146615967469781, lon: 123.75093855092464 },
-  'Hotel St. Ellis': { lat: 13.148336147120188, lon: 123.75451716256852 },
-  'Proxy by The Oriental Albay': { lat: 13.154395870049788, lon: 123.75177922023975 },
-  'Emerald Boutique Hotel': { lat: 13.13736197712241, lon: 123.7353493644178 }
-};
+// Haversine formula – returns distance in km between two lat/lon points
+function haversineDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const toRad = deg => deg * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
 
-const hotelPriceMap = {
-  'Alicia Hotel': 2200,
-  'The Marison Hotel': 2400,
-  'Proxy by The Oriental Albay': 2600,
-  'Hotel St. Ellis': 2100,
-  'Hotel Sentro Legazpi': 2300,
-  'Lotus Blu Hotel': 2000,
-  'Hotel Venezia': 2200,
-  'Emerald Boutique Hotel': 2500,
-  'La Edley Resort & Hotel': 1800,
-  'Daraga Guesthouses': 1400
-};
+// Estimate transport info based on distance
+function estimateTransport(distKm) {
+  if (distKm < 0.3) return { walking: `${Math.round(distKm * 15)} mins`, tricycle: '₱20 minimum' };
+  const tricTime = Math.max(3, Math.round(distKm * 4));
+  const tricCost = Math.max(20, Math.round(distKm * 30));
+  const taxiTime = Math.max(3, Math.round(distKm * 3));
+  const taxiCost = Math.max(70, Math.round(40 + distKm * 25));
+  return {
+    tricycle: `${tricTime} mins, ₱${tricCost}–${tricCost + 30}`,
+    taxi: `${taxiTime} mins, ₱${taxiCost}–${taxiCost + 50}`,
+    car: `${taxiTime} mins, ₱${taxiCost}–${taxiCost + 50}`,
+    motorcycle: `${Math.max(3, Math.round(distKm * 3))} mins, ₱${Math.max(50, Math.round(distKm * 25))}–${Math.max(70, Math.round(distKm * 25 + 30))}`,
+    bike: `${Math.round(distKm * 5)} mins`
+  };
+}
 
-const hotelRatingMap = {
-  'Alicia Hotel': 4.5,
-  'The Marison Hotel': 4.4,
-  'Proxy by The Oriental Albay': 4.6,
-  'Hotel St. Ellis': 4.2,
-  'Hotel Sentro Legazpi': 4.3,
-  'Lotus Blu Hotel': 4.1,
-  'Hotel Venezia': 4.4,
-  'Emerald Boutique Hotel': 4.5,
-  'La Edley Resort & Hotel': 4.2,
-  'Daraga Guesthouses': 4.0
-};
+// Fetch all hotels from database
+async function fetchAllDbHotels() {
+  try {
+    const paths = ['../backend/api.php?action=list_itinerary_hotels', 'backend/api.php?action=list_itinerary_hotels', '/capstone/backend/api.php?action=list_itinerary_hotels'];
+    for (const path of paths) {
+      try {
+        const res = await fetch(path);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.hotels) {
+            allDbHotels = data.hotels;
+            // Populate legacy maps for compatibility
+            allDbHotels.forEach(h => {
+              itineraryHotelCoords[h.name] = { lat: parseFloat(h.latitude), lon: parseFloat(h.longitude) };
+              hotelPriceMap[h.name] = parseInt(h.rate_per_night) || 2000;
+              hotelRatingMap[h.name] = parseFloat(h.rating) || 0;
+            });
+            console.log(`Loaded ${allDbHotels.length} hotels from database`);
+            return;
+          }
+        }
+      } catch(e) { /* try next */ }
+    }
+  } catch(e) { console.error('Failed to fetch hotels from DB:', e); }
+}
 
-function parseHotelDistance(distanceText) {
-  if (!distanceText) return 999;
-  const normalized = distanceText.replace(/\s+/g, '').replace('~', '');
-  if (normalized.includes('km')) {
-    return parseFloat(normalized.replace('km', '')) || 999;
-  }
-  if (normalized.includes('m')) {
-    return (parseFloat(normalized.replace('m', '')) || 0) / 1000;
-  }
-  return parseFloat(normalized) || 999;
+// Fetch all shops from database
+async function fetchAllDbShops() {
+  try {
+    const paths = ['../backend/api.php?action=list_shops', 'backend/api.php?action=list_shops', '/capstone/backend/api.php?action=list_shops'];
+    for (const path of paths) {
+      try {
+        const res = await fetch(path);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.shops) {
+            allDbShops = data.shops.filter(s => s.latitude && s.longitude);
+            console.log(`Loaded ${allDbShops.length} shops with coordinates from database`);
+            return;
+          }
+        }
+      } catch(e) { /* try next */ }
+    }
+  } catch(e) { console.error('Failed to fetch shops from DB:', e); }
+}
+
+// Get nearest hotels to a destination within radius (default 5km)
+function getNearestHotels(destName, radiusKm = 5) {
+  const destCoords = itineraryDestinationCoords[destName];
+  if (!destCoords || !allDbHotels.length) return [];
+  const destLat = parseFloat(destCoords.lat);
+  const destLon = parseFloat(destCoords.lon);
+  return allDbHotels
+    .map(h => {
+      const hLat = parseFloat(h.latitude);
+      const hLon = parseFloat(h.longitude);
+      const dist = haversineDistance(destLat, destLon, hLat, hLon);
+      return {
+        name: h.name,
+        location: h.address || 'Legazpi City',
+        distance: dist < 1 ? `~${Math.round(dist * 1000)} m` : `~${dist.toFixed(1)} km`,
+        distanceKm: dist,
+        price: parseInt(h.rate_per_night) || 2000,
+        rating: parseFloat(h.rating) || 4.0,
+        reviewCount: hotelReviewCountMap[h.name] || 0,
+        category: h.category || 'standard',
+        image: h.image || null,
+        features: h.features || '',
+        phone: h.phone || '',
+        transport: estimateTransport(dist),
+        dbId: h.id
+      };
+    })
+    .filter(h => h.distanceKm <= radiusKm)
+    .sort((a, b) => a.distanceKm - b.distanceKm);
+}
+
+async function fetchAllHotelRatings() {
+  const hotelNames = allDbHotels.map(h => h.name);
+  await Promise.all(hotelNames.map(async (name) => {
+    try {
+      const res = await fetch(`../backend/ratings_api.php?action=get_target_ratings&target_type=hotel&target_id=${encodeURIComponent(name)}`);
+      const data = await res.json();
+      if (data.success && data.statistics) {
+        const avg = parseFloat(data.statistics.average_rating);
+        if (avg > 0) hotelRatingMap[name] = avg;
+        hotelReviewCountMap[name] = parseInt(data.statistics.total_reviews) || 0;
+      }
+    } catch(e) { console.warn('Failed to fetch rating for', name, e); }
+  }));
 }
 
 function getHotelImage(hotelName) {
-  const images = {
-    'Alicia Hotel': 'https://via.placeholder.com/400x240?text=Alicia+Hotel',
-    'Lotus Blu Hotel': 'https://via.placeholder.com/400x240?text=Lotus+Blu+Hotel',
-    'Hotel Venezia': 'https://via.placeholder.com/400x240?text=Hotel+Venezia',
-    'The Marison Hotel': 'https://via.placeholder.com/400x240?text=The+Marison+Hotel',
-    'Hotel Sentro Legazpi': 'https://www.hotelsentrolegazpi.com/wp-content/uploads/2022/03/IMG_7977-min.jpg',
-    'Hotel St. Ellis': 'https://via.placeholder.com/400x240?text=Hotel+St.+Ellis',
-    'Proxy by The Oriental Albay': 'https://via.placeholder.com/400x240?text=Proxy+by+The+Oriental+Albay',
-    'Emerald Boutique Hotel': 'https://via.placeholder.com/400x240?text=Emerald+Boutique+Hotel'
-  };
-  return images[hotelName] || 'https://via.placeholder.com/400x240?text=Hotel';
+  const hotel = allDbHotels.find(h => h.name === hotelName);
+  if (hotel && hotel.image) return '../' + hotel.image;
+  return 'https://via.placeholder.com/400x240?text=' + encodeURIComponent(hotelName);
 }
 
 function getHotelPrice(hotelName) {
-  return hotelPriceMap[hotelName] || 2200;
+  return hotelPriceMap[hotelName] || 2000;
 }
 
 function setTravelStyle(event, style) {
@@ -4764,11 +5040,16 @@ function renderItineraryOverviewMarkers() {
   if (!itineraryOverviewMap) return;
   itineraryOverviewMarkers.forEach(marker => itineraryOverviewMap.removeLayer(marker));
   itineraryOverviewMarkers = [];
+  hotelMapMarkers.forEach(m => itineraryOverviewMap.removeLayer(m));
+  hotelMapMarkers = [];
+  shopMapMarkers.forEach(m => itineraryOverviewMap.removeLayer(m));
+  shopMapMarkers = [];
 
   const keys = Object.keys(destinationData);
   const filteredKeys = tripPreferences.startDate ? keys.filter(destinationMatchesPreferences) : keys;
   const markerKeys = filteredKeys.length ? filteredKeys : keys;
 
+  // Destination markers
   markerKeys.forEach(destName => {
     const coords = itineraryDestinationCoords[destName];
     if (!coords) return;
@@ -4780,7 +5061,7 @@ function renderItineraryOverviewMarkers() {
     else if (crowdPercent >= 50) markerColor = '#fbbf24';
 
     const marker = L.circleMarker([coords.lat, coords.lon], {
-      radius: 11,
+      radius: 15,
       color: markerColor,
       weight: 2,
       fillColor: markerColor,
@@ -4807,10 +5088,305 @@ function renderItineraryOverviewMarkers() {
     itineraryOverviewMarkers.push(marker);
   });
 
-  if (markerKeys.length > 0) {
-    const bounds = L.latLngBounds(markerKeys.map(name => [itineraryDestinationCoords[name].lat, itineraryDestinationCoords[name].lon]));
-    itineraryOverviewMap.fitBounds(bounds.pad(0.15));
+  // Hotel markers (blue)
+  allDbHotels.forEach(hotel => {
+    const lat = parseFloat(hotel.latitude);
+    const lng = parseFloat(hotel.longitude);
+    if (!lat || !lng) return;
+    const imgSrc = hotel.image ? ('../' + hotel.image) : 'https://via.placeholder.com/88x88?text=Hotel';
+    const rating = hotelRatingMap[hotel.name] || parseFloat(hotel.rating) || 0;
+    const price = parseInt(hotel.rate_per_night) || 0;
+
+    const hotelIcon = L.divIcon({
+      className: 'hotel-map-pin',
+      html: `<div style="width:44px; height:44px; background:linear-gradient(135deg,#3b82f6,#1d4ed8); border-radius:50%; border:3px solid #fff; box-shadow:0 2px 8px rgba(0,0,0,0.35); display:flex; align-items:center; justify-content:center; font-size:20px; cursor:pointer;">🏨</div>`,
+      iconSize: [44, 44],
+      iconAnchor: [22, 22]
+    });
+    const marker = L.marker([lat, lng], { icon: hotelIcon }).addTo(itineraryOverviewMap);
+    marker.bindTooltip(`
+      <div class="destination-tooltip-card">
+        <img src="${imgSrc}" alt="${hotel.name}" style="width:88px; height:88px; min-width:88px; object-fit:cover; border-radius:16px; border:1px solid rgba(255,255,255,0.14);" onerror="this.src='https://via.placeholder.com/88x88?text=Hotel';" />
+        <div style="min-width:0; display:flex; flex-direction:column; gap:6px;">
+          <div style="font-size:0.72rem; font-weight:700; color:#60a5fa; text-transform:uppercase; letter-spacing:0.1em;">🏨 Hotel</div>
+          <div style="font-size:0.95rem; font-weight:700; color:#fff; line-height:1.2;">${hotel.name}</div>
+          <div style="font-size:0.78rem; color:#cbd5e1;">${hotel.address || 'Legazpi City'}</div>
+          <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; font-size:0.78rem;">
+            <span style="color:#fbbf24;">★ ${rating.toFixed(1)}</span>
+            <span style="color:#34d399;">₱${price.toLocaleString()}/night</span>
+            <span style="color:#94a3b8;">${hotel.category || 'standard'}</span>
+          </div>
+        </div>
+      </div>
+    `, { direction: 'top', offset: [0, -24], className: 'destination-tooltip', opacity: 1 });
+    marker.on('click', () => showHotelInfoCard(hotel));
+    hotelMapMarkers.push(marker);
+  });
+
+  // Shop markers (orange)
+  allDbShops.forEach(shop => {
+    const lat = parseFloat(shop.latitude);
+    const lng = parseFloat(shop.longitude);
+    if (!lat || !lng) return;
+    const imgSrc = shop.image ? ('../' + shop.image) : 'https://via.placeholder.com/88x88?text=Shop';
+    const rating = shopRatingMap[shop.name || shop.NAME] || 0;
+
+    const shopIcon = L.divIcon({
+      className: 'shop-map-pin',
+      html: `<div style="width:44px; height:44px; background:linear-gradient(135deg,#f97316,#ea580c); border-radius:50%; border:3px solid #fff; box-shadow:0 2px 8px rgba(0,0,0,0.35); display:flex; align-items:center; justify-content:center; font-size:20px; cursor:pointer;">🛍️</div>`,
+      iconSize: [44, 44],
+      iconAnchor: [22, 22]
+    });
+    const marker = L.marker([lat, lng], { icon: shopIcon }).addTo(itineraryOverviewMap);
+    marker.bindTooltip(`
+      <div class="destination-tooltip-card">
+        <img src="${imgSrc}" alt="${shop.name || shop.NAME}" style="width:88px; height:88px; min-width:88px; object-fit:cover; border-radius:16px; border:1px solid rgba(255,255,255,0.14);" onerror="this.src='https://via.placeholder.com/88x88?text=Shop';" />
+        <div style="min-width:0; display:flex; flex-direction:column; gap:6px;">
+          <div style="font-size:0.72rem; font-weight:700; color:#fb923c; text-transform:uppercase; letter-spacing:0.1em;">🛍️ Shop</div>
+          <div style="font-size:0.95rem; font-weight:700; color:#fff; line-height:1.2;">${shop.name || shop.NAME}</div>
+          <div style="font-size:0.78rem; color:#cbd5e1;">${shop.address || 'Legazpi City'}</div>
+          <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; font-size:0.78rem;">
+            <span style="color:#fbbf24;">★ ${rating.toFixed ? rating.toFixed(1) : '0.0'}</span>
+            <span style="color:#94a3b8;">${shop.contact || ''}</span>
+          </div>
+        </div>
+      </div>
+    `, { direction: 'top', offset: [0, -24], className: 'destination-tooltip', opacity: 1 });
+    marker.on('click', () => showShopInfoCard(shop));
+    shopMapMarkers.push(marker);
+  });
+
+  // Fit bounds to all markers
+  const allCoords = [];
+  markerKeys.forEach(name => {
+    if (itineraryDestinationCoords[name]) allCoords.push([itineraryDestinationCoords[name].lat, itineraryDestinationCoords[name].lon]);
+  });
+  allDbHotels.forEach(h => { if (h.latitude && h.longitude) allCoords.push([parseFloat(h.latitude), parseFloat(h.longitude)]); });
+  allDbShops.forEach(s => { if (s.latitude && s.longitude) allCoords.push([parseFloat(s.latitude), parseFloat(s.longitude)]); });
+  if (allCoords.length > 0) {
+    itineraryOverviewMap.fitBounds(L.latLngBounds(allCoords).pad(0.15));
   }
+}
+
+// ===== Hotel Info Card (left panel) =====
+function showHotelInfoCard(hotel) {
+  const infoCard = document.getElementById('mapInfoCard');
+  if (!infoCard) return;
+  const imgSrc = hotel.image ? ('../' + hotel.image) : 'https://via.placeholder.com/400x240?text=Hotel';
+  const rating = hotelRatingMap[hotel.name] || parseFloat(hotel.rating) || 0;
+  const price = parseInt(hotel.rate_per_night) || 0;
+  const reviewCount = hotelReviewCountMap[hotel.name] || 0;
+  const features = hotel.features ? hotel.features.split(',').map(f => f.trim()).filter(Boolean) : [];
+
+  document.getElementById('mapInfoTag').textContent = '🏨 HOTEL';
+  document.getElementById('mapInfoTitle').textContent = hotel.name;
+  document.getElementById('mapInfoDescription').textContent = hotel.description || 'A hotel in Legazpi City.';
+  document.getElementById('mapInfoCategory').textContent = (hotel.category || 'standard').toUpperCase();
+  document.getElementById('mapInfoAddress').textContent = hotel.address || 'Legazpi City';
+  document.getElementById('mapInfoHours').textContent = '24/7';
+  document.getElementById('mapInfoFee').textContent = `₱${price.toLocaleString()}/night`;
+  document.getElementById('mapInfoCrowdLabel').textContent = hotel.category || 'Standard';
+  document.getElementById('mapInfoCrowdLabel').style.background = 'rgba(59,130,246,0.18)';
+  document.getElementById('mapInfoCrowdLabel').style.color = '#60a5fa';
+  document.getElementById('mapInfoCrowdPercent').textContent = '';
+  document.getElementById('mapInfoCrowdBar').style.width = '0%';
+  document.getElementById('mapInfoImage').style.backgroundImage = `url('${imgSrc}')`;
+  document.getElementById('mapInfoReviewText').textContent = `${rating.toFixed(1)} • ${reviewCount} review${reviewCount === 1 ? '' : 's'}`;
+
+  const starEl = document.getElementById('mapInfoStarRating');
+  if (starEl) {
+    starEl.innerHTML = Array(5).fill(0).map((_, i) => `<span style="color:${i < Math.round(rating) ? '#ffd166' : '#64748b'};">★</span>`).join('') +
+      ` <span style="font-size:0.9rem; color:#fff; margin-left:4px;">${rating.toFixed(1)}/5</span>`;
+  }
+  const countEl = document.getElementById('mapInfoReviewCount');
+  if (countEl) countEl.textContent = `${reviewCount} review${reviewCount === 1 ? '' : 's'}`;
+
+  // Features tags
+  const ratingEl = document.getElementById('mapInfoRating');
+  if (ratingEl) {
+    ratingEl.innerHTML = features.length
+      ? features.map(f => `<span style="display:inline-block; padding:3px 10px; margin:2px; border-radius:999px; background:rgba(59,130,246,0.12); color:#60a5fa; font-size:0.72rem; font-weight:600;">${f}</span>`).join('')
+      : '';
+  }
+
+  // Rate & Review button for hotel
+  const rateBtn = document.getElementById('mapInfoRateBtn');
+  if (rateBtn) {
+    rateBtn.onclick = () => {
+      if (window.contextualFeedback) {
+        window.contextualFeedback.initHotelFeedback(hotel.name, null, true);
+        const modal = document.getElementById('contextualFeedbackModal');
+        if (modal) {
+          const obs = new MutationObserver(() => {
+            if (modal.style.display === 'none') { obs.disconnect(); loadHotelInfoRating(hotel); }
+          });
+          obs.observe(modal, { attributes: true, attributeFilter: ['style'] });
+        }
+      }
+    };
+  }
+
+  infoCard.style.display = 'block';
+  infoCard.classList.remove('slide-in-left');
+  void infoCard.offsetWidth;
+  infoCard.classList.add('slide-in-left');
+  loadHotelInfoRating(hotel);
+}
+
+async function loadHotelInfoRating(hotel) {
+  try {
+    const res = await fetch(apiUrl(`ratings_api.php?action=get_target_ratings&target_type=hotel&target_id=${encodeURIComponent(hotel.name)}`));
+    const data = await res.json();
+    if (data.success && data.statistics) {
+      const avg = parseFloat(data.statistics.average_rating) || 0;
+      const total = data.statistics.total_reviews || 0;
+      hotelRatingMap[hotel.name] = avg > 0 ? avg : (parseFloat(hotel.rating) || 0);
+      hotelReviewCountMap[hotel.name] = total;
+      const starEl = document.getElementById('mapInfoStarRating');
+      if (starEl) {
+        starEl.innerHTML = Array(5).fill(0).map((_, i) => `<span style="color:${i < Math.round(avg) ? '#ffd166' : '#64748b'};">★</span>`).join('') +
+          ` <span style="font-size:0.9rem; color:#fff; margin-left:4px;">${avg.toFixed(1)}/5</span>`;
+      }
+      document.getElementById('mapInfoReviewText').textContent = `${avg.toFixed(1)} • ${total} review${total === 1 ? '' : 's'}`;
+      const countEl = document.getElementById('mapInfoReviewCount');
+      if (countEl) countEl.textContent = `${total} review${total === 1 ? '' : 's'}`;
+      // Reviews list
+      const reviewsListEl = document.getElementById('mapInfoReviewsList');
+      if (reviewsListEl && data.reviews && data.reviews.length > 0) {
+        const reviewsHtml = data.reviews.slice(0, 5).map(r => {
+          const stars = '★'.repeat(parseInt(r.rating) || 0) + '☆'.repeat(5 - (parseInt(r.rating) || 0));
+          const name = r.user_name || 'Anonymous';
+          const date = new Date(r.created_at).toLocaleDateString();
+          return `<div style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <span style="font-weight:600; color:#e2e8f0; font-size:0.82rem;">${name}</span>
+              <span style="color:#64748b; font-size:0.72rem;">${date}</span>
+            </div>
+            <div style="color:#fbbf24; font-size:0.78rem; margin-bottom:4px;">${stars}</div>
+            <div style="color:#cbd5e1; font-size:0.82rem; line-height:1.5;">${r.message || ''}</div>
+          </div>`;
+        }).join('');
+        reviewsListEl.innerHTML = `<div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:14px 16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="font-size:0.82rem; font-weight:700; color:#60a5fa; letter-spacing:0.06em;">💬 Hotel Reviews</div>
+            <div style="font-size:0.72rem; color:#94a3b8;">${total} total</div>
+          </div>${reviewsHtml}</div>`;
+      } else if (reviewsListEl) {
+        reviewsListEl.innerHTML = '<div style="color:#64748b; font-size:0.82rem; padding:10px 0;">No reviews yet.</div>';
+      }
+    }
+  } catch(e) { console.warn('Failed to load hotel rating:', e); }
+}
+
+// ===== Shop Info Card (left panel) =====
+function showShopInfoCard(shop) {
+  const infoCard = document.getElementById('mapInfoCard');
+  if (!infoCard) return;
+  const shopName = shop.name || shop.NAME;
+  const imgSrc = shop.image ? ('../' + shop.image) : 'https://via.placeholder.com/400x240?text=Shop';
+  const rating = shopRatingMap[shopName] || 0;
+  const reviewCount = shopReviewCountMap[shopName] || 0;
+
+  document.getElementById('mapInfoTag').textContent = '🛍️ SHOP';
+  document.getElementById('mapInfoTitle').textContent = shopName;
+  document.getElementById('mapInfoDescription').textContent = shop.description || 'A local shop in Legazpi City.';
+  document.getElementById('mapInfoCategory').textContent = 'SHOP';
+  document.getElementById('mapInfoAddress').textContent = shop.address || 'Legazpi City';
+  document.getElementById('mapInfoHours').textContent = 'Varies';
+  document.getElementById('mapInfoFee').textContent = 'N/A';
+  document.getElementById('mapInfoCrowdLabel').textContent = 'Shop';
+  document.getElementById('mapInfoCrowdLabel').style.background = 'rgba(249,115,22,0.18)';
+  document.getElementById('mapInfoCrowdLabel').style.color = '#fb923c';
+  document.getElementById('mapInfoCrowdPercent').textContent = '';
+  document.getElementById('mapInfoCrowdBar').style.width = '0%';
+  document.getElementById('mapInfoImage').style.backgroundImage = `url('${imgSrc}')`;
+  document.getElementById('mapInfoReviewText').textContent = `${rating.toFixed ? rating.toFixed(1) : '0.0'} • ${reviewCount} review${reviewCount === 1 ? '' : 's'}`;
+
+  const starEl = document.getElementById('mapInfoStarRating');
+  if (starEl) {
+    const r = typeof rating === 'number' ? rating : 0;
+    starEl.innerHTML = Array(5).fill(0).map((_, i) => `<span style="color:${i < Math.round(r) ? '#ffd166' : '#64748b'};">★</span>`).join('') +
+      ` <span style="font-size:0.9rem; color:#fff; margin-left:4px;">${r.toFixed(1)}/5</span>`;
+  }
+  const countEl = document.getElementById('mapInfoReviewCount');
+  if (countEl) countEl.textContent = `${reviewCount} review${reviewCount === 1 ? '' : 's'}`;
+
+  // Owner & Contact
+  const ratingEl = document.getElementById('mapInfoRating');
+  if (ratingEl) {
+    const parts = [];
+    if (shop.owner_name) parts.push(`<span style="color:#fb923c; font-size:0.82rem;">👤 ${shop.owner_name}</span>`);
+    if (shop.contact) parts.push(`<span style="color:#94a3b8; font-size:0.82rem;">📞 ${shop.contact}</span>`);
+    ratingEl.innerHTML = parts.join(' &nbsp;•&nbsp; ');
+  }
+
+  // Rate & Review button for shop
+  const rateBtn = document.getElementById('mapInfoRateBtn');
+  if (rateBtn) {
+    rateBtn.onclick = () => {
+      if (window.contextualFeedback) {
+        window.contextualFeedback.initShopFeedback(shop.id, shopName);
+        const modal = document.getElementById('contextualFeedbackModal');
+        if (modal) {
+          const obs = new MutationObserver(() => {
+            if (modal.style.display === 'none') { obs.disconnect(); loadShopInfoRating(shop); }
+          });
+          obs.observe(modal, { attributes: true, attributeFilter: ['style'] });
+        }
+      }
+    };
+  }
+
+  infoCard.style.display = 'block';
+  infoCard.classList.remove('slide-in-left');
+  void infoCard.offsetWidth;
+  infoCard.classList.add('slide-in-left');
+  loadShopInfoRating(shop);
+}
+
+async function loadShopInfoRating(shop) {
+  const shopName = shop.name || shop.NAME;
+  try {
+    const res = await fetch(apiUrl(`ratings_api.php?action=get_target_ratings&target_type=shop&target_id=${encodeURIComponent(shopName)}`));
+    const data = await res.json();
+    if (data.success && data.statistics) {
+      const avg = parseFloat(data.statistics.average_rating) || 0;
+      const total = data.statistics.total_reviews || 0;
+      shopRatingMap[shopName] = avg > 0 ? avg : 0;
+      shopReviewCountMap[shopName] = total;
+      const starEl = document.getElementById('mapInfoStarRating');
+      if (starEl) {
+        starEl.innerHTML = Array(5).fill(0).map((_, i) => `<span style="color:${i < Math.round(avg) ? '#ffd166' : '#64748b'};">★</span>`).join('') +
+          ` <span style="font-size:0.9rem; color:#fff; margin-left:4px;">${avg.toFixed(1)}/5</span>`;
+      }
+      document.getElementById('mapInfoReviewText').textContent = `${avg.toFixed(1)} • ${total} review${total === 1 ? '' : 's'}`;
+      const countEl = document.getElementById('mapInfoReviewCount');
+      if (countEl) countEl.textContent = `${total} review${total === 1 ? '' : 's'}`;
+      const reviewsListEl = document.getElementById('mapInfoReviewsList');
+      if (reviewsListEl && data.reviews && data.reviews.length > 0) {
+        const reviewsHtml = data.reviews.slice(0, 5).map(r => {
+          const stars = '★'.repeat(parseInt(r.rating) || 0) + '☆'.repeat(5 - (parseInt(r.rating) || 0));
+          const name = r.user_name || 'Anonymous';
+          const date = new Date(r.created_at).toLocaleDateString();
+          return `<div style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <span style="font-weight:600; color:#e2e8f0; font-size:0.82rem;">${name}</span>
+              <span style="color:#64748b; font-size:0.72rem;">${date}</span>
+            </div>
+            <div style="color:#fbbf24; font-size:0.78rem; margin-bottom:4px;">${stars}</div>
+            <div style="color:#cbd5e1; font-size:0.82rem; line-height:1.5;">${r.message || ''}</div>
+          </div>`;
+        }).join('');
+        reviewsListEl.innerHTML = `<div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:14px 16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="font-size:0.82rem; font-weight:700; color:#fb923c; letter-spacing:0.06em;">💬 Shop Reviews</div>
+            <div style="font-size:0.72rem; color:#94a3b8;">${total} total</div>
+          </div>${reviewsHtml}</div>`;
+      } else if (reviewsListEl) {
+        reviewsListEl.innerHTML = '<div style="color:#64748b; font-size:0.82rem; padding:10px 0;">No reviews yet.</div>';
+      }
+    }
+  } catch(e) { console.warn('Failed to load shop rating:', e); }
 }
 
 function getRouteItemImage(target, itemName) {
@@ -5147,10 +5723,11 @@ function renderRecommendedDestinations() {
     card.style.cssText = `
       background: ${isSelected ? 'rgba(56,189,248,0.08)' : '#0f172a'};
       border-radius: 16px;
+      display: flex;
+      flex-direction: column;
       overflow: hidden;
-      cursor: pointer;
       box-shadow: 0 12px 30px rgba(0,0,0,0.18);
-      transition: transform 0.3s ease, border-color 0.3s ease, opacity 0.3s ease;
+      transition: transform 0.3s ease, border-color 0.3s ease;
       transform: scale(1);
       border: 1px solid ${isSelected ? '#22c55e' : isRecommended ? '#ff7a18' : 'rgba(255,255,255,0.08)'};
     `;
@@ -5160,14 +5737,9 @@ function renderRecommendedDestinations() {
     card.onmouseout = function() {
       this.style.transform = 'scale(1)';
     };
-    card.onclick = (e) => {
-      if (!e.target.closest('.select-destination-button')) {
-        toggleDestinationSelection(destName);
-      }
-    };
 
-    const imgUrl = dest.image;
-    const summary = dest.description.length > 90 ? dest.description.substring(0, 90) + '...' : dest.description;
+    const imgUrl = dest.image || 'https://via.placeholder.com/400x240?text=Destination';
+    const summary = (dest.description || 'A destination in Legazpi City.').length > 90 ? (dest.description || '').substring(0, 90) + '...' : (dest.description || 'A destination in Legazpi City.');
     const price = getDestinationPrice(dest);
     const starCount = Math.round(dest.rating || 4);
     const stars = '★'.repeat(Math.min(5, starCount));
@@ -5177,40 +5749,63 @@ function renderRecommendedDestinations() {
     const isPacked = dest.crowdPercent >= 90 || /full capacity|fully packed/i.test(dest.crowdLevel || '');
     const crowdStatus = isPacked ? 'Fully packed' : isCrowded ? 'Very busy' : dest.crowdLevel || 'Light crowd';
     const crowdColor = isPacked ? '#fda4af' : isCrowded ? '#fde68a' : '#94a3b8';
+    // Build reviews HTML
+    const recentReviews = (dest.reviewList || []).slice(0, 3);
+    let reviewsHTML = '';
+    if (recentReviews.length > 0) {
+      reviewsHTML = `<div style="margin-bottom:12px; background:rgba(255,255,255,0.03); border-radius:12px; padding:10px 12px; overflow:hidden;">
+        <div style="color:#94a3b8; font-size:0.72rem; margin-bottom:6px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">Recent Reviews</div>
+        ${recentReviews.map(r => {
+          const rStars = '★'.repeat(parseInt(r.rating) || 0) + '☆'.repeat(5 - (parseInt(r.rating) || 0));
+          const rName = r.anonymous ? (typeof maskText === 'function' ? maskText(r.user_name || 'Anonymous') : 'An***') : (r.user_name || 'Guest');
+          const rDate = new Date(r.created_at).toLocaleDateString();
+          const rMsg = (r.message || '').length > 60 ? r.message.substring(0, 60) + '…' : (r.message || '');
+          return `<div style="padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.05); overflow:hidden;">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
+              <span style="color:#e2e8f0; font-size:0.75rem; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${rName} ${r.anonymous ? '🔒' : ''}</span>
+              <span style="color:#64748b; font-size:0.68rem; white-space:nowrap; flex-shrink:0;">${rDate}</span>
+            </div>
+            <div style="color:#fbbf24; font-size:0.72rem; margin:1px 0;">${rStars}</div>
+            ${rMsg ? `<div style="color:#94a3b8; font-size:0.75rem; line-height:1.3; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${rMsg}</div>` : ''}
+          </div>`;
+        }).join('')}
+      </div>`;
+    } else {
+      reviewsHTML = `<div style="margin-bottom:12px; background:rgba(255,255,255,0.03); border-radius:12px; padding:10px 12px; color:#64748b; font-size:0.75rem; font-style:italic;">No reviews yet — be the first to rate!</div>`;
+    }
+
     card.innerHTML = `
-      <div style="height: 220px; overflow: hidden; background: #111;"><img src="${imgUrl}" alt="${destName}" style="width:100%; height:100%; object-fit:cover; filter: brightness(0.85);" /></div>
-      <div style="padding: 18px; display:flex; flex-direction:column; height:100%;">
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px;">
-          <h4 style="color:#fff; font-size:1.15rem; margin:0;">${destName}</h4>
-          <span style="padding:4px 10px; border-radius:999px; font-size:0.75rem; font-weight:700; letter-spacing:0.4px; background:${isRecommended ? '#ff7a18' : 'rgba(255,255,255,0.08)'}; color:${isRecommended ? '#0b1220' : '#d1d5db'};">${isRecommended ? 'Recommended' : 'Optional'}</span>
+      <div style="height:180px; overflow:hidden; background:#111; flex-shrink:0;"><img src="${imgUrl}" alt="${destName}" style="width:100%; height:100%; object-fit:cover; filter:brightness(0.85);" onerror="this.onerror=null;this.src='https://via.placeholder.com/400x240?text=Destination';" /></div>
+      <div style="padding:16px; display:flex; flex-direction:column; flex:1; overflow:hidden;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px;">
+          <h4 style="color:#fff; font-size:1.05rem; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;">${destName}</h4>
+          <span style="padding:3px 8px; border-radius:999px; font-size:0.7rem; font-weight:700; letter-spacing:0.3px; flex-shrink:0; background:${isRecommended ? '#ff7a18' : 'rgba(255,255,255,0.08)'}; color:${isRecommended ? '#0b1220' : '#d1d5db'};">${isRecommended ? 'Recommended' : 'Optional'}</span>
         </div>
-        <p style="color:#cbd5e1; font-size:0.9rem; line-height:1.6; min-height:56px; margin:0 0 12px 0;">${summary}</p>
-        <div style="display:flex; gap: 10px; flex-wrap:wrap; margin-bottom: 14px;">
-          <span style="background: rgba(255,122,24,0.12); color: #ffb347; padding: 8px 10px; border-radius: 10px; font-size:0.8rem;">${tagLabel}</span>
-          <span style="background: rgba(255,255,255,0.05); color: #94a3b8; padding: 8px 10px; border-radius: 10px; font-size:0.8rem;">${dest.budget ? dest.budget.charAt(0).toUpperCase() + dest.budget.slice(1) : 'Flexible'}</span>
-          <span style="background: rgba(255,255,255,0.05); color: ${crowdColor}; padding: 8px 10px; border-radius: 10px; font-size:0.8rem;">${crowdStatus}</span>
+        <p style="color:#cbd5e1; font-size:0.82rem; line-height:1.5; margin:0 0 10px 0; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${summary}</p>
+        <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;">
+          <span style="background:rgba(255,122,24,0.12); color:#ffb347; padding:5px 8px; border-radius:8px; font-size:0.73rem;">${tagLabel}</span>
+          <span style="background:rgba(255,255,255,0.05); color:#94a3b8; padding:5px 8px; border-radius:8px; font-size:0.73rem;">${dest.budget ? dest.budget.charAt(0).toUpperCase() + dest.budget.slice(1) : 'Flexible'}</span>
+          <span style="background:rgba(255,255,255,0.05); color:${crowdColor}; padding:5px 8px; border-radius:8px; font-size:0.73rem;">${crowdStatus}</span>
         </div>
-        <div style="display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px;">
-          <div style="background: rgba(255,255,255,0.05); color: #fff; padding: 12px 14px; border-radius: 16px; font-size: 0.85rem;">
-            <div style="color:#94a3b8; font-size:0.75rem; margin-bottom:6px;">Price</div>
+        <div style="display:flex; gap:8px; margin-bottom:10px;">
+          <div style="flex:1; background:rgba(255,255,255,0.05); color:#fff; padding:10px 12px; border-radius:12px; font-size:0.82rem; overflow:hidden;">
+            <div style="color:#94a3b8; font-size:0.7rem; margin-bottom:4px;">Price</div>
             <div style="font-weight:700;">₱${price}/pax</div>
           </div>
-          <div style="background: rgba(255,255,255,0.05); color: #fff; padding: 12px 14px; border-radius: 16px; font-size: 0.85rem;">
-            <div style="color:#94a3b8; font-size:0.75rem; margin-bottom:6px;">Rating</div>
-            <div style="display:flex; align-items:center; gap:6px;">
-              <div class="destination-stars" data-destination="${destName.replace(/'/g, "\\'")}" style="cursor:pointer; font-size:1.1rem;">
-                ${'☆☆☆☆☆'.split('').map((star, idx) => `<span class="star" data-value="${idx+1}" style="color:#64748b;">${star}</span>`).join('')}
-              </div>
-              <span style="font-weight:700;">${dest.rating?.toFixed(1) || '4.0'}</span>
+          <div style="flex:1; background:rgba(255,255,255,0.05); color:#fff; padding:10px 12px; border-radius:12px; font-size:0.82rem; overflow:hidden;">
+            <div style="color:#94a3b8; font-size:0.7rem; margin-bottom:4px;">Rating</div>
+            <div style="display:flex; align-items:center; gap:4px;">
+              <span style="color:#fbbf24; font-size:0.9rem;">${'★'.repeat(Math.round(dest.rating || 0))}${'☆'.repeat(5 - Math.round(dest.rating || 0))}</span>
+              <span style="font-weight:700; font-size:0.85rem;">${(dest.rating || 0).toFixed(1)}</span>
             </div>
-            <div style="color:#94a3b8; font-size:0.75rem; margin-top:4px;">${reviewCount}</div>
+            <div style="color:#94a3b8; font-size:0.7rem; margin-top:2px;">${reviewCount}</div>
           </div>
         </div>
-        <div style="margin-bottom:14px;">
-          <textarea class="destination-feedback" data-destination="${destName.replace(/'/g, "\\'")}" placeholder="Share your experience..." rows="2" style="width:100%; padding:8px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.2); background:rgba(255,255,255,0.08); color:#fff; resize:vertical; font-size:0.85rem; display:none;"></textarea>
-          <button type="button" class="submit-destination-feedback" data-destination="${destName.replace(/'/g, "\\'")}" style="width:100%; margin-top:8px; padding:8px 0; border:none; border-radius:12px; background: linear-gradient(135deg, #ff7a18, #ff6a88); color:#fff; font-weight:600; cursor:pointer; font-size:0.85rem; display:none;">Submit Review</button>
+        ${reviewsHTML}
+        <div style="display:flex; gap:8px; margin-top:auto; flex-shrink:0;">
+          <button type="button" class="select-destination-button" style="flex:1; padding:12px 0; border:none; border-radius:12px; background: ${isSelected ? '#22c55e' : 'linear-gradient(135deg, #ff7a18, #ff6a88)'}; color:#fff; font-weight:700; cursor:pointer; font-size:0.9rem;">${isSelected ? '✓ Selected' : 'Select'}</button>
+          <button type="button" onclick="event.stopPropagation(); openDestinationFeedback('${destName.replace(/'/g, "\\'")}')" style="padding:12px 16px; border:none; border-radius:12px; background:linear-gradient(135deg, #6366f1, #8b5cf6); color:#fff; font-weight:700; cursor:pointer; font-size:0.85rem; white-space:nowrap;">⭐ Rate</button>
         </div>
-        <button type="button" class="select-destination-button" style="width:100%; margin-top:auto; padding:12px 0; border:none; border-radius:12px; background: ${isSelected ? '#22c55e' : 'linear-gradient(135deg, #ff7a18, #ff6a88)'}; color:#fff; font-weight:700; cursor:pointer;">${isSelected ? 'Selected' : 'Select destination'}</button>
       </div>
     `;
 
@@ -5225,77 +5820,6 @@ function renderRecommendedDestinations() {
 
     carousel.appendChild(card);
   });
-
-  // Initialize destination star rating interactions
-  setTimeout(() => {
-    document.querySelectorAll('.destination-stars').forEach(starContainer => {
-      const destinationName = starContainer.dataset.destination;
-      const stars = starContainer.querySelectorAll('.star');
-      const feedbackTextarea = document.querySelector(`.destination-feedback[data-destination="${destinationName.replace(/"/g, '\\"')}"]`);
-      const submitButton = document.querySelector(`.submit-destination-feedback[data-destination="${destinationName.replace(/"/g, '\\"')}"]`);
-
-      stars.forEach(star => {
-        star.addEventListener('click', function() {
-          const rating = parseInt(this.dataset.value);
-          // Update visual
-          stars.forEach((s, idx) => {
-            s.style.color = idx < rating ? '#ffd166' : '#64748b';
-          });
-          // Show feedback form
-          if (feedbackTextarea) feedbackTextarea.style.display = 'block';
-          if (submitButton) {
-            submitButton.style.display = 'block';
-            submitButton.dataset.rating = rating;
-          }
-        });
-
-        star.addEventListener('mouseover', function() {
-          const rating = parseInt(this.dataset.value);
-          stars.forEach((s, idx) => {
-            s.style.color = idx < rating ? '#ffd166' : '#64748b';
-          });
-        });
-      });
-
-      starContainer.addEventListener('mouseout', function() {
-        const currentRating = submitButton ? parseInt(submitButton.dataset.rating) || 0 : 0;
-        stars.forEach((s, idx) => {
-          s.style.color = idx < currentRating ? '#ffd166' : '#64748b';
-        });
-      });
-
-      if (submitButton) {
-        submitButton.addEventListener('click', async function() {
-          const rating = parseInt(this.dataset.rating);
-          const message = feedbackTextarea ? feedbackTextarea.value.trim() : '';
-
-          if (!rating) {
-            alert('Please select a rating first');
-            return;
-          }
-
-          this.textContent = 'Submitting...';
-          this.disabled = true;
-
-          const success = await submitDestinationFeedback(destinationName, rating, message);
-
-          if (success) {
-            alert('Thank you for your review!');
-            feedbackTextarea.style.display = 'none';
-            feedbackTextarea.value = '';
-            this.style.display = 'none';
-            // Refresh the carousel to show updated ratings
-            renderRecommendedDestinations();
-          } else {
-            alert('Failed to submit review. Please try again.');
-          }
-
-          this.textContent = 'Submit Review';
-          this.disabled = false;
-        });
-      }
-    });
-  }, 100);
 }
 
 function initDestinationCarousel() {
@@ -5381,7 +5905,7 @@ function showMapInfoCard(destName) {
   document.getElementById('mapInfoTitle').textContent = destName;
   document.getElementById('mapInfoDescription').textContent = data.description;
   document.getElementById('mapInfoCategory').textContent = data.category || 'Destination';
-  document.getElementById('mapInfoReviewText').textContent = `${data.rating || 0} • ${data.reviews || 0} reviews`;
+  document.getElementById('mapInfoReviewText').textContent = 'Loading reviews...';
   document.getElementById('mapInfoAddress').textContent = data.address || 'Legazpi, Albay';
   document.getElementById('mapInfoHours').textContent = data.hours || 'Hours not available';
   document.getElementById('mapInfoFee').textContent = data.fee || 'Free entry';
@@ -5417,19 +5941,17 @@ function showMapInfoCard(destName) {
 
   const ratingEl = document.getElementById('mapInfoRating');
   if (ratingEl) {
-    const rating = data.rating || 0;
-    const fullStars = Math.floor(rating);
-    const halfStar = rating % 1 >= 0.5;
-    let starsHtml = '★'.repeat(fullStars);
-    if (halfStar) starsHtml += '½';
-    ratingEl.textContent = starsHtml;
+    ratingEl.textContent = ''; // will be filled by loadDestinationLiveRating
   }
 
   const starRatingEl = document.getElementById('mapInfoStarRating');
   if (starRatingEl) {
-    const rating = Number(data.rating) || 0;
-    starRatingEl.textContent = `${getStarRatingMarkup(rating)} ${rating.toFixed(1)}/5`;
+    starRatingEl.innerHTML = '<span style="color:#94a3b8; font-size:0.85rem;">Loading rating...</span>';
   }
+
+  // Restore rate button to destination feedback handler
+  const rateBtn = document.getElementById('mapInfoRateBtn');
+  if (rateBtn) rateBtn.onclick = openDestinationFeedbackFromItinerary;
 
   const infoCard = document.getElementById('mapInfoCard');
   if (infoCard) {
@@ -5438,57 +5960,105 @@ function showMapInfoCard(destName) {
     void infoCard.offsetWidth;
     infoCard.classList.add('slide-in-left');
   }
-  renderDestinationRatingInput(destName);
+  loadDestinationLiveRating(destName);
   updateMapStatus(`Showing details for ${destName}`);
 }
 
-function saveDestinationUserRatings() {
-  localStorage.setItem('destinationUserRatings', JSON.stringify(destinationUserRatings));
-}
-
-function setDestinationUserRating(destName, rating) {
-  destinationUserRatings[destName] = rating;
-  saveDestinationUserRatings();
-  renderDestinationRatingInput(destName);
-  const feedback = document.getElementById('mapInfoRatingFeedback');
-  if (feedback) {
-    feedback.textContent = `Thanks! You rated ${destName} ${rating}/5 stars.`;
+// Open feedback modal from itinerary info card
+function openDestinationFeedbackFromItinerary() {
+  if (currentDestination && window.contextualFeedback) {
+    window.contextualFeedback.initDestinationFeedback(currentDestination, null, true);
+    // Refresh reviews in the info card when modal closes
+    const modal = document.getElementById('contextualFeedbackModal');
+    if (modal) {
+      const observer = new MutationObserver(() => {
+        if (modal.style.display === 'none') {
+          observer.disconnect();
+          loadDestinationLiveRating(currentDestination);
+        }
+      });
+      observer.observe(modal, { attributes: true, attributeFilter: ['style'] });
+    }
   }
 }
 
-function renderDestinationRatingInput(destName) {
-  const container = document.getElementById('mapInfoStarRating');
-  const feedback = document.getElementById('mapInfoRatingFeedback');
-  if (!container) return;
+// Fetch live rating from DB and display in itinerary info card
+async function loadDestinationLiveRating(destName) {
+  const starEl = document.getElementById('mapInfoStarRating');
+  const countEl = document.getElementById('mapInfoReviewCount');
+  const ratingEl = document.getElementById('mapInfoRating');
+  const reviewTextEl = document.getElementById('mapInfoReviewText');
+  if (!starEl) return;
 
-  const currentRating = Number(destinationUserRatings[destName] || 0);
-  container.innerHTML = '';
-
-  for (let i = 1; i <= 5; i += 1) {
-    const star = document.createElement('span');
-    star.textContent = '★';
-    star.dataset.value = i;
-    star.style.color = i <= currentRating ? '#ffd166' : 'rgba(255,255,255,0.35)';
-    star.style.fontSize = '1.2rem';
-    star.style.cursor = 'pointer';
-    star.style.transition = 'color 0.15s ease';
-    star.onmouseenter = () => {
-      for (let j = 0; j < container.children.length; j += 1) {
-        container.children[j].style.color = j < i ? '#ffe066' : 'rgba(255,255,255,0.35)';
+  try {
+    const res = await fetch(apiUrl(`ratings_api.php?action=get_target_ratings&target_type=destination&target_id=${encodeURIComponent(destName)}`));
+    const data = await res.json();
+    if (data.success && data.statistics) {
+      const avg = parseFloat(data.statistics.average_rating) || 0;
+      const total = data.statistics.total_reviews || 0;
+      starEl.innerHTML = getStarRatingMarkup(avg) + ` <span style="font-size:0.9rem; color:#fff; margin-left:4px;">${avg.toFixed(1)}/5</span>`;
+      if (countEl) countEl.textContent = `${total} review${total === 1 ? '' : 's'}`;
+      if (ratingEl) {
+        const fullStars = Math.floor(avg);
+        const halfStar = avg % 1 >= 0.5;
+        ratingEl.textContent = '★'.repeat(fullStars) + (halfStar ? '½' : '');
       }
-    };
-    star.onmouseleave = () => {
-      for (let j = 0; j < container.children.length; j += 1) {
-        const val = Number(container.children[j].dataset.value);
-        container.children[j].style.color = val <= currentRating ? '#ffd166' : 'rgba(255,255,255,0.35)';
+      if (reviewTextEl) reviewTextEl.textContent = `${avg.toFixed(1)} • ${total} review${total === 1 ? '' : 's'}`;
+      // Update destinationData so tooltips reflect it
+      if (destinationData[destName]) {
+        destinationData[destName].rating = avg;
+        destinationData[destName].reviews = total;
       }
-    };
-    star.onclick = () => setDestinationUserRating(destName, i);
-    container.appendChild(star);
-  }
-
-  if (feedback) {
-    feedback.textContent = currentRating ? `You rated this destination ${currentRating}/5 stars.` : 'Tap a star to rate this destination.';
+      // Display recent reviews in the info card
+      const reviewsListEl = document.getElementById('mapInfoReviewsList');
+      if (reviewsListEl && data.reviews && data.reviews.length > 0) {
+        const reviewsHtml = data.reviews.slice(0, 5).map(r => {
+          const stars = '★'.repeat(parseInt(r.rating) || 0) + '☆'.repeat(5 - (parseInt(r.rating) || 0));
+          const name = r.anonymous ? (typeof maskText === 'function' ? maskText(r.user_name || 'Anonymous') : 'An***') : (r.user_name || 'Anonymous');
+          const date = new Date(r.created_at).toLocaleDateString();
+          const imgTag = r.image_url ? `<img src="${r.image_url}" style="width:100%; max-height:120px; object-fit:cover; border-radius:8px; margin-top:6px; cursor:pointer;" onclick="window.open(this.src,'_blank')" onerror="this.style.display='none'">` : '';
+          return `<div style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <span style="font-weight:600; color:#e2e8f0; font-size:0.82rem;">${name} ${r.anonymous ? '🔒' : ''}</span>
+              <span style="color:#64748b; font-size:0.72rem;">${date}</span>
+            </div>
+            <div style="color:#fbbf24; font-size:0.78rem; margin-bottom:4px;">${stars}</div>
+            <div style="color:#cbd5e1; font-size:0.82rem; line-height:1.5;">${r.message}</div>
+            ${imgTag}
+          </div>`;
+        }).join('');
+        reviewsListEl.innerHTML = `
+          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:14px 16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <div style="font-size:0.82rem; font-weight:700; color:#fbbf24; letter-spacing:0.06em;">💬 Recent Reviews</div>
+              <div style="font-size:0.72rem; color:#94a3b8;">${total} total</div>
+            </div>
+            ${reviewsHtml}
+          </div>`;
+      } else if (reviewsListEl) {
+        reviewsListEl.innerHTML = `
+          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:20px 16px; text-align:center;">
+            <div style="font-size:1.3rem; margin-bottom:6px;">💬</div>
+            <div style="color:#94a3b8; font-size:0.82rem;">No reviews yet. Be the first to share your experience!</div>
+          </div>`;
+      }
+    } else {
+      starEl.innerHTML = getStarRatingMarkup(0) + ' <span style="font-size:0.9rem; color:#94a3b8; margin-left:4px;">No ratings yet</span>';
+      if (countEl) countEl.textContent = '0 reviews';
+      if (ratingEl) ratingEl.textContent = '';
+      if (reviewTextEl) reviewTextEl.textContent = 'No reviews yet';
+      const rlEl = document.getElementById('mapInfoReviewsList');
+      if (rlEl) rlEl.innerHTML = `
+        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:20px 16px; text-align:center;">
+          <div style="font-size:1.3rem; margin-bottom:6px;">💬</div>
+          <div style="color:#94a3b8; font-size:0.82rem;">No reviews yet. Be the first to share your experience!</div>
+        </div>`;
+    }
+  } catch(e) {
+    console.error('Error loading destination rating:', e);
+    starEl.innerHTML = getStarRatingMarkup(0);
+    if (countEl) countEl.textContent = '';
+    if (reviewTextEl) reviewTextEl.textContent = '';
   }
 }
 
@@ -5497,6 +6067,23 @@ function getStarRatingMarkup(rating) {
   const halfStar = rating % 1 >= 0.5;
   const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
   return '★'.repeat(fullStars) + (halfStar ? '½' : '') + '☆'.repeat(emptyStars);
+}
+
+// Fetch live ratings for all destinations from DB and update destinationData
+async function fetchAllDestinationRatings(evList) {
+  const names = (evList || []).map(e => e.title).filter(Boolean);
+  const uniqueNames = [...new Set(names)];
+  await Promise.all(uniqueNames.map(async (name) => {
+    try {
+      const res = await fetch(apiUrl(`ratings_api.php?action=get_target_ratings&target_type=destination&target_id=${encodeURIComponent(name)}`));
+      const data = await res.json();
+      if (data.success && data.statistics && destinationData[name]) {
+        destinationData[name].rating = parseFloat(data.statistics.average_rating) || 0;
+        destinationData[name].reviews = data.statistics.total_reviews || 0;
+        destinationData[name].reviewList = data.reviews || [];
+      }
+    } catch(e) { /* skip */ }
+  }));
 }
 
 async function submitTargetFeedback(targetType, targetId, targetName, rating, message, feedbackType = 'review') {
@@ -5523,27 +6110,43 @@ async function submitTargetFeedback(targetType, targetId, targetName, rating, me
   }
 }
 
-async function submitDestinationFeedback() {
-  const messageEl = document.getElementById('mapInfoFeedbackMessage');
-  const statusEl = document.getElementById('mapInfoFeedbackStatus');
-  const currentRating = Number(destinationUserRatings[currentDestination] || 0);
-  if (!currentDestination) return;
-  if (!currentRating) {
-    alert('Please select a star rating first.');
-    return;
+// Open destination feedback modal (from destination map card)
+function openDestinationFeedback(destName) {
+  if (window.contextualFeedback) {
+    window.contextualFeedback.initDestinationFeedback(destName, null, true);
+    // Watch for modal close and refresh destination carousel ratings
+    const modal = document.getElementById('contextualFeedbackModal');
+    if (modal) {
+      const observer = new MutationObserver(() => {
+        if (modal.style.display === 'none') {
+          observer.disconnect();
+          renderRecommendedDestinations();
+        }
+      });
+      observer.observe(modal, { attributes: true, attributeFilter: ['style'] });
+    }
+  } else {
+    alert('Feedback system is loading, please try again.');
   }
-  const message = messageEl ? messageEl.value.trim() : '';
-  if (!message) {
-    alert('Please write a short review message.');
-    return;
-  }
-  if (statusEl) statusEl.textContent = 'Submitting review...';
-  const result = await submitTargetFeedback('destination', currentDestination, currentDestination, currentRating, message);
-  if (result.success) {
-    if (statusEl) statusEl.textContent = 'Thank you! Your destination review was submitted.';
-    if (messageEl) messageEl.value = '';
-  } else if (statusEl) {
-    statusEl.textContent = 'Failed to submit review: ' + (result.error || 'unknown error');
+}
+
+// Open hotel feedback modal (from hotel info)
+function openHotelFeedback(hotelName) {
+  if (window.contextualFeedback) {
+    window.contextualFeedback.initHotelFeedback(hotelName, null, true);
+    // Watch for modal close and refresh hotel ratings
+    const modal = document.getElementById('contextualFeedbackModal');
+    if (modal) {
+      const observer = new MutationObserver(() => {
+        if (modal.style.display === 'none') {
+          observer.disconnect();
+          fetchAllHotelRatings().then(() => renderHotelRecommendations());
+        }
+      });
+      observer.observe(modal, { attributes: true, attributeFilter: ['style'] });
+    }
+  } else {
+    alert('Feedback system is loading, please try again.');
   }
 }
 
@@ -5848,15 +6451,15 @@ async function populateItineraryResults() {
   document.getElementById('summaryTitle').textContent = tripTitle;
   document.getElementById('summaryDest').textContent = currentDestination || `${selectedDestinationNames.length} destinations`;
   document.getElementById('summaryDays').textContent = selectedDays + ' Day(s)';
-  document.getElementById('summaryTravelers').textContent = `${tripPreferences.adults + tripPreferences.kids} traveler${tripPreferences.adults + tripPreferences.kids === 1 ? '' : 's'}`;
+  document.getElementById('summaryTravelers').textContent = `${tripPreferences.adults} Adult${tripPreferences.adults !== 1 ? 's' : ''}, ${tripPreferences.kids} Kid${tripPreferences.kids !== 1 ? 's' : ''}`;
   document.getElementById('summaryBudget').textContent = budgetRange;
   document.getElementById('summaryEstCost').textContent = `₱${calculateSelectedCost().toLocaleString('en-PH')}`;
   document.getElementById('summaryStyle').textContent = travelStyle;
   document.getElementById('summaryAccommodation').textContent = 'Select from options below';
   document.getElementById('formSelectedBudgetAmount').textContent = tripPreferences.budget.toLocaleString('en-PH');
   
-  // Get accommodations for current destination
-  const hotels = accommodationData[currentDestination] || [];
+  // Get accommodations for current destination from DB
+  const hotels = getNearestHotels(currentDestination, 5);
   
   // Keep the hotel list hidden; selection is handled through the hotel recommendations panel.
   const hotelLocationEl = document.getElementById('hotelLocation');
@@ -5981,7 +6584,7 @@ function renderConfirmationSummary() {
   const endDate = document.getElementById('tripEndDate')?.value;
   const dates = formatDateRange(startDate, endDate);
   const duration = selectedDays ? `${selectedDays} Day${selectedDays > 1 ? 's' : ''}` : '1 Day';
-  const travelers = `${tripPreferences.adults + tripPreferences.kids} traveler${tripPreferences.adults + tripPreferences.kids === 1 ? '' : 's'}`;
+  const travelers = `${tripPreferences.adults} Adult${tripPreferences.adults !== 1 ? 's' : ''}, ${tripPreferences.kids} Kid${tripPreferences.kids !== 1 ? 's' : ''}`;
   const budget = `₱${calculateTotalBudget().toLocaleString('en-PH')}`;
   const stops = selectedDestinationNames.length ? selectedDestinationNames.join(', ') : 'No stops selected';
   const estCost = `₱${calculateSelectedCost().toLocaleString('en-PH')}`;
@@ -6113,7 +6716,10 @@ function renderHotelRecommendations() {
   if (!hotelRecommendations) return;
 
   const destination = currentDestination || selectedDestinationNames[0] || 'Current route';
+  const nights = Math.max(1, getSelectedDurationDays() - 1) || 1;
+  const totalTravelers = (tripPreferences.adults || 1) + (tripPreferences.kids || 0);
   const hotelAllocation = Math.round(tripPreferences.budget * 0.35);
+  const perNight = Math.round(hotelAllocation / nights);
   const sortOptions = [
     { id: 'best', label: 'Best Match' },
     { id: 'rating', label: 'Highest Rating' },
@@ -6125,16 +6731,24 @@ function renderHotelRecommendations() {
     <button type="button" onclick="setHotelSortMode('${option.id}')" style="padding:8px 14px; border:1px solid ${hotelSortMode === option.id ? '#34d399' : 'rgba(255,255,255,0.12)'}; border-radius:999px; background:${hotelSortMode === option.id ? 'rgba(52,211,153,0.12)' : 'transparent'}; color:#fff; cursor:pointer; font-size:0.85rem;">${option.label}</button>
   `).join('');
 
-  const hotels = (accommodationData[destination] || []).map(h => {
-    const price = getHotelPrice(h.name);
-    const rating = hotelRatingMap[h.name] || 4.2;
-    const distanceKm = parseHotelDistance(h.distance);
-    return { ...h, price, rating, distanceKm };
-  });
+  // Get hotels dynamically from DB within 5km radius
+  let hotels = getNearestHotels(destination, 5);
+  // If no hotels within 5km, expand to 10km and show notice
+  let expandedRadius = false;
+  if (!hotels.length) {
+    hotels = getNearestHotels(destination, 10);
+    expandedRadius = true;
+  }
+  // Update review counts from fetched ratings
+  hotels = hotels.map(h => ({
+    ...h,
+    rating: hotelRatingMap[h.name] || h.rating,
+    reviewCount: hotelReviewCountMap[h.name] || 0
+  }));
 
-  const inBudget = hotels.filter(h => h.price <= hotelAllocation);
+  const inBudget = hotels.filter(h => h.price <= perNight);
   const pool = inBudget.length ? inBudget : hotels;
-  const sortedHotels = pool.sort((a, b) => {
+  const sortedHotels = [...pool].sort((a, b) => {
     if (hotelSortMode === 'rating') {
       return b.rating - a.rating || a.distanceKm - b.distanceKm || a.price - b.price;
     }
@@ -6144,10 +6758,18 @@ function renderHotelRecommendations() {
     if (hotelSortMode === 'distance') {
       return a.distanceKm - b.distanceKm || b.rating - a.rating || a.price - b.price;
     }
+    // Best match: budget fit + rating + proximity
     return b.rating - a.rating || a.distanceKm - b.distanceKm || a.price - b.price;
   }).slice(0, 3);
 
-  const fallbackNotice = inBudget.length ? '' : '<div style="color:#fbbf24; font-size:0.95rem; margin-bottom:12px;">No hotels found within budget for this destination. Showing the nearest top-rated options instead.</div>';
+  let fallbackNotice = '';
+  if (!hotels.length) {
+    fallbackNotice = '<div style="color:#fbbf24; font-size:0.95rem; margin-bottom:12px;">No hotels found near this destination. Add hotels in the admin dashboard.</div>';
+  } else if (expandedRadius) {
+    fallbackNotice = '<div style="color:#fbbf24; font-size:0.95rem; margin-bottom:12px;">No hotels within 5 km. Showing nearest hotels within 10 km.</div>';
+  } else if (!inBudget.length) {
+    fallbackNotice = '<div style="color:#fbbf24; font-size:0.95rem; margin-bottom:12px;">No hotels found within budget for this destination. Showing the nearest top-rated options instead.</div>';
+  }
   const hotelCards = sortedHotels.map(h => {
     const isSelected = selectedAccommodation && selectedAccommodation.name === h.name;
     return `
@@ -6163,21 +6785,21 @@ function renderHotelRecommendations() {
             <div style="text-align:right; color:#fff; font-weight:700; font-size:1rem;">₱${h.price}</div>
           </div>
           <div style="display:flex; align-items:center; gap:8px; font-size:0.9rem; color:#facc15;">
-            <div class="hotel-stars" data-hotel="${h.name.replace(/'/g, "\\'")}" style="cursor:pointer;">
-              ${'☆☆☆☆☆'.split('').map((star, idx) => `<span class="star" data-value="${idx+1}" style="color:#64748b;">${star}</span>`).join('')}
+            <div style="display:flex; gap:2px;">
+              ${Array(5).fill(0).map((_, idx) => `<span style="color:${idx < Math.round(h.rating) ? '#ffd166' : '#64748b'};">★</span>`).join('')}
             </div>
-            <span style="color:#cbd5e1;">${h.rating.toFixed(1)}/5</span>
+            <span style="color:#cbd5e1; font-weight:700;">${h.rating.toFixed(1)}/5</span>
+            <span style="color:#94a3b8; font-size:0.8rem;">(${h.reviewCount || 0} reviews)</span>
           </div>
           <div style="display:grid; gap:6px; font-size:0.85rem; color:#cbd5e1;">
             ${Object.entries(h.transport || {}).slice(0, 3).map(([type, info]) => `<div>• ${type.charAt(0).toUpperCase() + type.slice(1)}: ${info}</div>`).join('')}
           </div>
           <div style="margin-top:8px;">
-            <textarea class="hotel-feedback" data-hotel="${h.name.replace(/'/g, "\\'")}" placeholder="Share your hotel experience..." rows="2" style="width:100%; padding:8px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.2); background:rgba(255,255,255,0.08); color:#fff; resize:vertical; font-size:0.85rem; display:none;"></textarea>
-            <button type="button" class="submit-hotel-feedback" data-hotel="${h.name.replace(/'/g, "\\'")}" style="width:100%; margin-top:8px; padding:8px 0; border:none; border-radius:12px; background: linear-gradient(135deg, #ff7a18, #ff6a88); color:#fff; font-weight:600; cursor:pointer; font-size:0.85rem; display:none;">Submit Review</button>
             <div class="hotel-reviews-display" data-hotel="${h.name.replace(/'/g, "\\'")}" style="margin-top:8px; padding:8px 12px; border-radius:12px; background:rgba(255,255,255,0.05); max-height:150px; overflow-y:auto; font-size:0.8rem; color:#cbd5e1; display:none;"></div>
           </div>
           <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:10px;">
             <button type="button" onclick="toggleAccommodationSelection('${escapeHtmlAttribute(h.name)}','${escapeHtmlAttribute(h.location)}')" style="padding:12px 16px; border:none; border-radius:14px; background: ${isSelected ? '#0f766e' : 'linear-gradient(135deg, #667eea, #764fa2)'}; color:#fff; font-weight:700; cursor:pointer; width:max-content;">${isSelected ? 'Selected — click again to undo' : 'Select hotel'}</button>
+            <button type="button" onclick="openHotelFeedback('${h.name.replace(/'/g, "\\'")}')" style="padding:12px 16px; border:none; border-radius:14px; background:linear-gradient(135deg, #6366f1, #8b5cf6); color:#fff; font-weight:700; cursor:pointer; width:max-content; display:flex; align-items:center; gap:6px;">⭐ Rate & Review</button>
           </div>
         </div>
       </div>
@@ -6201,85 +6823,15 @@ function renderHotelRecommendations() {
           <div style="color:#ff7a18; font-size:0.85rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;">${destination}</div>
           <div style="color:#94a3b8; font-size:0.95rem; margin-top:4px;">Top hotel choices for this destination</div>
         </div>
-        <div style="color:#94a3b8; font-size:0.95rem;">Budget cap: ₱${hotelAllocation.toLocaleString('en-PH')}</div>
+        <div style="color:#94a3b8; font-size:0.95rem;">Budget: ₱${hotelAllocation.toLocaleString('en-PH')} (₱${perNight.toLocaleString('en-PH')}/night × ${nights})</div>
       </div>
       ${fallbackNotice}
       ${hotelCards}
     </div>
   `;
 
-  // Initialize hotel star rating interactions
+  // Load and display submitted reviews for each hotel
   setTimeout(() => {
-    document.querySelectorAll('.hotel-stars').forEach(starContainer => {
-      const hotelName = starContainer.dataset.hotel;
-      const stars = starContainer.querySelectorAll('.star');
-      const feedbackTextarea = document.querySelector(`.hotel-feedback[data-hotel="${hotelName.replace(/"/g, '\\"')}"]`);
-      const submitButton = document.querySelector(`.submit-hotel-feedback[data-hotel="${hotelName.replace(/"/g, '\\"')}"]`);
-
-      stars.forEach(star => {
-        star.addEventListener('click', function() {
-          const rating = parseInt(this.dataset.value);
-          // Update visual
-          stars.forEach((s, idx) => {
-            s.style.color = idx < rating ? '#ffd166' : '#64748b';
-          });
-          // Show feedback form
-          if (feedbackTextarea) feedbackTextarea.style.display = 'block';
-          if (submitButton) {
-            submitButton.style.display = 'block';
-            submitButton.dataset.rating = rating;
-          }
-        });
-
-        star.addEventListener('mouseover', function() {
-          const rating = parseInt(this.dataset.value);
-          stars.forEach((s, idx) => {
-            s.style.color = idx < rating ? '#ffd166' : '#64748b';
-          });
-        });
-      });
-
-      starContainer.addEventListener('mouseout', function() {
-        const currentRating = submitButton ? parseInt(submitButton.dataset.rating) || 0 : 0;
-        stars.forEach((s, idx) => {
-          s.style.color = idx < currentRating ? '#ffd166' : '#64748b';
-        });
-      });
-
-      if (submitButton) {
-        submitButton.addEventListener('click', async function() {
-          const rating = parseInt(this.dataset.rating);
-          const message = feedbackTextarea ? feedbackTextarea.value.trim() : '';
-
-          if (!rating) {
-            alert('Please select a rating first');
-            return;
-          }
-
-          this.textContent = 'Submitting...';
-          this.disabled = true;
-
-          const success = await submitHotelFeedback(hotelName, rating, message);
-
-          if (success) {
-            alert('Thank you for your hotel review!');
-            feedbackTextarea.style.display = 'none';
-            feedbackTextarea.value = '';
-            this.style.display = 'none';
-            // Refresh hotel recommendations to show updated ratings
-            renderHotelRecommendations();
-            loadHotelReviews(hotelName);
-          } else {
-            alert('Failed to submit review. Please try again.');
-          }
-
-          this.textContent = 'Submit Review';
-          this.disabled = false;
-        });
-      }
-    });
-
-    // Load and display submitted reviews for each hotel
     sortedHotels.forEach(h => {
       loadHotelReviews(h.name);
     });
@@ -6350,11 +6902,13 @@ function renderItineraryResults() {
   if (summaryDays) summaryDays.textContent = `${days} Day${days > 1 ? 's' : ''}`;
   if (summaryBudget) summaryBudget.textContent = `₱${totalBudget.toLocaleString('en-PH')}`;
   if (summaryDest) summaryDest.textContent = selectedDestinationNames.length ? `${selectedDestinationNames.length} destinations` : 'Multiple destinations';
-  if (summaryTravelers) summaryTravelers.textContent = `${tripPreferences.adults + tripPreferences.kids} traveler${tripPreferences.adults + tripPreferences.kids === 1 ? '' : 's'}`;
+  if (summaryTravelers) summaryTravelers.textContent = `${tripPreferences.adults} Adult${tripPreferences.adults !== 1 ? 's' : ''}, ${tripPreferences.kids} Kid${tripPreferences.kids !== 1 ? 's' : ''}`;
   if (summaryEstCost) summaryEstCost.textContent = `₱${selectedCost.toLocaleString('en-PH')}`;
   if (summaryStyle) summaryStyle.textContent = travelStyle;
   if (budgetText) budgetText.textContent = `${usedPercent}% used • ₱${selectedCost.toLocaleString('en-PH')} spent`;
-  if (hotelAllocText) hotelAllocText.textContent = `Hotel allocation ₱${hotelAllocation.toLocaleString('en-PH')}`;
+  const nightsForAlloc = Math.max(1, days - 1) || 1;
+  const perNightAlloc = Math.round(hotelAllocation / nightsForAlloc);
+  if (hotelAllocText) hotelAllocText.textContent = `₱${hotelAllocation.toLocaleString('en-PH')} total (₱${perNightAlloc.toLocaleString('en-PH')}/night × ${nightsForAlloc} night${nightsForAlloc > 1 ? 's' : ''})`;
   if (progressBar) progressBar.style.width = `${usedPercent}%`;
 
   const assignments = distributeDestinationsAcrossDays(selectedDestinationNames, days);
@@ -6525,11 +7079,11 @@ function selectAccommodation(hotelName, hotelLocation) {
   }
 
   // Refresh hotel display to show selection state
-  const hotels = accommodationData[currentDestination] || [];
+  const hotels = getNearestHotels(currentDestination, 5);
   const hotelsListElement = document.getElementById('hotelsList');
   if (hotelsListElement) {
     hotelsListElement.innerHTML = hotels.map((h, idx) => {
-      const transportHTML = Object.entries(h.transport)
+      const transportHTML = Object.entries(h.transport || {})
         .filter(([key, val]) => val && val !== 'N/A')
         .map(([type, info]) => `
           <div style="display: grid; grid-template-columns: 100px 1fr; gap: 12px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
@@ -7165,6 +7719,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <script src="feedback-system.js" defer></script>
 <script src="shop-ratings.js" defer></script>
 <script src="contextual-feedback.js" defer></script>
+
 <script>
 // ========== ENHANCED ITINERARY BUILDER FUNCTIONALITY ==========
 let currentItinerary = null;
@@ -8024,15 +8579,15 @@ function showMap() {
       bounds.extend(legazpiCenter);
     }
 
-    const destinationCoords = {
+    const destinationCoords = Object.assign({
       'Mayon Volcano': { lat: 13.1550, lon: 123.7050 },
       'Lignon Hill': { lat: 13.1520, lon: 123.7390 },
       'Embarcadero de Legazpi': { lat: 13.1340, lon: 123.7520 },
       'Albay Park & Wildlife': { lat: 13.1500, lon: 123.7400 },
       'Highlands Park Legazpi City': { lat: 13.1610, lon: 123.7240 },
-      'Nuestra Senora de Salvacion Legaspi': { lat: 13.1300, lon: 123.7200 },
+      'Nuestra Senora de Salvacion Legaspi': { lat: 13.17065, lon: 123.73909 },
       'SEVENTY-SIX Farm': { lat: 13.1200, lon: 123.7400 }
-    };
+    }, itineraryDestinationCoords);
 
     currentItinerary.destinations.forEach(dest => {
       const coords = destinationCoords[dest];

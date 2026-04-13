@@ -359,8 +359,8 @@
     <ul class="sidebar-nav">
       <li><a href="#" class="nav-link active" onclick="showTab('overview')">📈 Dashboard</a></li>
       <li><a href="#" class="nav-link" onclick="showTab('events')">🗺️ Destination Management</a></li>
-      <li><a href="#" class="nav-link" onclick="showTab('destinations')">🗺️ Destinations</a></li>
       <li><a href="#" class="nav-link" onclick="showTab('shops')">🛍️ Shops</a></li>
+      <li><a href="#" class="nav-link" onclick="showTab('hotels')">🏨 Hotels</a></li>
       <li><a href="#" class="nav-link" onclick="showTab('experiences')">🎭 Experiences</a></li>
       <li><a href="#" class="nav-link" onclick="showTab('festivals')">🎉 Festivals</a></li>
       <li><a href="#" class="nav-link" onclick="showTab('alerts')">🚨 Alerts</a></li>
@@ -558,9 +558,16 @@
                   </div>
                 </div>
                 
+                <!-- Manual Coordinate Input -->
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+                  <div><label style="font-size:0.82rem; color:#667eea; font-weight:600;">Latitude</label><input id="eventLatManual" type="number" step="any" placeholder="e.g. 13.17065" style="width:100%; padding:8px; border:2px solid #e0e0ff; border-radius:8px; background:#fff; font-size:0.88rem;" onchange="applyManualEventCoords()" /></div>
+                  <div><label style="font-size:0.82rem; color:#667eea; font-weight:600;">Longitude</label><input id="eventLngManual" type="number" step="any" placeholder="e.g. 123.73909" style="width:100%; padding:8px; border:2px solid #e0e0ff; border-radius:8px; background:#fff; font-size:0.88rem;" onchange="applyManualEventCoords()" /></div>
+                </div>
+                <p style="font-size:0.78rem; color:#888; margin:0 0 14px 0;">💡 Type exact coordinates above, or use the map below to pick</p>
+
                 <!-- Control Buttons -->
                 <div style="display: flex; gap: 12px; margin-bottom: 18px; flex-wrap: wrap;">
-                  <button type="button" id="pickStartEventBtn" class="btn" style="flex: 1; min-width: 150px; padding: 13px; font-weight: 700; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 10px; cursor: pointer; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(102,126,234,0.3)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">📍 Pick Location</button>
+                  <button type="button" id="pickStartEventBtn" class="btn" style="flex: 1; min-width: 150px; padding: 13px; font-weight: 700; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 10px; cursor: pointer; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(102,126,234,0.3)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">📍 Pick on Map</button>
                   <button type="button" id="clearEventPickBtn" class="btn" style="flex: 1; min-width: 150px; padding: 13px; font-weight: 700; background: #e0e0e0; color: #333; border: none; border-radius: 10px; cursor: pointer; transition: all 0.3s;" onmouseover="this.style.backgroundColor='#d0d0d0';" onmouseout="this.style.backgroundColor='#e0e0e0';">🗑️ Clear</button>
                 </div>
                 
@@ -578,9 +585,62 @@
               <!-- STEP 3: Advanced Options (Collapsible) -->
               <details style="border: 2px solid #ecf0f1; border-radius: 10px; padding: 0; cursor: pointer;">
                 <summary style="padding: 16px 20px; background: linear-gradient(135deg, rgba(102,126,234,0.08), rgba(118,75,162,0.05)); font-weight: 700; color: #667eea; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">
-                  ⚙️ Step 3: Advanced Options (Optional)
+                  ⚙️ Step 3: Analytics & Advanced Options
                 </summary>
                 <div style="padding: 24px; border-top: 2px solid #ecf0f1;">
+
+                  <!-- Analytics Fields -->
+                  <h5 style="color: #667eea; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 16px 0;">📊 Analytics Configuration</h5>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+                    <div class="form-group">
+                      <label>Peak Visit Time</label>
+                      <select name="peak_visit_time" style="width:100%; padding:11px 14px; border:2px solid #ecf0f1; border-radius:8px; background:white; cursor:pointer; font-size: 14px;">
+                        <option value="auto">🤖 Auto-detect</option>
+                        <option value="morning">🌅 Morning (6AM–12PM)</option>
+                        <option value="afternoon" selected>☀️ Afternoon (12PM–5PM)</option>
+                        <option value="evening">🌇 Evening (5PM–10PM)</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label>Weekend Visitor Multiplier</label>
+                      <input name="weekend_multiplier" type="number" step="0.1" min="1.0" max="4.0" value="1.5" placeholder="1.5" style="width:100%;" />
+                      <small style="color:#888; font-size:11px;">How many times busier on weekends (1.0 = same as weekdays)</small>
+                    </div>
+                    <div class="form-group">
+                      <label>Season Type</label>
+                      <select name="season_type" style="width:100%; padding:11px 14px; border:2px solid #ecf0f1; border-radius:8px; background:white; cursor:pointer; font-size: 14px;">
+                        <option value="regular" selected>📅 Regular Season</option>
+                        <option value="peak">🔥 Peak Season (Holy Week, Holidays)</option>
+                        <option value="low">🌧️ Low Season (Typhoon Months)</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+                    <div class="form-group">
+                      <label>Est. Waste Per Visitor (kg)</label>
+                      <input name="waste_per_visitor" type="number" step="0.01" min="0.01" max="2.0" value="" placeholder="Auto (based on type)" style="width:100%;" />
+                      <small style="color:#888; font-size:11px;">Leave blank for auto-estimate from destination type</small>
+                    </div>
+                    <div class="form-group">
+                      <label>Has Food Vendors/Stalls?</label>
+                      <select name="has_food_stalls" style="width:100%; padding:11px 14px; border:2px solid #ecf0f1; border-radius:8px; background:white; cursor:pointer; font-size: 14px;">
+                        <option value="no">❌ No</option>
+                        <option value="few">🍢 Few (1–5 stalls)</option>
+                        <option value="many" selected>🍜 Many (6+ stalls)</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label>Parking Capacity</label>
+                      <select name="parking_capacity" style="width:100%; padding:11px 14px; border:2px solid #ecf0f1; border-radius:8px; background:white; cursor:pointer; font-size: 14px;">
+                        <option value="none">🚫 No Parking</option>
+                        <option value="small">🅿️ Small (1–20 slots)</option>
+                        <option value="medium" selected>🅿️ Medium (21–50 slots)</option>
+                        <option value="large">🅿️ Large (51+ slots)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <hr style="border: 1px solid #ecf0f1; margin: 20px 0;" />
                   
                   <!-- Event Image (can also be MP4 video) -->
                   <div class="form-group">
@@ -642,6 +702,21 @@
             <div class="form-group" style="grid-column:1/-1;"><label>Shop Image</label><input type="file" id="shopImage" accept="image/*" onchange="handleShopImageChange(this)" /><p id="shopImageStatus" style="margin:8px 0 0 0; font-size:0.85rem; color:#666;">No file selected</p></div>
             <div id="shopImagePreviewContainer" style="display:none; grid-column:1/-1; margin:10px 0;"><img id="shopImagePreview" style="max-width:200px; border-radius:8px;" /></div>
             <input name="image" type="hidden" />
+            <input name="latitude" type="hidden" id="shopLatInput" />
+            <input name="longitude" type="hidden" id="shopLngInput" />
+
+            <!-- Map Location Picker for Shop -->
+            <div style="grid-column:1/-1;">
+              <label style="font-weight:700; font-size:0.95rem; color:#1a237e; display:block; margin-bottom:8px;">📍 Pin Shop Location on Map</label>
+              <p style="font-size:0.82rem; color:#888; margin-bottom:8px;">Click on the map to place the shop pin. Drag to adjust.</p>
+              <div id="shopLocationPickerMap" style="height:280px; border-radius:12px; border:2px solid #ecf0f1; overflow:hidden;"></div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:10px;">
+                <div><label style="font-size:0.82rem; color:#999;">Latitude</label><input id="shopLatDisplay" type="number" step="any" placeholder="e.g. 13.1448" style="width:100%; padding:8px; border:1px solid #ecf0f1; border-radius:6px; background:#fff; font-size:0.88rem;" onchange="applyManualShopCoords()" /></div>
+                <div><label style="font-size:0.82rem; color:#999;">Longitude</label><input id="shopLngDisplay" type="number" step="any" placeholder="e.g. 123.7435" style="width:100%; padding:8px; border:1px solid #ecf0f1; border-radius:6px; background:#fff; font-size:0.88rem;" onchange="applyManualShopCoords()" /></div>
+              </div>
+              <p style="font-size:0.78rem; color:#888; margin-top:6px;">💡 Type exact coordinates or click the map to pick</p>
+            </div>
+
             <div style="grid-column:1/-1; display:flex; gap:12px;">
               <button type="submit" class="btn btn-primary" id="submitShopBtn">➕ Add Shop</button>
               <button type="button" class="btn" onclick="resetShopForm()" style="background:#e0e0e0; color:#333; display:none;" id="cancelShopEditBtn">Cancel Edit</button>
@@ -704,68 +779,64 @@
         </div>
 
       </div>
-      <div id="destinations" class="tab-content" style="display:none;">
-        <div class="section-title">🗺️ Destinations Management</div>
-        
-        <!-- Destination Ratings Overview -->
-        <div style="background: linear-gradient(135deg, white 0%, #fafbfc 100%); padding: 24px; border-radius: 12px; margin-bottom: 28px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); border: 1px solid rgba(100,200,100,0.15);">
-          <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #1a237e;">⭐ Destination Ratings Overview</h3>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
-            <div style="background: white; padding: 16px; border-radius: 8px; text-align: center; border-left: 4px solid #27ae60;">
-              <small style="color: #666; font-weight: 600;">Avg Destination Rating</small>
-              <div style="font-size: 28px; font-weight: 900; color: #27ae60; margin: 8px 0;" id="dashDestAvgRating">0.0</div>
-              <small style="color: #999;">from guest reviews</small>
+
+      <!-- HOTELS TAB -->
+      <div id="hotels" class="tab-content" style="display:none;">
+        <div class="section-title">🏨 Hotel Management</div>
+
+        <!-- Hotel Form -->
+        <div class="form-card">
+          <h3>Add / Edit Hotel</h3>
+          <form id="hotelForm" style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+            <div class="form-group"><label>Hotel Name *</label><input name="name" required /></div>
+            <div class="form-group"><label>Category</label>
+              <select name="category" style="width:100%; padding:11px 14px; border:2px solid #ecf0f1; border-radius:8px;">
+                <option value="budget">Budget</option>
+                <option value="standard" selected>Standard</option>
+                <option value="boutique">Boutique</option>
+                <option value="luxury">Luxury</option>
+                <option value="resort">Resort</option>
+              </select>
             </div>
-            <div style="background: white; padding: 16px; border-radius: 8px; text-align: center; border-left: 4px solid #e74c3c;">
-              <small style="color: #666; font-weight: 600;">Total Destination Reviews</small>
-              <div style="font-size: 28px; font-weight: 900; color: #e74c3c; margin: 8px 0;" id="dashDestReviewCount">0</div>
-              <small style="color: #999;">feedback received</small>
+            <div class="form-group"><label>Rate per Night (₱) *</label><input name="ratePerNight" type="number" min="0" required /></div>
+            <div class="form-group"><label>Phone</label><input name="phone" placeholder="+63 912 345 6789" /></div>
+            <div class="form-group" style="grid-column:1/-1;"><label>Address</label><input name="address" placeholder="Street, Legazpi City" /></div>
+            <div class="form-group" style="grid-column:1/-1;"><label>Description</label><textarea name="description" rows="3"></textarea></div>
+            <div class="form-group" style="grid-column:1/-1;"><label>Features (comma-separated)</label><input name="features" placeholder="WiFi, Pool, Restaurant, Parking, AC" /></div>
+            <div class="form-group" style="grid-column:1/-1;"><label>Hotel Image</label>
+              <input type="file" id="hotelImage" accept="image/*" onchange="handleHotelImageChange(this)" />
+              <p id="hotelImageStatus" style="margin:8px 0 0 0; font-size:0.85rem; color:#666;">No file selected</p>
             </div>
-          </div>
-          <button onclick="loadDestinationRatingsOverview()" style="margin-top: 16px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9rem;">🔄 Refresh Ratings</button>
-        </div>
-        
-        <!-- Category Management -->
-        <div class="expandable-section" style="margin-bottom: 25px;">
-          <div class="expandable-header">
-            <span>📂 Destination Categories</span>
-            <span style="font-size: 1.2em;">▼</span>
-          </div>
-          <div class="expandable-content open">
-            <div style="display:grid; grid-template-columns:1fr auto; gap:12px; margin-bottom:18px;">
-              <div class="form-group" style="margin:0;"><input type="text" id="destinationCategoryName" placeholder="Enter category name" style="width:100%; padding:11px 14px; border:2px solid #ecf0f1; border-radius:8px; font-size:13.5px;" /></div>
-              <button type="button" class="btn btn-primary" onclick="addDestinationCategory()" style="align-self:flex-end;">➕ Add</button>
+            <div id="hotelImagePreviewContainer" style="display:none; grid-column:1/-1; margin:10px 0;">
+              <img id="hotelImagePreview" style="max-width:200px; border-radius:8px;" />
             </div>
-            <div id="destinationCategoriesList" style="display:flex; flex-wrap:wrap; gap:10px;"></div>
-          </div>
-        </div>
-        
-        <!-- Add New Destination -->
-        <div class="chart-container" style="background: white; border-left: 4px solid #667eea; padding: 28px;">
-          <h3 style="margin: 0 0 20px 0; color: #2c3e50; display: flex; align-items: center; gap: 8px;"><span>➕</span> Add New Destination</h3>
-          <form id="destinationForm" style="display:grid; grid-template-columns: 1fr 1fr; gap:18px;">
-            <div class="form-group"><label>Name *</label><input name="name" required style="width:100%; padding:11px 14px; border:2px solid #ecf0f1; border-radius:8px;" placeholder="Destination name" /></div>
-            <div class="form-group"><label>Category</label><select name="category_id" id="destinationCategorySelect" style="width:100%; padding:11px 14px; border:2px solid #ecf0f1; border-radius:8px; font-size:13.5px; background:white; cursor:pointer;"><option value="">Select a category...</option></select></div>
-            <div class="form-group"><label>Location</label><input name="location" placeholder="Legazpi City" style="width:100%; padding:11px 14px; border:2px solid #ecf0f1; border-radius:8px;" /></div>
-            <div class="form-group"><label>Rating (1-5)</label><input name="rating" type="number" min="1" max="5" placeholder="4.5" style="width:100%; padding:11px 14px; border:2px solid #ecf0f1; border-radius:8px;" /></div>
-            <div class="form-group" style="grid-column:1/-1;"><label>Description</label><textarea name="description" rows="3" style="width:100%; padding:11px 14px; border:2px solid #ecf0f1; border-radius:8px;" placeholder="Describe this destination..."></textarea></div>
-            <div class="form-group" style="grid-column:1/-1;"><label>Image</label>
-              <div style="display:flex; gap:12px; align-items:center; padding:15px; background:white; border:2px dashed #ecf0f1; border-radius:8px; cursor:pointer;" onclick="this.querySelector('input').click()">
-                <span style="font-size:24px;">📸</span>
-                <div><div style="font-weight:600; color:#667eea;">Click to upload image</div><small style="color:#999; display:block; margin-top:3px;" id="destinationImageStatus">No file selected</small></div>
-                <input type="file" name="imageFile" accept="image/*" onchange="previewDestinationImage(this)" style="display:none;" />
+            <input name="image" type="hidden" />
+            <input name="latitude" type="hidden" id="hotelLatInput" />
+            <input name="longitude" type="hidden" id="hotelLngInput" />
+
+            <!-- Map Location Picker -->
+            <div style="grid-column:1/-1;">
+              <label style="font-weight:700; font-size:0.95rem; color:#1a237e; display:block; margin-bottom:8px;">📍 Pin Hotel Location on Map *</label>
+              <p style="font-size:0.82rem; color:#888; margin-bottom:8px;">Click on the map to place the hotel pin. Drag to adjust.</p>
+              <div id="hotelLocationPickerMap" style="height:320px; border-radius:12px; border:2px solid #ecf0f1; overflow:hidden;"></div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:10px;">
+                <div><label style="font-size:0.82rem; color:#999;">Latitude</label><input id="hotelLatDisplay" type="number" step="any" placeholder="e.g. 13.1448" style="width:100%; padding:8px; border:1px solid #ecf0f1; border-radius:6px; background:#fff; font-size:0.88rem;" onchange="applyManualHotelCoords()" /></div>
+                <div><label style="font-size:0.82rem; color:#999;">Longitude</label><input id="hotelLngDisplay" type="number" step="any" placeholder="e.g. 123.7435" style="width:100%; padding:8px; border:1px solid #ecf0f1; border-radius:6px; background:#fff; font-size:0.88rem;" onchange="applyManualHotelCoords()" /></div>
               </div>
-              <input type="hidden" name="image" />
+              <p style="font-size:0.78rem; color:#888; margin-top:6px;">💡 Type exact coordinates or click the map to pick</p>
             </div>
-            <div id="destinationImagePreviewContainer" style="display:none; grid-column:1/-1; text-align:center; padding:15px; background:white; border:2px solid #ecf0f1; border-radius:8px;"><img id="destinationImagePreview" src="" style="max-width:100%; max-height:220px; border-radius:8px;"/></div>
-            <div style="grid-column:1/-1; display:flex; gap:12px;"><button type="submit" class="btn btn-primary" style="flex:1;">➕ Add Destination</button><button type="button" class="btn" style="flex:1; background:#ecf0f1; color:#2c3e50;" onclick="resetDestinationForm()">↺ Reset</button></div>
+
+            <div style="grid-column:1/-1; display:flex; gap:12px;">
+              <button type="submit" class="btn btn-primary" id="submitHotelBtn">➕ Add Hotel</button>
+              <button type="button" class="btn" onclick="resetHotelForm()" style="background:#e0e0e0; color:#333; display:none;" id="cancelHotelEditBtn">Cancel Edit</button>
+            </div>
           </form>
         </div>
-        
-        <!-- Destinations List -->
-        <div style="margin-top: 30px;">
-          <h3 style="color: #2c3e50; margin-bottom: 18px; font-size: 18px; font-weight: 700;">📋 Destinations List</h3>
-          <div id="destinationsList" style="display:grid; gap:15px;"></div>
+
+        <!-- Hotels List -->
+        <div class="detail-panel">
+          <h4>Registered Hotels</h4>
+          <div id="hotelsList" class="detail-list"></div>
         </div>
       </div>
 
@@ -868,22 +939,35 @@
         <!-- Filter and Statistics Section -->
         <div style="background: linear-gradient(135deg, white 0%, #fafbfc 100%); padding: 24px; border-radius: 12px; margin-bottom: 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); border: 1px solid rgba(255,122,24,0.15);">
           <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #1a237e;">📊 Rating Statistics</h3>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 20px;">
-            <div style="background: white; padding: 16px; border-radius: 8px; text-align: center; border-left: 4px solid #ff7a18;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px;">
+            <div style="background: white; padding: 14px; border-radius: 8px; text-align: center; border-left: 4px solid #ff7a18;">
               <small style="color: #666; font-weight: 600;">Total Reviews</small>
-              <div style="font-size: 28px; font-weight: 900; color: #ff7a18; margin: 8px 0;" id="totalReviewsCount">0</div>
+              <div style="font-size: 26px; font-weight: 900; color: #ff7a18; margin: 6px 0;" id="totalReviewsCount">0</div>
             </div>
-            <div style="background: white; padding: 16px; border-radius: 8px; text-align: center; border-left: 4px solid #27ae60;">
-              <small style="color: #666; font-weight: 600;">Avg Shop Rating</small>
-              <div style="font-size: 28px; font-weight: 900; color: #27ae60; margin: 8px 0;" id="avgShopRating">0.0</div>
+            <div style="background: white; padding: 14px; border-radius: 8px; text-align: center; border-left: 4px solid #10b981;">
+              <small style="color: #666; font-weight: 600;">🏔️ Avg Destination</small>
+              <div style="font-size: 26px; font-weight: 900; color: #10b981; margin: 6px 0;" id="avgDestinationRating">0.0</div>
+              <small style="color: #999; font-size: 11px;" id="destReviewCount">0 reviews</small>
             </div>
-            <div style="background: white; padding: 16px; border-radius: 8px; text-align: center; border-left: 4px solid #3498db;">
-              <small style="color: #666; font-weight: 600;">Avg Product Rating</small>
-              <div style="font-size: 28px; font-weight: 900; color: #3498db; margin: 8px 0;" id="avgProductRating">0.0</div>
+            <div style="background: white; padding: 14px; border-radius: 8px; text-align: center; border-left: 4px solid #8b5cf6;">
+              <small style="color: #666; font-weight: 600;">🏨 Avg Hotel</small>
+              <div style="font-size: 26px; font-weight: 900; color: #8b5cf6; margin: 6px 0;" id="avgHotelRating">0.0</div>
+              <small style="color: #999; font-size: 11px;" id="hotelReviewCount">0 reviews</small>
             </div>
-            <div style="background: white; padding: 16px; border-radius: 8px; text-align: center; border-left: 4px solid #e74c3c;">
-              <small style="color: #666; font-weight: 600;">Positive Reviews</small>
-              <div style="font-size: 28px; font-weight: 900; color: #e74c3c; margin: 8px 0;" id="positiveReviewsCount">0</div>
+            <div style="background: white; padding: 14px; border-radius: 8px; text-align: center; border-left: 4px solid #27ae60;">
+              <small style="color: #666; font-weight: 600;">🛍️ Avg Shop</small>
+              <div style="font-size: 26px; font-weight: 900; color: #27ae60; margin: 6px 0;" id="avgShopRating">0.0</div>
+              <small style="color: #999; font-size: 11px;" id="shopReviewCount">0 reviews</small>
+            </div>
+            <div style="background: white; padding: 14px; border-radius: 8px; text-align: center; border-left: 4px solid #3498db;">
+              <small style="color: #666; font-weight: 600;">🛒 Avg Product</small>
+              <div style="font-size: 26px; font-weight: 900; color: #3498db; margin: 6px 0;" id="avgProductRating">0.0</div>
+              <small style="color: #999; font-size: 11px;" id="productReviewCount">0 reviews</small>
+            </div>
+            <div style="background: white; padding: 14px; border-radius: 8px; text-align: center; border-left: 4px solid #e74c3c;">
+              <small style="color: #666; font-weight: 600;">👍 Positive (4-5★)</small>
+              <div style="font-size: 26px; font-weight: 900; color: #e74c3c; margin: 6px 0;" id="positiveReviewsCount">0</div>
+              <small style="color: #999; font-size: 11px;" id="positivePercent">0%</small>
             </div>
           </div>
 
@@ -895,6 +979,8 @@
                 <option value="">-- All Types --</option>
                 <option value="shop">🛍️ Shop</option>
                 <option value="product">🛒 Product</option>
+                <option value="destination">🏔️ Destination</option>
+                <option value="hotel">🏨 Hotel</option>
               </select>
             </div>
             <div class="form-group" style="margin-bottom: 0;">
@@ -1125,7 +1211,6 @@ async function loadAllData(){
   await Promise.all([
     loadAnalytics(),
     loadEvents(),
-    loadDestinations(),
     loadExperiences(),
     loadFestivals(),
     loadAlerts(),
@@ -1270,14 +1355,17 @@ async function editEvent(id){
   if(form.event_type) form.event_type.value = ev.event_type || 'other';
 
   // Determine event duration and set form mode
-  const startDate = ev.event_start_date || '';
-  const endDate = ev.event_end_date || '';
+  // Use DB columns first (reliable), fall back to legacy fields
+  const startDate = ev.open_days_start || ev.event_start_date || '';
+  const endDate = ev.open_days_end || ev.event_end_date || '';
   
   if (startDate && endDate) {
     const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-    const isSingleDayName = dayNames.includes(startDate) && startDate === endDate;
+    const isStartDayName = dayNames.includes(startDate);
+    const isEndDayName = dayNames.includes(endDate);
+    const isDayRange = isStartDayName && isEndDayName;
 
-    if (isSingleDayName) {
+    if (isDayRange) {
       selectDurationType('single');
       const startDayInput = document.querySelector('select[name="single_event_start_day"]');
       const endDayInput = document.querySelector('select[name="single_event_end_day"]');
@@ -1367,6 +1455,15 @@ async function editEvent(id){
     }
   }
   
+  // Populate analytics fields from prediction data if available
+  const pred = ev.prediction ? (typeof ev.prediction === 'string' ? JSON.parse(ev.prediction) : ev.prediction) : {};
+  if (form.peak_visit_time) form.peak_visit_time.value = pred.peak_visit_time || 'auto';
+  if (form.weekend_multiplier) form.weekend_multiplier.value = pred.weekend_multiplier || 1.5;
+  if (form.season_type) form.season_type.value = pred.season_type || 'regular';
+  if (form.waste_per_visitor && pred.wastePerVisitor) form.waste_per_visitor.value = pred.wastePerVisitor;
+  if (form.has_food_stalls) form.has_food_stalls.value = pred.has_food_stalls || 'many';
+  if (form.parking_capacity) form.parking_capacity.value = pred.parking_capacity || 'medium';
+
   editingEventId = id; 
   document.getElementById('submitEventBtn').textContent = '💾 Update Destination'; 
   document.getElementById('cancelEditBtn').style.display = 'inline-block';
@@ -1528,22 +1625,58 @@ function computeDayRisk(entry){
 
 
 
-// generate hourly/phase/waste prediction using simple model (copied from PHP fallback)
+// generate hourly/phase/waste prediction using enhanced model with admin analytics input
 function generateDayPrediction(entry){
   if (!entry) return;
   const profiles = {
-    celebration:{avg:45029,waste:0.082}, festival:{avg:42599,waste:0.088}, expo:{avg:49612,waste:0.075},
-    marathon:{avg:44098,waste:0.065}, fiesta:{avg:44671,waste:0.085}, religious:{avg:46650,waste:0.070},
-    food_festival:{avg:60600,waste:0.120}, concert:{avg:50000,waste:0.095}, market:{avg:35000,waste:0.115},
-    workshop:{avg:25000,waste:0.062}, sports:{avg:45000,waste:0.078}, conference:{avg:20000,waste:0.055}
+    cultural:{avg:35000,waste:0.072,peakBias:'afternoon'},
+    nature:{avg:28000,waste:0.065,peakBias:'morning'},
+    shopping:{avg:32000,waste:0.110,peakBias:'afternoon'},
+    food:{avg:38000,waste:0.125,peakBias:'evening'},
+    heritage:{avg:25000,waste:0.068,peakBias:'afternoon'},
+    adventure:{avg:22000,waste:0.058,peakBias:'morning'},
+    wellness:{avg:18000,waste:0.045,peakBias:'morning'},
+    family:{avg:40000,waste:0.095,peakBias:'afternoon'},
+    scenic:{avg:30000,waste:0.055,peakBias:'morning'},
+    celebration:{avg:45029,waste:0.082,peakBias:'afternoon'},
+    festival:{avg:42599,waste:0.088,peakBias:'evening'},
+    expo:{avg:49612,waste:0.075,peakBias:'afternoon'},
+    marathon:{avg:44098,waste:0.065,peakBias:'morning'},
+    fiesta:{avg:44671,waste:0.085,peakBias:'evening'},
+    religious:{avg:46650,waste:0.070,peakBias:'morning'},
+    food_festival:{avg:60600,waste:0.120,peakBias:'evening'},
+    concert:{avg:50000,waste:0.095,peakBias:'evening'},
+    market:{avg:35000,waste:0.115,peakBias:'afternoon'},
+    other:{avg:30000,waste:0.080,peakBias:'afternoon'}
   };
-  // read event type from form if available
-  const evTypeEl = document.querySelector('select[name="event_type"]');
-  const evType = evTypeEl ? evTypeEl.value.toLowerCase() : 'festival';
-  const profile = profiles[evType] || profiles['festival'];
+
+  const evType = (entry.event_type || document.querySelector('select[name="event_type"]')?.value || 'other').toLowerCase();
+  const profile = profiles[evType] || profiles['other'];
   const cap = entry.capacity || 0;
-  const expected = cap > 0 ? Math.round(cap * 0.7) : profile.avg;
-  const wastePerVisitor = profile.waste;
+
+  // Season multiplier from admin input
+  const seasonMultipliers = { peak: 1.35, regular: 1.0, low: 0.65 };
+  const seasonType = entry.season_type || 'regular';
+  const seasonMult = seasonMultipliers[seasonType] || 1.0;
+
+  // Base expected visitors with capacity and seasonal adjustment
+  let expected = cap > 0 ? Math.round(cap * 0.7 * seasonMult) : Math.round(profile.avg * seasonMult);
+
+  // Waste per visitor: admin override > food stall adjustment > profile default
+  let wastePerVisitor = profile.waste;
+  if (entry.waste_per_visitor && entry.waste_per_visitor > 0) {
+    wastePerVisitor = entry.waste_per_visitor;
+  } else {
+    // Adjust based on food stalls presence
+    const foodStalls = entry.has_food_stalls || 'many';
+    if (foodStalls === 'many') wastePerVisitor *= 1.25;
+    else if (foodStalls === 'few') wastePerVisitor *= 1.08;
+    // 'no' = no adjustment
+  }
+
+  // Determine peak time bias for hourly curve shaping
+  let peakBias = entry.peak_visit_time || 'auto';
+  if (peakBias === 'auto') peakBias = profile.peakBias || 'afternoon';
 
   const parseTime = t => {
     const parts = String(t||'00:00').split(':').map(Number);
@@ -1551,7 +1684,7 @@ function generateDayPrediction(entry){
   };
   const start = parseTime(entry.start_time);
   const end = parseTime(entry.end_time);
-  let hourly = [], peak = 0, peakHour = start;
+  let hourly = [], peak = 0, peakHour = Math.floor(start);
   const activeHours = [];
   if (!isNaN(start) && !isNaN(end)) {
     if (end > start) {
@@ -1562,38 +1695,111 @@ function generateDayPrediction(entry){
     }
   }
 
+  // Calculate peak shift based on admin peak_visit_time
+  const span = activeHours.length;
+  let peakCenter = 0.5; // default: center of operating hours
+  if (peakBias === 'morning') peakCenter = 0.3;
+  else if (peakBias === 'afternoon') peakCenter = 0.55;
+  else if (peakBias === 'evening') peakCenter = 0.75;
+
   for (let h = 0; h < 24; h++) {
     let factor = 0.0;
     const isActive = activeHours.includes(h);
-    if (isActive) {
-      const span = (end > start) ? (end - start) : ((24 - start) + end);
-      const pos = span > 0 ? ((h + 0.5 - start + 24) % 24) / span : 0;
-      factor = Math.max(0, 0.2 + (0.8 * Math.sin(pos * Math.PI)));
+    if (isActive && span > 0) {
+      const pos = ((h + 0.5 - start + 24) % 24) / span;
+      // Asymmetric bell curve shifted toward peak bias
+      const dist = Math.abs(pos - peakCenter);
+      factor = Math.max(0.08, Math.exp(-4.5 * dist * dist));
     }
     const visitors = Math.round(expected * factor);
     hourly.push(visitors);
     if (visitors > peak) { peak = visitors; peakHour = h; }
   }
-  const hourlyWaste = hourly.map(v=>Math.round(v * wastePerVisitor * 100)/100);
-  const phase = {arrival:Math.round(expected*0.3),peak:Math.round(expected*0.4),leaving:Math.round(expected*0.3)};
-  entry.prediction = {expected, hourly, hourlyWaste, phase, peakHour, wastePerVisitor};
-  // normalize prediction shape for other consumers (guest charts & API)
-  const totalWaste = Math.round(hourlyWaste.reduce((a,b)=>a+b,0)*10)/10;
-  entry.prediction.attendance = expected;
-  entry.prediction.expected_visitors = expected;
-  entry.prediction.waste_prediction = totalWaste; // legacy numeric field
-  entry.prediction.predicted_waste_kg = totalWaste;
-  // structured waste object for newer consumers
-  entry.prediction.waste = { total_kg: totalWaste };
-  // simple scenario estimates (low/medium/high) based on capacity thresholds
-  const low = Math.round(Math.max(1, expected * 0.7));
-  const med = Math.round(Math.max(1, expected));
-  const high = Math.round(Math.min((entry.capacity||expected)*1.05, expected * 1.2));
-  entry.prediction.scenarios = {
-    low:{attendance: low, waste_prediction: Math.round(low * wastePerVisitor), overcrowding_probability: Math.max(0, 0.4)},
-    medium:{attendance: med, waste_prediction: Math.round(med * wastePerVisitor), overcrowding_probability: Math.max(0, 0.6)},
-    high:{attendance: high, waste_prediction: Math.round(high * wastePerVisitor), overcrowding_probability: Math.max(0, 0.8)}
+
+  // Normalize hourly so sum ≈ expected
+  const rawSum = hourly.reduce((a,b) => a+b, 0);
+  if (rawSum > 0) {
+    hourly = hourly.map(v => Math.round(v * expected / rawSum));
+  }
+
+  const hourlyWaste = hourly.map(v => Math.round(v * wastePerVisitor * 100) / 100);
+  const totalWaste = Math.round(hourlyWaste.reduce((a,b) => a+b, 0) * 10) / 10;
+
+  // Phase breakdown using peak bias
+  let arrivalPct, peakPct, leavingPct;
+  if (peakBias === 'morning') { arrivalPct = 0.4; peakPct = 0.35; leavingPct = 0.25; }
+  else if (peakBias === 'evening') { arrivalPct = 0.25; peakPct = 0.35; leavingPct = 0.4; }
+  else { arrivalPct = 0.3; peakPct = 0.4; leavingPct = 0.3; }
+  const phase = {
+    arrival: Math.round(expected * arrivalPct),
+    peak: Math.round(expected * peakPct),
+    leaving: Math.round(expected * leavingPct)
   };
+
+  // Weekend multiplier from admin (affects weekday vs weekend scenario spread)
+  const weekendMult = entry.weekend_multiplier || 1.5;
+
+  // Scenarios with weekend-aware spread
+  const low = Math.round(Math.max(1, expected * 0.65));
+  const med = Math.round(Math.max(1, expected));
+  const high = Math.round(Math.min((cap || expected) * 1.1, expected * weekendMult));
+
+  // Overcrowding probability based on parking + capacity
+  const parkingFactor = { none: 0.15, small: 0.10, medium: 0.05, large: 0.0 };
+  const parkingBonus = parkingFactor[entry.parking_capacity] || 0.05;
+
+  entry.prediction = {
+    expected, hourly, hourlyWaste, phase, peakHour, wastePerVisitor,
+    attendance: expected,
+    expected_visitors: expected,
+    waste_prediction: totalWaste,
+    predicted_waste_kg: totalWaste,
+    waste: { total_kg: totalWaste },
+    start_time: entry.start_time,
+    end_time: entry.end_time,
+    open_days_start: entry.open_days_start || null,
+    open_days_end: entry.open_days_end || null,
+    event_schedule: entry.event_schedule || null,
+    model_version: 'enhanced-v4.0',
+    peak_visit_time: peakBias,
+    season_type: seasonType,
+    weekend_multiplier: weekendMult,
+    scenarios: {
+      low: { attendance: low, waste_prediction: Math.round(low * wastePerVisitor), overcrowding_probability: Math.max(0, 0.25 + parkingBonus) },
+      medium: { attendance: med, waste_prediction: Math.round(med * wastePerVisitor), overcrowding_probability: Math.max(0, 0.50 + parkingBonus) },
+      high: { attendance: high, waste_prediction: Math.round(high * wastePerVisitor), overcrowding_probability: Math.min(1, 0.75 + parkingBonus) }
+    },
+    // Waste composition breakdown by destination type
+    waste_composition: getWasteComposition(evType, entry.has_food_stalls)
+  };
+}
+
+// Helper: generate waste composition based on destination type and food stalls
+function getWasteComposition(evType, foodStalls) {
+  const base = {
+    cultural: { biodegradable: 30, recyclable: 35, residual: 25, special: 10 },
+    nature: { biodegradable: 25, recyclable: 30, residual: 35, special: 10 },
+    shopping: { biodegradable: 20, recyclable: 40, residual: 30, special: 10 },
+    food: { biodegradable: 50, recyclable: 20, residual: 22, special: 8 },
+    heritage: { biodegradable: 28, recyclable: 32, residual: 30, special: 10 },
+    adventure: { biodegradable: 22, recyclable: 28, residual: 40, special: 10 },
+    wellness: { biodegradable: 35, recyclable: 25, residual: 30, special: 10 },
+    family: { biodegradable: 40, recyclable: 25, residual: 27, special: 8 },
+    scenic: { biodegradable: 20, recyclable: 30, residual: 40, special: 10 },
+    other: { biodegradable: 35, recyclable: 28, residual: 27, special: 10 }
+  };
+  const comp = { ...(base[evType] || base['other']) };
+  // Shift toward biodegradable if many food stalls
+  if (foodStalls === 'many') {
+    comp.biodegradable = Math.min(60, comp.biodegradable + 10);
+    comp.recyclable = Math.max(10, comp.recyclable - 5);
+    comp.residual = Math.max(10, comp.residual - 5);
+  } else if (foodStalls === 'few') {
+    comp.biodegradable = Math.min(55, comp.biodegradable + 4);
+    comp.recyclable = Math.max(15, comp.recyclable - 2);
+    comp.residual = Math.max(15, comp.residual - 2);
+  }
+  return comp;
 }
 
 function updateDateFieldsFromSchedule(){
@@ -1771,17 +1977,44 @@ function updateMultiDayPreview() {
  */
 function resetEventForm() {
   document.getElementById('eventForm')?.reset();
-  document.getElementById('eventImagePreview').innerHTML = '';
-  document.getElementById('durationType').value = '';
-  document.getElementById('singleDayContainer').style.display = 'none';
-  document.getElementById('multiDayContainer').style.display = 'none';
-  document.getElementById('oneDayOption').style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-  document.getElementById('oneDayOption').style.borderColor = '#667eea';
-  document.getElementById('multiDayOption').style.background = '#f5f5f5';
-  document.getElementById('multiDayOption').style.borderColor = '#e0e0e0';
-  document.getElementById('cancelEditBtn').style.display = 'none';
-  document.getElementById('submitEventBtn').innerHTML = '➕ Create Destination';
+  const imgPreview = document.getElementById('eventImagePreview');
+  if (imgPreview) imgPreview.innerHTML = '';
+  const durType = document.getElementById('durationType');
+  if (durType) durType.value = '';
+  const singleDay = document.getElementById('singleDayContainer');
+  if (singleDay) singleDay.style.display = 'none';
+  const multiDay = document.getElementById('multiDayContainer');
+  if (multiDay) multiDay.style.display = 'none';
+  const oneDay = document.getElementById('oneDayOption');
+  if (oneDay) { oneDay.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'; oneDay.style.borderColor = '#667eea'; }
+  const multiOpt = document.getElementById('multiDayOption');
+  if (multiOpt) { multiOpt.style.background = '#f5f5f5'; multiOpt.style.borderColor = '#e0e0e0'; }
+  const cancelBtn = document.getElementById('cancelEditBtn');
+  if (cancelBtn) cancelBtn.style.display = 'none';
+  const submitBtn = document.getElementById('submitEventBtn');
+  if (submitBtn) submitBtn.innerHTML = '➕ Create Destination';
   editingEventId = null;
+
+  // Reset location picker visual state
+  if (startMarker) {
+    try { startMarker.remove(); } catch(e) {}
+    startMarker = null;
+  }
+  pickMode = null;
+  const locText = document.getElementById('startLocationText');
+  if (locText) locText.textContent = 'Click to Pick';
+  const locCoord = document.getElementById('startLocationCoord');
+  if (locCoord) locCoord.textContent = '';
+  const locCard = document.getElementById('startLocationCard');
+  if (locCard) {
+    locCard.style.borderColor = 'transparent';
+    locCard.style.boxShadow = '0 4px 12px rgba(102,126,234,0.2)';
+  }
+  // Clear manual coordinate inputs
+  const evLatManual = document.getElementById('eventLatManual');
+  const evLngManual = document.getElementById('eventLngManual');
+  if (evLatManual) evLatManual.value = '';
+  if (evLngManual) evLngManual.value = '';
 }
 
 document.getElementById('eventImage')?.addEventListener('change', function(e){
@@ -1972,7 +2205,17 @@ document.getElementById('eventForm')?.addEventListener('submit', async (e)=>{
     capacity: parseInt(f.capacity.value || 0), 
     event_type: f.event_type.value || 'other',
     author: 'ADMIN', 
-    anonymous: 0
+    anonymous: 0,
+    // Open days for weekly chart (stored as DB columns)
+    open_days_start: startDate || null,
+    open_days_end: endDate || null,
+    // Analytics fields
+    peak_visit_time: f.peak_visit_time?.value || 'auto',
+    weekend_multiplier: parseFloat(f.weekend_multiplier?.value) || 1.5,
+    season_type: f.season_type?.value || 'regular',
+    waste_per_visitor: f.waste_per_visitor?.value ? parseFloat(f.waste_per_visitor.value) : null,
+    has_food_stalls: f.has_food_stalls?.value || 'many',
+    parking_capacity: f.parking_capacity?.value || 'medium'
   };
   
   // include optional route coordinates if provided
@@ -2019,7 +2262,17 @@ document.getElementById('eventForm')?.addEventListener('submit', async (e)=>{
       const eventObj = {
         capacity: data.capacity,
         start_time: (startTimeInput && startTimeInput.value) ? startTimeInput.value : '09:00',
-        end_time: (endTimeInput && endTimeInput.value) ? endTimeInput.value : '17:00'
+        end_time: (endTimeInput && endTimeInput.value) ? endTimeInput.value : '17:00',
+        event_type: data.event_type,
+        peak_visit_time: data.peak_visit_time,
+        weekend_multiplier: data.weekend_multiplier,
+        season_type: data.season_type,
+        waste_per_visitor: data.waste_per_visitor,
+        has_food_stalls: data.has_food_stalls,
+        parking_capacity: data.parking_capacity,
+        open_days_start: data.event_start_date || startDate || null,
+        open_days_end: data.event_end_date || endDate || null,
+        event_schedule: data.event_schedule || null
       };
       console.log('🔵 Generating prediction with:', eventObj);
       generateDayPrediction(eventObj);
@@ -2068,6 +2321,12 @@ function updateLocationCard(lat, lng) {
   // Update hidden inputs
   input_lat.value = lat.toFixed(6);
   input_lng.value = lng.toFixed(6);
+  
+  // Sync manual text inputs
+  const evLatManual = document.getElementById('eventLatManual');
+  const evLngManual = document.getElementById('eventLngManual');
+  if (evLatManual) evLatManual.value = lat.toFixed(6);
+  if (evLngManual) evLngManual.value = lng.toFixed(6);
   
   // Update card display
   textEl.textContent = '✓ Location Picked';
@@ -2136,6 +2395,12 @@ document.getElementById('clearEventPickBtn')?.addEventListener('click', () => {
   
   document.querySelector('input[name="start_lat"]').value = '';
   document.querySelector('input[name="start_lng"]').value = '';
+  
+  // Clear manual coordinate inputs
+  const evLatManual = document.getElementById('eventLatManual');
+  const evLngManual = document.getElementById('eventLngManual');
+  if (evLatManual) evLatManual.value = '';
+  if (evLngManual) evLngManual.value = '';
   
   document.getElementById('startLocationText').textContent = 'Click to Pick';
   document.getElementById('startLocationCoord').textContent = '';
@@ -2276,6 +2541,27 @@ async function editShop(id){
   editingShopId = id;
   document.getElementById('submitShopBtn').textContent = '💾 Update Shop';
   document.getElementById('cancelShopEditBtn').style.display = 'inline-block';
+  // Load coordinates into map picker
+  if (shop.latitude && shop.longitude) {
+    const lat = parseFloat(shop.latitude);
+    const lng = parseFloat(shop.longitude);
+    document.getElementById('shopLatInput').value = lat;
+    document.getElementById('shopLngInput').value = lng;
+    document.getElementById('shopLatDisplay').value = lat.toFixed(6);
+    document.getElementById('shopLngDisplay').value = lng.toFixed(6);
+    if (window.shopMapObj) {
+      if (window.shopMapMarker) window.shopMapObj.removeLayer(window.shopMapMarker);
+      window.shopMapMarker = L.marker([lat, lng], {draggable: true}).addTo(window.shopMapObj);
+      window.shopMapMarker.on('dragend', function(e) {
+        const pos = e.target.getLatLng();
+        document.getElementById('shopLatInput').value = pos.lat;
+        document.getElementById('shopLngInput').value = pos.lng;
+        document.getElementById('shopLatDisplay').value = pos.lat.toFixed(6);
+        document.getElementById('shopLngDisplay').value = pos.lng.toFixed(6);
+      });
+      window.shopMapObj.setView([lat, lng], 15);
+    }
+  }
   form.scrollIntoView({behavior: 'smooth'});
 }
 
@@ -2297,6 +2583,12 @@ function resetShopForm(){
   editingShopId = null;
   document.getElementById('submitShopBtn').textContent = '➕ Add Shop';
   document.getElementById('cancelShopEditBtn').style.display = 'none';
+  // Reset map picker
+  if (window.shopMapMarker) { window.shopMapObj.removeLayer(window.shopMapMarker); window.shopMapMarker = null; }
+  document.getElementById('shopLatInput').value = '';
+  document.getElementById('shopLngInput').value = '';
+  document.getElementById('shopLatDisplay').value = '';
+  document.getElementById('shopLngDisplay').value = '';
 }
 
 async function deleteShop(id){
@@ -2362,7 +2654,7 @@ document.getElementById('shopForm')?.addEventListener('submit', async (e)=>{
     }
   }
 
-  const data = {name:f.name.value, description:f.description.value, address:f.address.value, contact:f.contact.value, owner_name:f.owner_name.value, image:f.image.value};
+  const data = {name:f.name.value, description:f.description.value, address:f.address.value, contact:f.contact.value, owner_name:f.owner_name.value, image:f.image.value, latitude: f.latitude.value || null, longitude: f.longitude.value || null};
   let r;
   if(editingShopId){ 
     data.id = editingShopId; 
@@ -3136,6 +3428,311 @@ async function previewRoute(eventId){
   }catch(e){ console.error(e); showSnackbar('Preview failed','error'); }
 }
 
+// ===== HOTEL MANAGEMENT =====
+let editingHotelId = null;
+let hotelMapObj = null;
+let hotelMapMarker = null;
+
+function initHotelMap() {
+  if (hotelMapObj) return;
+  const container = document.getElementById('hotelLocationPickerMap');
+  if (!container) return;
+  hotelMapObj = L.map('hotelLocationPickerMap').setView([13.1448, 123.7435], 13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(hotelMapObj);
+  hotelMapObj.on('click', function(e) {
+    const { lat, lng } = e.latlng;
+    if (hotelMapMarker) hotelMapObj.removeLayer(hotelMapMarker);
+    hotelMapMarker = L.marker([lat, lng], { draggable: true }).addTo(hotelMapObj);
+    document.getElementById('hotelLatInput').value = lat;
+    document.getElementById('hotelLngInput').value = lng;
+    document.getElementById('hotelLatDisplay').value = lat.toFixed(6);
+    document.getElementById('hotelLngDisplay').value = lng.toFixed(6);
+    hotelMapMarker.on('dragend', function(ev) {
+      const pos = ev.target.getLatLng();
+      document.getElementById('hotelLatInput').value = pos.lat;
+      document.getElementById('hotelLngInput').value = pos.lng;
+      document.getElementById('hotelLatDisplay').value = pos.lat.toFixed(6);
+      document.getElementById('hotelLngDisplay').value = pos.lng.toFixed(6);
+    });
+  });
+}
+
+function initShopMap() {
+  if (window.shopMapObj) return;
+  const container = document.getElementById('shopLocationPickerMap');
+  if (!container) return;
+  window.shopMapObj = L.map('shopLocationPickerMap').setView([13.1448, 123.7435], 13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(window.shopMapObj);
+  window.shopMapObj.on('click', function(e) {
+    const { lat, lng } = e.latlng;
+    if (window.shopMapMarker) window.shopMapObj.removeLayer(window.shopMapMarker);
+    window.shopMapMarker = L.marker([lat, lng], { draggable: true }).addTo(window.shopMapObj);
+    document.getElementById('shopLatInput').value = lat;
+    document.getElementById('shopLngInput').value = lng;
+    document.getElementById('shopLatDisplay').value = lat.toFixed(6);
+    document.getElementById('shopLngDisplay').value = lng.toFixed(6);
+    window.shopMapMarker.on('dragend', function(ev) {
+      const pos = ev.target.getLatLng();
+      document.getElementById('shopLatInput').value = pos.lat;
+      document.getElementById('shopLngInput').value = pos.lng;
+      document.getElementById('shopLatDisplay').value = pos.lat.toFixed(6);
+      document.getElementById('shopLngDisplay').value = pos.lng.toFixed(6);
+    });
+  });
+}
+
+// === Manual Coordinate Input Handlers ===
+function applyManualHotelCoords() {
+  const lat = parseFloat(document.getElementById('hotelLatDisplay').value);
+  const lng = parseFloat(document.getElementById('hotelLngDisplay').value);
+  if (isNaN(lat) || isNaN(lng)) return;
+  document.getElementById('hotelLatInput').value = lat;
+  document.getElementById('hotelLngInput').value = lng;
+  if (!hotelMapObj) initHotelMap();
+  if (hotelMapObj) {
+    if (hotelMapMarker) hotelMapObj.removeLayer(hotelMapMarker);
+    hotelMapMarker = L.marker([lat, lng], { draggable: true }).addTo(hotelMapObj);
+    hotelMapMarker.on('dragend', function(ev) {
+      const pos = ev.target.getLatLng();
+      document.getElementById('hotelLatInput').value = pos.lat;
+      document.getElementById('hotelLngInput').value = pos.lng;
+      document.getElementById('hotelLatDisplay').value = pos.lat.toFixed(6);
+      document.getElementById('hotelLngDisplay').value = pos.lng.toFixed(6);
+    });
+    hotelMapObj.setView([lat, lng], 15);
+  }
+}
+
+function applyManualShopCoords() {
+  const lat = parseFloat(document.getElementById('shopLatDisplay').value);
+  const lng = parseFloat(document.getElementById('shopLngDisplay').value);
+  if (isNaN(lat) || isNaN(lng)) return;
+  document.getElementById('shopLatInput').value = lat;
+  document.getElementById('shopLngInput').value = lng;
+  if (!window.shopMapObj) initShopMap();
+  if (window.shopMapObj) {
+    if (window.shopMapMarker) window.shopMapObj.removeLayer(window.shopMapMarker);
+    window.shopMapMarker = L.marker([lat, lng], { draggable: true }).addTo(window.shopMapObj);
+    window.shopMapMarker.on('dragend', function(ev) {
+      const pos = ev.target.getLatLng();
+      document.getElementById('shopLatInput').value = pos.lat;
+      document.getElementById('shopLngInput').value = pos.lng;
+      document.getElementById('shopLatDisplay').value = pos.lat.toFixed(6);
+      document.getElementById('shopLngDisplay').value = pos.lng.toFixed(6);
+    });
+    window.shopMapObj.setView([lat, lng], 15);
+  }
+}
+
+function applyManualEventCoords() {
+  const lat = parseFloat(document.getElementById('eventLatManual').value);
+  const lng = parseFloat(document.getElementById('eventLngManual').value);
+  if (isNaN(lat) || isNaN(lng)) return;
+  if (!eventPickerMap) initEventLocationPicker();
+  setTimeout(() => {
+    if (startMarker) startMarker.remove();
+    startMarker = L.marker([lat, lng], { draggable: true, title: 'Destination Location' }).addTo(eventPickerMap);
+    startMarker.on('dragend', function() {
+      const p = this.getLatLng();
+      updateLocationCard(p.lat, p.lng);
+      document.getElementById('eventLatManual').value = p.lat.toFixed(6);
+      document.getElementById('eventLngManual').value = p.lng.toFixed(6);
+    });
+    updateLocationCard(lat, lng);
+    eventPickerMap.setView([lat, lng], 15);
+    pickMode = null;
+  }, eventPickerMap ? 0 : 200);
+}
+
+// Initialize maps when tabs are shown
+const origShowTab = showTab;
+showTab = function(tab) {
+  origShowTab(tab);
+  if (tab === 'hotels') setTimeout(() => { initHotelMap(); if (hotelMapObj) hotelMapObj.invalidateSize(); }, 200);
+  if (tab === 'shops') setTimeout(() => { initShopMap(); if (window.shopMapObj) window.shopMapObj.invalidateSize(); }, 200);
+};
+
+async function handleHotelImageChange(input) {
+  const status = document.getElementById('hotelImageStatus');
+  if (!input.files || !input.files[0]) { status.textContent = 'No file selected'; return; }
+  status.textContent = 'Uploading: ' + input.files[0].name;
+  const fd = new FormData();
+  fd.append('image', input.files[0]);
+  try {
+    const r = await fetch('../backend/upload_hotel_image.php', { method: 'POST', body: fd, credentials: 'include' });
+    const data = await r.json();
+    if (data.success) {
+      document.getElementById('hotelForm').querySelector('input[name="image"]').value = data.path;
+      document.getElementById('hotelImagePreview').src = '../' + data.path;
+      document.getElementById('hotelImagePreviewContainer').style.display = 'block';
+      status.textContent = '✅ ' + input.files[0].name;
+    } else {
+      status.textContent = '❌ Upload failed: ' + (data.error || 'unknown');
+    }
+  } catch (err) {
+    status.textContent = '❌ Upload error';
+    console.error(err);
+  }
+}
+
+async function loadHotels() {
+  const r = await getJSON('../backend/api.php?action=list_itinerary_hotels');
+  const out = document.getElementById('hotelsList');
+  if (!out) return;
+  out.innerHTML = '';
+  const hotels = r.hotels || [];
+  if (!hotels.length) {
+    out.innerHTML = '<div style="padding:20px; color:#999; text-align:center;">No hotels added yet. Use the form above to add hotels.</div>';
+    return;
+  }
+  hotels.forEach(hotel => {
+    const div = document.createElement('div');
+    div.className = 'list-item';
+    const imgPath = hotel.image ? ('../' + hotel.image) : 'https://via.placeholder.com/70?text=Hotel';
+    const features = hotel.features ? hotel.features.split(',').slice(0, 3).map(f => f.trim()).join(', ') : 'N/A';
+    div.innerHTML = `
+      <div style="flex:0 0 80px; margin-right:12px;">
+        <img src="${imgPath}" style="width:70px; height:70px; object-fit:cover; border-radius:6px; background:#f0f0f0;" onerror="this.src='https://via.placeholder.com/70?text=Hotel';" />
+      </div>
+      <div style="flex:1;">
+        <strong>${hotel.name}</strong> <span style="background:#667eea; color:#fff; padding:2px 8px; border-radius:4px; font-size:0.75rem;">${hotel.category || 'standard'}</span><br/>
+        <small style="color:#666;">📍 ${hotel.address || 'No address'}</small><br/>
+        <small style="color:#666;">📞 ${hotel.phone || 'N/A'} • ⭐ ${hotel.rating || '4.0'} • 💰 ₱${Number(hotel.rate_per_night || 0).toLocaleString()}/night</small><br/>
+        <small style="color:#999;">📌 ${hotel.latitude ? hotel.latitude.toString().slice(0,9) : '—'}, ${hotel.longitude ? hotel.longitude.toString().slice(0,10) : '—'}</small>
+        <small style="color:#999; display:block;">🏷️ ${features}</small>
+      </div>
+      <div class="list-item-actions" style="display:flex; gap:8px;">
+        <button class="btn btn-primary" onclick="editHotel(${hotel.id})">✏️ Edit</button>
+        <button class="btn btn-danger" onclick="deleteHotel(${hotel.id})">🗑️ Delete</button>
+      </div>
+    `;
+    out.appendChild(div);
+  });
+}
+
+async function editHotel(id) {
+  const r = await getJSON('../backend/api.php?action=list_itinerary_hotels');
+  const hotel = (r.hotels || []).find(h => h.id == id);
+  if (!hotel) { showSnackbar('Hotel not found', 'error'); return; }
+  const form = document.getElementById('hotelForm');
+  form.name.value = hotel.name || '';
+  form.category.value = hotel.category || 'standard';
+  form.ratePerNight.value = hotel.rate_per_night || '';
+  form.phone.value = hotel.phone || '';
+  form.address.value = hotel.address || '';
+  form.description.value = hotel.description || '';
+  form.features.value = hotel.features || '';
+  form.querySelector('input[name="image"]').value = hotel.image || '';
+  if (hotel.image) {
+    document.getElementById('hotelImagePreview').src = '../' + hotel.image;
+    document.getElementById('hotelImagePreviewContainer').style.display = 'block';
+    document.getElementById('hotelImageStatus').textContent = hotel.image.split('/').pop();
+  }
+  // Load lat/lng
+  if (hotel.latitude && hotel.longitude) {
+    const lat = parseFloat(hotel.latitude);
+    const lng = parseFloat(hotel.longitude);
+    document.getElementById('hotelLatInput').value = lat;
+    document.getElementById('hotelLngInput').value = lng;
+    document.getElementById('hotelLatDisplay').value = lat.toFixed(6);
+    document.getElementById('hotelLngDisplay').value = lng.toFixed(6);
+    initHotelMap();
+    setTimeout(() => {
+      if (hotelMapMarker) hotelMapObj.removeLayer(hotelMapMarker);
+      hotelMapMarker = L.marker([lat, lng], { draggable: true }).addTo(hotelMapObj);
+      hotelMapMarker.on('dragend', function(e) {
+        const pos = e.target.getLatLng();
+        document.getElementById('hotelLatInput').value = pos.lat;
+        document.getElementById('hotelLngInput').value = pos.lng;
+        document.getElementById('hotelLatDisplay').value = pos.lat.toFixed(6);
+        document.getElementById('hotelLngDisplay').value = pos.lng.toFixed(6);
+      });
+      hotelMapObj.setView([lat, lng], 15);
+    }, 300);
+  }
+  editingHotelId = id;
+  document.getElementById('submitHotelBtn').textContent = '💾 Update Hotel';
+  document.getElementById('cancelHotelEditBtn').style.display = 'inline-block';
+  form.scrollIntoView({ behavior: 'smooth' });
+}
+
+function resetHotelForm() {
+  const form = document.getElementById('hotelForm');
+  form.reset();
+  document.getElementById('hotelImagePreviewContainer').style.display = 'none';
+  document.getElementById('hotelImagePreview').src = '';
+  document.getElementById('hotelImageStatus').textContent = 'No file selected';
+  form.querySelector('input[name="image"]').value = '';
+  document.getElementById('hotelLatInput').value = '';
+  document.getElementById('hotelLngInput').value = '';
+  document.getElementById('hotelLatDisplay').value = '';
+  document.getElementById('hotelLngDisplay').value = '';
+  if (hotelMapMarker && hotelMapObj) { hotelMapObj.removeLayer(hotelMapMarker); hotelMapMarker = null; }
+  editingHotelId = null;
+  document.getElementById('submitHotelBtn').textContent = '➕ Add Hotel';
+  document.getElementById('cancelHotelEditBtn').style.display = 'none';
+}
+
+async function deleteHotel(id) {
+  if (!await showConfirm('Delete this hotel?')) return;
+  const r = await postJSON('../backend/api.php?action=delete_itinerary_hotel', { id });
+  if (r.success) { loadHotels(); showSnackbar('Hotel deleted', 'success'); }
+  else showSnackbar('Error: ' + (r.error || 'failed'), 'error');
+}
+
+document.getElementById('hotelForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const f = e.target;
+  // Upload image if selected but not yet uploaded
+  const imgInput = document.getElementById('hotelImage');
+  if (imgInput && imgInput.files && imgInput.files[0]) {
+    const hidden = f.querySelector('input[name="image"]');
+    if (hidden && !hidden.value) {
+      const fd = new FormData();
+      fd.append('image', imgInput.files[0]);
+      try {
+        const res = await fetch('../backend/upload_hotel_image.php', { method: 'POST', body: fd, credentials: 'include' });
+        const data = await res.json();
+        if (data.success) hidden.value = data.path;
+        else { showSnackbar('Image upload failed', 'error'); return; }
+      } catch (err) { showSnackbar('Image upload error', 'error'); return; }
+    }
+  }
+  const lat = parseFloat(f.latitude.value);
+  const lng = parseFloat(f.longitude.value);
+  if (!lat || !lng) {
+    showSnackbar('Please pin the hotel location on the map', 'error');
+    return;
+  }
+  const data = {
+    name: f.name.value,
+    category: f.category.value,
+    ratePerNight: f.ratePerNight.value,
+    phone: f.phone.value,
+    address: f.address.value,
+    description: f.description.value,
+    features: f.features.value,
+    image: f.querySelector('input[name="image"]').value,
+    latitude: lat,
+    longitude: lng,
+    rating: 4.0
+  };
+  let r;
+  if (editingHotelId) {
+    data.id = editingHotelId;
+    r = await postJSON('../backend/api.php?action=edit_itinerary_hotel', data);
+  } else {
+    r = await postJSON('../backend/api.php?action=add_itinerary_hotel', data);
+  }
+  if (r.success) {
+    showSnackbar(editingHotelId ? 'Hotel updated ✓' : 'Hotel created ✓', 'success');
+    resetHotelForm();
+    loadHotels();
+  } else {
+    showSnackbar('Error: ' + (r.error || 'Failed'), 'error');
+  }
+});
+
 // ===== Attendance Audit =====
 // Attendance audit list & actions
 async function loadAttendanceAudit(){
@@ -3202,13 +3799,8 @@ function showTab(tab){
   // Load appropriate data based on tab
   if(tab === 'overview' && typeof loadAnalytics === 'function') loadAnalytics();
   if(tab === 'events' && typeof loadEvents === 'function') loadEvents();
-  if(tab === 'shops' && typeof loadShops === 'function') {
-    loadShops();
-  }
-  if(tab === 'destinations') { 
-    if(typeof loadDestinationCategories === 'function') loadDestinationCategories();
-    if(typeof loadDestinations === 'function') loadDestinations();
-  }
+  if(tab === 'shops' && typeof loadShops === 'function') loadShops();
+  if(tab === 'hotels' && typeof loadHotels === 'function') loadHotels();
   if(tab === 'experiences' && typeof loadExperiences === 'function') loadExperiences();
   if(tab === 'festivals' && typeof loadFestivals === 'function') loadFestivals();
   if(tab === 'alerts') { 
@@ -3387,14 +3979,14 @@ function createFeedbackCard(feedback) {
     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
       <div style="flex: 1;">
         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
-          <h4 style="margin: 0; color: #333; font-weight: 700;">${feedback.user_name || 'Anonymous'}</h4>
+          <h4 style="margin: 0; color: #333; font-weight: 700;">${feedback.anonymous ? (function(t){if(!t||t.length<=2)return'***';var s=Math.min(2,Math.floor(t.length/2));return t.substring(0,s)+'*'.repeat(t.length-s)})(feedback.user_name||'Anonymous') : (feedback.user_name || 'Anonymous')}</h4>
           <span style="background: ${info.color}20; color: ${info.color}; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; white-space: nowrap;">
             ${info.emoji} ${type.charAt(0).toUpperCase() + type.slice(1)}
           </span>
         </div>
         <div style="color: #666; font-size: 13px;">
-          📧 ${feedback.user_email || 'N/A'} 
-          ${feedback.anonymous ? ' (Anonymous)' : ''}
+          📧 ${feedback.anonymous ? (function(e){if(!e||e==='N/A')return'***@***.***';var p=e.split('@');if(p.length<2)return'***';var u=p[0],d=p[1];return u.substring(0,Math.min(2,u.length))+'***@'+d.charAt(0)+'***'})(feedback.user_email) : (feedback.user_email || 'N/A')} 
+          ${feedback.anonymous ? ' 🔒 Anonymous' : ''}
         </div>
         <div style="color: #666; font-size: 13px; margin-top: 4px;">
           📍 ${feedback.target_name || feedback.target_id || 'General'}
@@ -3408,6 +4000,7 @@ function createFeedbackCard(feedback) {
     
     <div style="background: #f9f9f9; padding: 12px; border-radius: 8px; margin-bottom: 12px; border-left: 3px solid ${info.color};">
       <p style="margin: 0; color: #555; line-height: 1.6; font-size: 14px;">💬 ${feedback.message}</p>
+      ${feedback.image_url ? `<div style="margin-top: 10px;"><img src="${feedback.image_url}" alt="Feedback photo" style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid #e5e7eb; object-fit: cover; cursor: pointer;" onclick="window.open(this.src, '_blank')" onerror="this.style.display='none'"></div>` : ''}
     </div>
     
     <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -3423,24 +4016,29 @@ function createFeedbackCard(feedback) {
 }
 
 function updateFeedbackStatistics(allFeedbacks) {
-  // Calculate stats from data
   const total = allFeedbacks.length;
-  const positive = allFeedbacks.filter(f => f.rating >= 4).length;
+  const positive = allFeedbacks.filter(f => parseFloat(f.rating) >= 4).length;
   
-  // Calculate averages by type
+  const calcAvg = (arr) => arr.length > 0 ? (arr.reduce((s, f) => s + parseFloat(f.rating || 0), 0) / arr.length).toFixed(1) : '0.0';
+  
+  const destRatings = allFeedbacks.filter(f => f.target_type === 'destination');
+  const hotelRatings = allFeedbacks.filter(f => f.target_type === 'hotel');
   const shopRatings = allFeedbacks.filter(f => f.target_type === 'shop');
   const productRatings = allFeedbacks.filter(f => f.target_type === 'product');
   
-  const avgShopRating = shopRatings.length > 0 ? 
-    (shopRatings.reduce((sum, f) => sum + (f.rating || 0), 0) / shopRatings.length).toFixed(2) : 0;
-  const avgProductRating = productRatings.length > 0 ? 
-    (productRatings.reduce((sum, f) => sum + (f.rating || 0), 0) / productRatings.length).toFixed(2) : 0;
-  
-  // Update UI
   document.getElementById('totalReviewsCount').textContent = total;
-  document.getElementById('avgShopRating').textContent = avgShopRating;
-  document.getElementById('avgProductRating').textContent = avgProductRating;
+  document.getElementById('avgDestinationRating').textContent = calcAvg(destRatings);
+  document.getElementById('avgHotelRating').textContent = calcAvg(hotelRatings);
+  document.getElementById('avgShopRating').textContent = calcAvg(shopRatings);
+  document.getElementById('avgProductRating').textContent = calcAvg(productRatings);
   document.getElementById('positiveReviewsCount').textContent = positive;
+  
+  const el = (id, txt) => { const e = document.getElementById(id); if(e) e.textContent = txt; };
+  el('destReviewCount', destRatings.length + ' reviews');
+  el('hotelReviewCount', hotelRatings.length + ' reviews');
+  el('shopReviewCount', shopRatings.length + ' reviews');
+  el('productReviewCount', productRatings.length + ' reviews');
+  el('positivePercent', total > 0 ? Math.round(positive / total * 100) + '%' : '0%');
 }
 
 async function deleteFeedbackRating(id) {
@@ -3674,161 +4272,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-// ===== New sections JS: Destinations / Experiences / Festivals =====
-function resetDestinationForm(){
-  const f = document.getElementById('destinationForm'); if(!f) return; f.reset(); document.querySelector('#destinationImagePreviewContainer').style.display='none'; document.getElementById('destinationImagePreview').src=''; document.querySelector('#destinationForm input[name=image]').value = '';
-}
-function previewDestinationImage(input){
-  const status = document.getElementById('destinationImageStatus'); if(!input.files || !input.files[0]){ status.textContent='No file selected'; return; }
-  const file = input.files[0]; status.textContent = file.name + ' (' + Math.round(file.size/1024) + 'KB)';
-  const reader = new FileReader(); reader.onload = ()=>{ document.getElementById('destinationImagePreview').src = reader.result; document.getElementById('destinationImagePreviewContainer').style.display='block'; };
-  reader.readAsDataURL(file);
-}
-async function uploadDestinationImageFile(file){ 
-  if(!file) {
-    console.error('No file provided');
-    return {success: false, error: 'No file provided'};
-  }
-  
-  console.log('Uploading destination file:', file.name);
-  
-  const fd = new FormData(); 
-  fd.append('image', file); 
-  
-  try {
-    const res = await fetch('../backend/upload_destination_image.php', {
-      method: 'POST', 
-      body: fd,
-      headers: {}
-    });
-    
-    console.log('Destination upload response:', res.status);
-    
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error('Error response:', errorText);
-      try {
-        return JSON.parse(errorText);
-      } catch(e) {
-        return {success: false, error: 'Server error: ' + res.statusText};
-      }
-    }
-    
-    const result = await res.json();
-    console.log('Destination upload result:', result);
-    return result;
-  } catch(err) {
-    console.error('Destination upload error:', err);
-    return {success: false, error: err.message};
-  }
-}
-document.addEventListener('DOMContentLoaded', function(){
-  const destForm = document.getElementById('destinationForm');
-  if(!destForm) return;
-  
-  destForm.addEventListener('submit', async function(e){ 
-    e.preventDefault(); 
-    
-    // Validate required fields
-    if(!destForm.name.value.trim()) {
-      showSnackbar('Destination name is required','error');
-      return;
-    }
-    
-    const data = { 
-      name: destForm.name.value.trim(), 
-      location: destForm.location.value.trim(), 
-      description: destForm.description.value.trim(),
-      category_id: destForm.querySelector('select[name="category_id"]').value || null
-    };
-    
-    // Handle image upload if file is selected
-    const fileInput = destForm.querySelector('input[type=file]'); 
-    if(fileInput && fileInput.files && fileInput.files[0]){ 
-      try {
-        const up = await uploadDestinationImageFile(fileInput.files[0]); 
-        if(up.success) {
-          data.image = up.path;
-        } else {
-          showSnackbar('Image upload failed: ' + (up.error || 'unknown error'), 'error');
-          return;
-        }
-      } catch(uploadErr) {
-        showSnackbar('Image upload error: ' + uploadErr.message, 'error');
-        return;
-      }
-    }
-    
-    // Submit form data
-    try {
-      const res = await postJSON('../backend/api.php?action=create_destination', data); 
-      if(res.success){ 
-        showSnackbar('✅ Destination added','success'); 
-        resetDestinationForm(); 
-        loadDestinations(); 
-      } else {
-        showSnackbar('Error: ' + (res.error || 'create failed'), 'error');
-      }
-    } catch(err) {
-      showSnackbar('API error: ' + err.message, 'error');
-    }
-  });
-}, {once: true});
-
-async function loadDestinations(){ const out = document.getElementById('destinationsList'); if(!out) return; out.innerHTML = 'Loading...'; try{ const r = await getJSON('../backend/api.php?action=list_destinations'); const rows = r.destinations || []; if(rows.length===0){ out.innerHTML = '<div style="color:#666;">No destinations</div>'; return; } out.innerHTML = rows.map(d=>{
-    const img = d.image ? `<img src="${d.image}" style="width:100px; height:70px; object-fit:cover; border-radius:6px; margin-right:10px;"/>` : '';
-    return `<div style="display:flex; align-items:center; justify-content:space-between; background:white; padding:12px; border-radius:8px; border-left:4px solid #667eea;"><div style="display:flex; align-items:center; gap:12px;"><div>${img}</div><div><strong>${d.name}</strong><div style="color:#666; font-size:0.9rem;">${d.location||''}</div><div style="color:#777; font-size:0.85rem;">${d.description? d.description.substring(0,120):''}</div></div></div><div style="display:flex; gap:8px;"><button class="btn" onclick="editDestination(${d.id})">Edit</button><button class="btn btn-danger" onclick="deleteDestination(${d.id})">Delete</button></div></div>`;
-  }).join(''); }catch(e){ out.innerHTML = '<div style="color:#f88;">Load failed</div>'; }}
-
-async function editDestination(id){ const r = await getJSON('../backend/api.php?action=list_destinations'); const d = (r.destinations||[]).find(x=>x.id==id); if(!d) return alert('Not found'); const f = document.getElementById('destinationForm'); f.name.value = d.name; f.location.value = d.location; f.description.value = d.description; document.querySelector('#destinationForm input[name=image]').value = d.image || ''; document.getElementById('destinationImagePreview').src = d.image || ''; document.getElementById('destinationImagePreviewContainer').style.display = d.image ? 'block' : 'none'; if(d.category_id) f.querySelector('select[name="category_id"]').value = d.category_id;
-  // change submit handler to perform update
-  const submitHandler = async function upd(e){ e.preventDefault(); const form = e.target; const payload = { id: id, name: form.name.value, location: form.location.value, description: form.description.value, category_id: form.querySelector('select[name="category_id"]').value || null };
-    const fileInput = form.querySelector('input[type=file]'); if(fileInput && fileInput.files && fileInput.files[0]){ const up = await uploadDestinationImageFile(fileInput.files[0]); if(up.success) payload.image = up.path; else return showSnackbar('Image upload failed','error'); }
-    const res = await postJSON('../backend/api.php?action=edit_destination', payload); if(res.success){ showSnackbar('Updated','success'); loadDestinations(); form.removeEventListener('submit', submitHandler); form.addEventListener('submit', destinationCreateListener); resetDestinationForm(); } else showSnackbar('Error updating','error'); };
-  // swap handlers
-  const form = document.getElementById('destinationForm'); const destinationCreateListener = form._createListenerRef || null; if(!form._createListenerRef){ form._createListenerRef = form.onsubmit; }
-  form.removeEventListener('submit', destinationCreateListener); form.addEventListener('submit', submitHandler);
-}
-
-async function deleteDestination(id){ if(!confirm('Delete destination?')) return; const res = await postJSON('../backend/api.php?action=delete_destination', { id }); if(res.success){ showSnackbar('Deleted','success'); loadDestinations(); } else showSnackbar('Delete failed','error'); }
-
-// DESTINATION CATEGORIES
-async function loadDestinationCategories(){
-  try{
-    const r = await getJSON('../backend/api.php?action=list_destination_categories');
-    const cats = r.categories || [];
-    const list = document.getElementById('destinationCategoriesList');
-    if(list) list.innerHTML = cats.map(c=>`<div class="list-item" style="padding:8px; background:#f0f2ff; border:1px solid #ddd; flex:none; white-space:nowrap;"><strong>${c.name}</strong> <button class="btn" style="padding:4px 8px; font-size:0.8rem;" onclick="deleteDestinationCategory(${c.id})">×</button></div>`).join('');
-    const sel = document.getElementById('destinationCategorySelect');
-    if(sel) sel.innerHTML = '<option value="">Select a category...</option>' + cats.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
-  }catch(e){ console.error(e); }
-}
-
-async function addDestinationCategory(){
-  const input = document.getElementById('destinationCategoryName');
-  if(!input.value.trim()) return showSnackbar('Enter category name','error');
-  try{
-    const res = await postJSON('../backend/api.php?action=create_destination_category', { name: input.value.trim(), description: '' });
-    if(res.success){ showSnackbar('Category added','success'); input.value=''; loadDestinationCategories(); } 
-    else showSnackbar('Error: ' + (res.error || 'unknown'), 'error');
-  }catch(e){ showSnackbar('API error: ' + e.message, 'error'); }
-}
-
-async function deleteDestinationCategory(id){
-  if(!confirm('Delete category?')) return;
-  try{
-    const res = await postJSON('../backend/api.php?action=delete_destination_category', { id });
-    if(res.success){ showSnackbar('Category deleted','success'); loadDestinationCategories(); }
-    else showSnackbar('Error: ' + (res.error || 'unknown'), 'error');
-  }catch(e){ showSnackbar('API error: ' + e.message, 'error'); }
-}
-
-// When showing destinations tab, load categories first
-const origLoadDestinations = loadDestinations;
-window.loadDestinations = async function(){
-  await loadDestinationCategories();
-  return origLoadDestinations();
-};
+// ===== New sections JS: Experiences / Festivals =====
 
 // Experiences
 function resetExperienceForm(){ const f = document.getElementById('experienceForm'); if(!f) return; f.reset(); document.getElementById('experienceImagePreviewContainer').style.display='none'; document.getElementById('experienceImagePreview').src=''; document.querySelector('#experienceForm input[name=image]').value=''; }
@@ -4613,9 +5057,9 @@ async function loadShopRatingsOverview() {
     
     // Calculate averages
     const avgShop = shopRatings.length > 0 ? 
-      (shopRatings.reduce((sum, r) => sum + (r.rating || 0), 0) / shopRatings.length).toFixed(1) : 0;
+      (shopRatings.reduce((sum, r) => sum + parseFloat(r.rating || 0), 0) / shopRatings.length).toFixed(1) : 0;
     const avgProduct = productRatings.length > 0 ? 
-      (productRatings.reduce((sum, r) => sum + (r.rating || 0), 0) / productRatings.length).toFixed(1) : 0;
+      (productRatings.reduce((sum, r) => sum + parseFloat(r.rating || 0), 0) / productRatings.length).toFixed(1) : 0;
     const total = shopRatings.length + productRatings.length;
     
     // Update UI
@@ -4638,11 +5082,13 @@ async function loadDestinationRatingsOverview() {
     
     // Calculate average
     const avgDest = destRatings.length > 0 ? 
-      (destRatings.reduce((sum, r) => sum + (r.rating || 0), 0) / destRatings.length).toFixed(1) : 0;
+      (destRatings.reduce((sum, r) => sum + parseFloat(r.rating || 0), 0) / destRatings.length).toFixed(1) : 0;
     
-    // Update UI
-    document.getElementById('dashDestAvgRating').textContent = avgDest;
-    document.getElementById('dashDestReviewCount').textContent = destRatings.length;
+    // Update UI if elements exist
+    const avgEl = document.getElementById('dashDestAvgRating');
+    const countEl = document.getElementById('dashDestReviewCount');
+    if (avgEl) avgEl.textContent = avgDest;
+    if (countEl) countEl.textContent = destRatings.length;
   } catch(e) {
     console.error('Error loading destination ratings:', e);
   }
@@ -4654,8 +5100,8 @@ window.showTab = function(tab) {
   originalShowTab.call(this, tab);
   if (tab === 'shops') {
     loadShopRatingsOverview();
-  } else if (tab === 'destinations') {
-    loadDestinationRatingsOverview();
+  } else if (tab === 'events') {
+    if (typeof loadDestinationRatingsOverview === 'function') loadDestinationRatingsOverview();
   }
 };
 </script>

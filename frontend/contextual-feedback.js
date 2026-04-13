@@ -6,6 +6,12 @@
  * - Integrated into existing sections
  */
 
+function maskText(text) {
+  if (!text || text.length <= 2) return '***';
+  const show = Math.min(2, Math.floor(text.length / 2));
+  return text.substring(0, show) + '*'.repeat(text.length - show);
+}
+
 class ContextualFeedbackSystem {
   constructor() {
     this.currentContext = null;
@@ -76,7 +82,19 @@ class ContextualFeedbackSystem {
         </div>
       `;
       document.body.appendChild(modal);
+
+      // Close modal when clicking outside (attach once)
+      modal.addEventListener('click', function(e) {
+        if(e.target === modal) {
+          modal.style.display = 'none';
+          document.body.style.overflow = 'auto';
+        }
+      });
     }
+
+    // Show modal and prevent body scroll
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
 
     // Update modal title
     const titleEl = document.getElementById('feedbackModalTitle');
@@ -84,14 +102,6 @@ class ContextualFeedbackSystem {
       const icon = this.currentContext === 'destination' ? '🏔️' : '🏨';
       titleEl.innerHTML = `${icon} ${this.currentItemName}`;
     }
-
-    // Close modal when clicking outside
-    modal.addEventListener('click', function(e) {
-      if(e.target === modal) {
-        modal.style.display = 'none';
-        document.body.style.overflow = 'auto';
-      }
-    });
 
     // Close modal on Escape key
     const escapeHandler = function(e) {
@@ -213,13 +223,18 @@ class ContextualFeedbackSystem {
       return;
     }
 
-    container.innerHTML = reviews.map(review => `
+    container.innerHTML = reviews.map(review => {
+      let displayName = review.user_name || 'Anonymous';
+      if(review.anonymous || displayName === 'Anonymous') {
+        displayName = maskText(displayName);
+      }
+      return `
       <div style="background: #f9f9f9; padding: 16px; border-radius: 10px; border-left: 4px solid #ff7a18; 
                   margin-bottom: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
           <div>
             <div style="font-weight: 700; color: #1a237e; font-size: 14px;">
-              ${review.user_name || 'Anonymous'} ${review.anonymous ? '🔒' : ''}
+              ${displayName} ${review.anonymous ? '🔒' : ''}
             </div>
             <div style="font-size: 12px; color: #999; margin-top: 2px;">
               ${new Date(review.created_at).toLocaleDateString()}
@@ -230,12 +245,13 @@ class ContextualFeedbackSystem {
           </div>
         </div>
         <p style="margin: 0; color: #555; font-size: 13px; line-height: 1.6;">${review.message}</p>
+        ${review.image_url ? `<div style="margin-top: 10px;"><img src="${review.image_url}" alt="Review photo" style="max-width: 100%; max-height: 220px; border-radius: 8px; border: 1px solid #e5e7eb; object-fit: cover; cursor: pointer;" onclick="window.open(this.src, '_blank')" onerror="this.style.display='none'"></div>` : ''}
       </div>
-    `).join('');
+    `}).join('');
   }
 
   // ============= SUBMIT FEEDBACK =============
-  async submitFeedback(name, email, rating, message, anonymous = false) {
+  async submitFeedback(name, email, rating, message, anonymous = false, imageFile = null) {
     if(!this.currentContext || !this.currentItemId) {
       alert('Error: Context not set');
       return false;
@@ -252,6 +268,24 @@ class ContextualFeedbackSystem {
     }
 
     try {
+      // Upload image first if provided
+      let imageUrl = null;
+      if(imageFile) {
+        const formData = new FormData();
+        formData.append('file', imageFile);
+        const uploadRes = await fetch('../backend/upload_feedback_image.php', {
+          method: 'POST',
+          body: formData
+        });
+        const uploadData = await uploadRes.json();
+        if(uploadData.success) {
+          imageUrl = uploadData.path;
+        } else {
+          alert('Image upload failed: ' + (uploadData.error || 'Unknown error'));
+          return false;
+        }
+      }
+
       const payload = {
         user_name: name,
         user_email: email,
@@ -261,7 +295,8 @@ class ContextualFeedbackSystem {
         rating: parseInt(rating),
         message: message.trim(),
         anonymous: anonymous ? 1 : 0,
-        feedback_type: 'review'
+        feedback_type: 'review',
+        image_url: imageUrl
       };
 
       const response = await fetch('../backend/ratings_api.php?action=submit_rating', {
@@ -289,23 +324,25 @@ class ContextualFeedbackSystem {
 
   // ============= CREATE FEEDBACK FORM HTML =============
   createFeedbackFormHTML(contextType, itemId, itemName) {
+    // Create a safe ID slug from itemId (remove special chars, spaces)
+    const safeId = String(itemId).replace(/[^a-zA-Z0-9]/g, '_');
     return `
       <div style="background: white; padding: 20px; border-radius: 12px; margin-top: 20px; border: 2px solid #ecf0f1;">
         <h4 style="margin: 0 0 16px 0; color: #1a237e; font-weight: 700; font-size: 15px;">
           ✍️ Share Your Review for "${itemName}"
         </h4>
         
-        <form id="feedback-form-${contextType}-${itemId}" onsubmit="event.preventDefault(); submitContextFeedback('${contextType}', '${itemId}', '${itemName}');">
+        <form id="feedback-form-${contextType}-${safeId}" data-context="${contextType}" data-itemid="${itemId.replace(/"/g, '&quot;')}" data-itemname="${itemName.replace(/"/g, '&quot;')}" onsubmit="event.preventDefault(); submitContextFeedbackSafe(this);">
           
           <!-- Rating -->
           <div style="margin-bottom: 14px;">
             <label style="display: block; font-weight: 700; color: #333; font-size: 13px; margin-bottom: 8px;">Rating *</label>
-            <div id="rating-stars-${contextType}-${itemId}" style="display: flex; gap: 8px; font-size: 28px; cursor: pointer;">
+            <div id="rating-stars-${contextType}-${safeId}" style="display: flex; gap: 8px; font-size: 28px; cursor: pointer;">
               ${Array(5).fill(0).map((_, i) => `
                 <span class="rating-star" data-value="${i+1}" style="opacity: 0.3; transition: all 0.2s; cursor: pointer;">★</span>
               `).join('')}
             </div>
-            <input type="hidden" id="rating-value-${contextType}-${itemId}" name="rating" value="0" required>
+            <input type="hidden" id="rating-value-${contextType}-${safeId}" name="rating" value="0" required>
           </div>
 
           <!-- Name & Email -->
@@ -326,10 +363,25 @@ class ContextualFeedbackSystem {
             <textarea placeholder="Share your experience..." required rows="3" style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; resize: vertical;"></textarea>
           </div>
 
+          <!-- Image Upload -->
+          <div style="margin-bottom: 14px;">
+            <label style="display: block; font-weight: 700; color: #333; font-size: 13px; margin-bottom: 6px;">📷 Upload Photo (optional)</label>
+            <label style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; background: #f3f4f6; border: 2px dashed #d1d5db; border-radius: 8px; cursor: pointer; font-size: 13px; color: #6b7280; transition: all 0.2s;" onmouseover="this.style.borderColor='#6366f1'; this.style.background='#eef2ff'" onmouseout="this.style.borderColor='#d1d5db'; this.style.background='#f3f4f6'">
+              📸 Choose Image
+              <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" style="display: none;" onchange="previewFeedbackImage(this)">
+            </label>
+            <div class="feedback-image-preview" style="margin-top: 8px; display: none;">
+              <div style="position: relative; display: inline-block;">
+                <img src="" style="max-width: 200px; max-height: 150px; border-radius: 8px; border: 1px solid #e5e7eb; object-fit: cover;">
+                <button type="button" onclick="removeFeedbackImage(this)" style="position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; border-radius: 50%; background: #ef4444; color: white; border: none; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1;">×</button>
+              </div>
+            </div>
+          </div>
+
           <!-- Anonymous -->
           <div style="margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
-            <input type="checkbox" id="anonymous-${contextType}-${itemId}" style="width: 16px; height: 16px; cursor: pointer;">
-            <label for="anonymous-${contextType}-${itemId}" style="cursor: pointer; font-size: 13px; color: #666;">Submit anonymously</label>
+            <input type="checkbox" id="anonymous-${contextType}-${safeId}" style="width: 16px; height: 16px; cursor: pointer;">
+            <label for="anonymous-${contextType}-${safeId}" style="cursor: pointer; font-size: 13px; color: #666;">Submit anonymously</label>
           </div>
 
           <!-- Submit -->
@@ -346,6 +398,79 @@ class ContextualFeedbackSystem {
 window.contextualFeedback = new ContextualFeedbackSystem();
 
 // ============= SUBMIT FEEDBACK HANDLER =============
+async function submitContextFeedbackSafe(formEl) {
+  const contextType = formEl.dataset.context;
+  const itemId = formEl.dataset.itemid;
+  const itemName = formEl.dataset.itemname;
+
+  const inputs = formEl.querySelectorAll('input, textarea');
+  const ratingInput = formEl.querySelector('input[name="rating"]');
+  const nameInput = inputs[0]; // first text input after hidden rating
+  const emailInput = inputs[1];
+  const messageInput = formEl.querySelector('textarea');
+  const anonymousCheck = formEl.querySelector('input[type="checkbox"]');
+
+  // Find the actual text inputs (skip hidden)
+  const textInputs = formEl.querySelectorAll('input[type="text"], input[type="email"]');
+  const nameVal = textInputs[0] ? textInputs[0].value.trim() : '';
+  const emailVal = textInputs[1] ? textInputs[1].value.trim() : '';
+
+  const rating = parseInt(ratingInput ? ratingInput.value : 0);
+  const message = messageInput ? messageInput.value.trim() : '';
+  const anonymous = anonymousCheck ? anonymousCheck.checked : false;
+
+  if(!rating || rating < 1 || rating > 5) {
+    alert('Please select a rating');
+    return;
+  }
+
+  if(!anonymous && (!nameVal || !emailVal)) {
+    alert('Please fill in your name and email, or check "Submit anonymously"');
+    return;
+  }
+
+  if(!message) {
+    alert('Please write a review message');
+    return;
+  }
+
+  const btn = formEl.querySelector('button[type="submit"]');
+  btn.disabled = true;
+  btn.textContent = '⏳ Submitting...';
+
+  // Set context on the feedback system
+  window.contextualFeedback.currentContext = contextType;
+  window.contextualFeedback.currentItemId = itemId;
+  window.contextualFeedback.currentItemName = itemName;
+
+  // Get selected image file if any
+  const fileInput = formEl.querySelector('input[type="file"]');
+  const imageFile = fileInput && fileInput.files.length > 0 ? fileInput.files[0] : null;
+
+  const success = await window.contextualFeedback.submitFeedback(
+    anonymous ? 'Anonymous' : nameVal,
+    anonymous ? '' : emailVal,
+    rating,
+    message,
+    anonymous,
+    imageFile
+  );
+
+  btn.disabled = false;
+  btn.textContent = '📤 Submit Review';
+
+  if(success) {
+    formEl.reset();
+    if(ratingInput) ratingInput.value = '0';
+    formEl.querySelectorAll('.rating-star').forEach(s => {
+      s.style.opacity = '0.3';
+      s.style.color = 'inherit';
+    });
+    alert('✅ Thank you for your review!');
+  }
+}
+
+// Legacy handler (kept for backward compatibility)
 async function submitContextFeedback(contextType, itemId, itemName) {
   const form = document.getElementById(`feedback-form-${contextType}-${itemId}`);
   if(!form) return;
@@ -368,8 +493,12 @@ async function submitContextFeedback(contextType, itemId, itemName) {
     return;
   }
 
-  if(!name || !email || !message) {
+  if(!anonymous && (!name || !email || !message)) {
     alert('Please fill in all required fields');
+    return;
+  }
+  if(!message) {
+    alert('Please write a review message');
     return;
   }
 
@@ -378,8 +507,8 @@ async function submitContextFeedback(contextType, itemId, itemName) {
   btn.textContent = '⏳ Submitting...';
 
   const success = await window.contextualFeedback.submitFeedback(
-    anonymous ? 'Anonymous' + Math.floor(Math.random()*10000) : name,
-    anonymous ? 'anon@local' : email,
+    anonymous ? 'Anonymous' : name,
+    anonymous ? '' : email,
     rating,
     message,
     anonymous
@@ -438,6 +567,37 @@ document.addEventListener('mouseout', function(e) {
     });
   }
 });
+
+// ============= IMAGE PREVIEW & REMOVE =============
+function previewFeedbackImage(input) {
+  const previewDiv = input.closest('div').parentElement.querySelector('.feedback-image-preview');
+  if(!previewDiv) return;
+  if(input.files && input.files[0]) {
+    // Validate size (3MB max)
+    if(input.files[0].size > 3 * 1024 * 1024) {
+      alert('Image too large. Maximum size is 3MB.');
+      input.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = previewDiv.querySelector('img');
+      img.src = e.target.result;
+      previewDiv.style.display = 'block';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function removeFeedbackImage(btn) {
+  const previewDiv = btn.closest('.feedback-image-preview');
+  if(previewDiv) {
+    previewDiv.style.display = 'none';
+    previewDiv.querySelector('img').src = '';
+    const fileInput = previewDiv.closest('form').querySelector('input[type="file"]');
+    if(fileInput) fileInput.value = '';
+  }
+}
 
 // ============= STATISTICS DASHBOARD =============
 async function loadFeedbackAnalytics() {

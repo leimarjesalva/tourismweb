@@ -1,0 +1,14 @@
+{
+    "id": 19,
+    "timestamp": "2026-04-13 03:31:04",
+    "user_name": "a",
+    "user_email": "sda@gmail.com",
+    "target_type": "destination",
+    "target_id": "asda",
+    "target_name": "asda",
+    "rating": 3,
+    "message": "adada",
+    "anonymous": 0,
+    "feedback_type": "review",
+    "metadata": null
+}

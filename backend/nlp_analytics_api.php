@@ -118,13 +118,25 @@ function analyzeAllFeedback($conn) {
               FROM feedback 
               WHERE message IS NOT NULL AND message != ''";
     
+    $params = [];
+    $types = '';
     if ($filterType) {
-        $query .= " AND target_type = '$filterType'";
+        $query .= " AND target_type = ?";
+        $params[] = $filterType;
+        $types .= 's';
     }
     
-    $query .= " ORDER BY created_at DESC LIMIT " . $limit;
+    $query .= " ORDER BY created_at DESC LIMIT ?";
+    $params[] = $limit;
+    $types .= 'i';
     
-    $result = $conn->query($query);
+    $stmt = $conn->prepare($query);
+    if (!$stmt) {
+        throw new Exception('Prepare failed: ' . $conn->error);
+    }
+    $stmt->bind_param($types, ...$params);
+    $stmt->execute();
+    $result = $stmt->get_result();
     if (!$result) {
         throw new Exception('Query failed: ' . $conn->error);
     }

@@ -323,7 +323,11 @@ if ($action === 'list_events'){
         exit;
     }
     
-    $res = $db->query("SELECT id, title, description, image, datetime, location, capacity, author, anonymous, event_type, start_time, end_time, prediction, start_lat, start_lng, end_lat, end_lng, created_at FROM events ORDER BY created_at DESC");
+    // Auto-create open_days columns if missing
+    $colCheck = function($db, $col){ $res = $db->query("SHOW COLUMNS FROM events LIKE '".$db->real_escape_string($col)."'"); return $res && $res->num_rows>0; };
+    $extraCols = '';
+    if ($colCheck($db, 'open_days_start')) $extraCols .= ', open_days_start, open_days_end';
+    $res = $db->query("SELECT id, title, description, image, datetime, location, capacity, author, anonymous, event_type, start_time, end_time, prediction, start_lat, start_lng, end_lat, end_lng, created_at{$extraCols} FROM events ORDER BY created_at DESC");
     if (!$res) {
         j(['error' => $db->error, 'events' => []]);
         exit;
@@ -388,10 +392,18 @@ if ($action === 'create_event'){
     if (!$colCheck($db, 'prediction')) {
         $db->query("ALTER TABLE events ADD COLUMN prediction LONGTEXT DEFAULT NULL");
     }
+    if (!$colCheck($db, 'open_days_start')) {
+        $db->query("ALTER TABLE events ADD COLUMN open_days_start VARCHAR(20) DEFAULT NULL");
+    }
+    if (!$colCheck($db, 'open_days_end')) {
+        $db->query("ALTER TABLE events ADD COLUMN open_days_end VARCHAR(20) DEFAULT NULL");
+    }
     
-    $stmt = $db->prepare('INSERT INTO events (title,description,image,datetime,start_time,end_time,event_type,location,capacity,author,anonymous) VALUES (?,?,?,?,?,?,?,?,?,?,?)');
-    // types: title(s), description(s), image(s), datetime(s), start_time(s), end_time(s), event_type(s), location(s), capacity(i), author(s), anonymous(i)
-    $stmt->bind_param('ssssssssisi', $title, $description, $image_path, $datetime, $start_time, $end_time, $event_type, $location, $capacity, $author, $anon);
+    $open_days_start = $d['open_days_start'] ?? null;
+    $open_days_end = $d['open_days_end'] ?? null;
+    
+    $stmt = $db->prepare('INSERT INTO events (title,description,image,datetime,start_time,end_time,event_type,location,capacity,author,anonymous,open_days_start,open_days_end) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)');
+    $stmt->bind_param('ssssssssisiss', $title, $description, $image_path, $datetime, $start_time, $end_time, $event_type, $location, $capacity, $author, $anon, $open_days_start, $open_days_end);
     if ($stmt->execute()){
         $event_id = $db->insert_id;
 
@@ -406,7 +418,7 @@ if ($action === 'create_event'){
             else {
                 $ust = $db->prepare('UPDATE events SET start_lat=?, start_lng=?, end_lat=?, end_lng=? WHERE id=?');
                 $ust->bind_param('ddddi', $start_lat, $start_lng, $end_lat, $end_lng, $event_id);
-                @$ust->execute();
+                $ust->execute();
             }
         }
 
@@ -764,15 +776,28 @@ if ($action === 'edit_event'){
     $capacity = intval($d['capacity'] ?? 0);
     $id = intval($d['id'] ?? 0);
     $image_path = $d['image_path'] ?? null;
+    $event_type = $d['event_type'] ?? 'other';
     // If image_path provided, update image too
     $start_time = $d['start_time'] ?? null;
     $end_time = $d['end_time'] ?? null;
+    $open_days_start = $d['open_days_start'] ?? null;
+    $open_days_end = $d['open_days_end'] ?? null;
+    
+    // Auto-create open_days columns if missing
+    $colCheck = function($db, $col){ $res = $db->query("SHOW COLUMNS FROM events LIKE '".$db->real_escape_string($col)."'"); return $res && $res->num_rows>0; };
+    if (!$colCheck($db, 'open_days_start')) {
+        $db->query("ALTER TABLE events ADD COLUMN open_days_start VARCHAR(20) DEFAULT NULL");
+    }
+    if (!$colCheck($db, 'open_days_end')) {
+        $db->query("ALTER TABLE events ADD COLUMN open_days_end VARCHAR(20) DEFAULT NULL");
+    }
+    
     if (!empty($d['image_path'])){
-        $stmt = $db->prepare('UPDATE events SET title=?,description=?,datetime=?,location=?,capacity=?,start_time=?,end_time=?,image=? WHERE id=?');
-        $stmt->bind_param('ssssisssi', $title, $description, $datetime, $location, $capacity, $start_time, $end_time, $image_path, $id);
+        $stmt = $db->prepare('UPDATE events SET title=?,description=?,datetime=?,location=?,capacity=?,start_time=?,end_time=?,event_type=?,open_days_start=?,open_days_end=?,image=? WHERE id=?');
+        $stmt->bind_param('sssssisssssi', $title, $description, $datetime, $location, $capacity, $start_time, $end_time, $event_type, $open_days_start, $open_days_end, $image_path, $id);
     } else {
-        $stmt = $db->prepare('UPDATE events SET title=?,description=?,datetime=?,location=?,capacity=?,start_time=?,end_time=? WHERE id=?');
-        $stmt->bind_param('ssssissi', $title, $description, $datetime, $location, $capacity, $start_time, $end_time, $id);
+        $stmt = $db->prepare('UPDATE events SET title=?,description=?,datetime=?,location=?,capacity=?,start_time=?,end_time=?,event_type=?,open_days_start=?,open_days_end=? WHERE id=?');
+        $stmt->bind_param('ssssisssssi', $title, $description, $datetime, $location, $capacity, $start_time, $end_time, $event_type, $open_days_start, $open_days_end, $id);
     }
     if ($stmt->execute()){
         // If admin provided coordinates, attempt to persist if table supports columns
@@ -783,8 +808,8 @@ if ($action === 'edit_event'){
         $colCheck = function($db, $col){ $res = $db->query("SHOW COLUMNS FROM events LIKE '".$db->real_escape_string($col)."'"); return $res && $res->num_rows>0; };
         if (($start_lat !== null || $start_lng !== null || $end_lat !== null || $end_lng !== null) && $colCheck($db,'start_lat')){
             $ust = $db->prepare('UPDATE events SET start_lat=?, start_lng=?, end_lat=?, end_lng=? WHERE id=?');
-            $ust->bind_param('dddii', $start_lat, $start_lng, $end_lat, $end_lng, $id);
-            @$ust->execute();
+            $ust->bind_param('ddddi', $start_lat, $start_lng, $end_lat, $end_lng, $id);
+            $ust->execute();
         }
         j(['success'=>true]);
     }
@@ -825,8 +850,10 @@ if ($action === 'create_shop'){
     $image = $d['image'] ?? null;
     $contact = $d['contact'] ?? null;
     $owner_name = $d['owner_name'] ?? null;
-    $stmt = $db->prepare('INSERT INTO shops (name,description,address,contact,owner_name,image) VALUES (?,?,?,?,?,?)');
-    $stmt->bind_param('ssssss',$d['name'],$d['description'],$d['address'],$contact,$owner_name,$image);
+    $latitude = isset($d['latitude']) ? floatval($d['latitude']) : null;
+    $longitude = isset($d['longitude']) ? floatval($d['longitude']) : null;
+    $stmt = $db->prepare('INSERT INTO shops (name,description,address,contact,owner_name,image,latitude,longitude) VALUES (?,?,?,?,?,?,?,?)');
+    $stmt->bind_param('ssssssdd',$d['name'],$d['description'],$d['address'],$contact,$owner_name,$image,$latitude,$longitude);
     if ($stmt->execute()) j(['success'=>true,'id'=>$db->insert_id]);
     j(['success'=>false,'error'=>$stmt->error]);
 }
@@ -838,12 +865,14 @@ if ($action === 'edit_shop'){
     $image = $d['image'] ?? null;
     $contact = $d['contact'] ?? null;
     $owner_name = $d['owner_name'] ?? null;
+    $latitude = isset($d['latitude']) ? floatval($d['latitude']) : null;
+    $longitude = isset($d['longitude']) ? floatval($d['longitude']) : null;
     if ($image) {
-        $stmt = $db->prepare('UPDATE shops SET name=?, description=?, address=?, contact=?, owner_name=?, image=? WHERE id=?');
-        $stmt->bind_param('ssssssi',$d['name'],$d['description'],$d['address'],$contact,$owner_name,$image,$d['id']);
+        $stmt = $db->prepare('UPDATE shops SET name=?, description=?, address=?, contact=?, owner_name=?, image=?, latitude=?, longitude=? WHERE id=?');
+        $stmt->bind_param('ssssssddi',$d['name'],$d['description'],$d['address'],$contact,$owner_name,$image,$latitude,$longitude,$d['id']);
     } else {
-        $stmt = $db->prepare('UPDATE shops SET name=?, description=?, address=?, contact=?, owner_name=? WHERE id=?');
-        $stmt->bind_param('sssssi',$d['name'],$d['description'],$d['address'],$contact,$owner_name,$d['id']);
+        $stmt = $db->prepare('UPDATE shops SET name=?, description=?, address=?, contact=?, owner_name=?, latitude=?, longitude=? WHERE id=?');
+        $stmt->bind_param('sssssddi',$d['name'],$d['description'],$d['address'],$contact,$owner_name,$latitude,$longitude,$d['id']);
     }
     if ($stmt->execute()) j(['success'=>true]);
     j(['success'=>false,'error'=>$stmt->error]);
@@ -2600,7 +2629,7 @@ if ($action === 'add_itinerary_hotel'){
     }
     
     $stmt = $db->prepare('INSERT INTO itinerary_hotels (name, category, latitude, longitude, rating, rate_per_night, phone, address, description, features, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-    $stmt->bind_param('ssddidssss', $name, $category, $latitude, $longitude, $rating, $rate_per_night, $phone, $address, $description, $features, $image);
+    $stmt->bind_param('ssddidsssss', $name, $category, $latitude, $longitude, $rating, $rate_per_night, $phone, $address, $description, $features, $image);
     
     if ($stmt->execute()) {
         j(['success'=>true, 'id'=>$db->insert_id]);

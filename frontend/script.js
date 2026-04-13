@@ -189,15 +189,29 @@ function getHotelImage(name) {
 
 // ===== DESTINATION COORDINATES & TRANSPORT ROUTES =====
 
-const destinationCoords = {
+const _baseDestinationCoords = {
   'Mayon Volcano': { lat: 13.1550, lon: 123.7050 },
   'Lignon Hill': { lat: 13.1520, lon: 123.7390 },
   'Embarcadero de Legazpi': { lat: 13.1340, lon: 123.7520 },
   'Albay Park & Wildlife': { lat: 13.1500, lon: 123.7400 },
   'Highlands Park Legazpi City': { lat: 13.1610, lon: 123.7240 },
-  'Nuestra Senora de Salvacion Legaspi': { lat: 13.1300, lon: 123.7200 },
+  'Nuestra Senora de Salvacion Legaspi': { lat: 13.17065, lon: 123.73909 },
   'SEVENTY-SIX Farm': { lat: 13.1200, lon: 123.7400 }
 };
+
+// Dynamic proxy: falls back to itineraryDestinationCoords from index.html for DB-added destinations
+const destinationCoords = new Proxy(_baseDestinationCoords, {
+  get(target, prop) {
+    if (prop in target) return target[prop];
+    if (typeof itineraryDestinationCoords !== 'undefined' && prop in itineraryDestinationCoords) return itineraryDestinationCoords[prop];
+    return undefined;
+  },
+  has(target, prop) {
+    if (prop in target) return true;
+    if (typeof itineraryDestinationCoords !== 'undefined' && prop in itineraryDestinationCoords) return true;
+    return false;
+  }
+});
 
 // Destination Database with Images and Details
 const destinationDatabase = {
@@ -248,6 +262,8 @@ const destinationDatabase = {
 
 // Load shops from database instead of hardcoded data
 let noveltyShops = [];
+let shopSortMode = 'best'; // best, rating, reviews, name
+let productSortMode = 'best'; // best, rating, price-low, price-high, name
 
 async function loadNoveltyShops() {
   try {
@@ -257,16 +273,28 @@ async function loadNoveltyShops() {
       noveltyShops = data.shops.map(shop => ({
         id: shop.id,
         name: shop.name,
-        rating: 4.5, // Default rating since not in DB
+        rating: 0,
+        reviewCount: 0,
         address: shop.address,
-        distance: 1.0, // Default distance
+        distance: 1.0,
         phone: shop.contact,
         description: shop.description,
-        specialties: ['Local products', 'Souvenirs'], // Default specialties
-        hours: '9 AM - 6 PM', // Default hours
+        specialties: ['Local products', 'Souvenirs'],
+        hours: '9 AM - 6 PM',
         landmark: shop.owner_name || '',
         directions: '',
         image: shop.image
+      }));
+      // Fetch live ratings from DB for each shop
+      await Promise.all(noveltyShops.map(async (shop) => {
+        try {
+          const res = await fetch(`/capstone/backend/ratings_api.php?action=get_target_ratings&target_type=shop&target_id=${encodeURIComponent(shop.id)}`);
+          const d = await res.json();
+          if (d.success && d.statistics) {
+            shop.rating = parseFloat(d.statistics.average_rating) || 0;
+            shop.reviewCount = parseInt(d.statistics.total_reviews) || 0;
+          }
+        } catch(e) { /* skip */ }
       }));
       window.noveltyShops = noveltyShops;
       renderNoveltyShops();
@@ -334,13 +362,55 @@ if (typeof window !== 'undefined') {
   window.noveltyShops = noveltyShops;
 }
 
+function sortShops(shops) {
+  const sorted = [...shops];
+  switch(shopSortMode) {
+    case 'rating':
+      return sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0) || (b.reviewCount || 0) - (a.reviewCount || 0));
+    case 'reviews':
+      return sorted.sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0) || (b.rating || 0) - (a.rating || 0));
+    case 'name':
+      return sorted.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    case 'best':
+    default:
+      // ML-style weighted score: bayesian average + review volume boost
+      return sorted.sort((a, b) => {
+        const C = 3.5; // prior mean
+        const m = 3;   // minimum reviews threshold
+        const scoreA = ((a.reviewCount || 0) * (a.rating || 0) + m * C) / ((a.reviewCount || 0) + m);
+        const scoreB = ((b.reviewCount || 0) * (b.rating || 0) + m * C) / ((b.reviewCount || 0) + m);
+        return scoreB - scoreA;
+      });
+  }
+}
+
+function setShopSortMode(mode) {
+  shopSortMode = mode;
+  renderNoveltyShops();
+}
+
 function renderNoveltyShops() {
   const container = document.getElementById('shopsContainer');
   if (!container) return;
   container.innerHTML = '';
 
-  noveltyShops.forEach(shop => {
+  // Sort toolbar
+  const toolbar = document.createElement('div');
+  toolbar.style.cssText = 'grid-column: 1/-1; display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:8px;';
+  const sortOptions = [
+    { id: 'best', label: '🤖 Best Match' },
+    { id: 'rating', label: '⭐ Highest Rated' },
+    { id: 'reviews', label: '💬 Most Reviews' },
+    { id: 'name', label: '🔤 Name' }
+  ];
+  toolbar.innerHTML = `<span style="color:#94a3b8; font-size:0.85rem; font-weight:600;">Sort by:</span>` +
+    sortOptions.map(o => `<button onclick="setShopSortMode('${o.id}')" style="padding:6px 14px; border:1px solid ${shopSortMode === o.id ? '#ff7a18' : 'rgba(255,255,255,0.15)'}; border-radius:999px; background:${shopSortMode === o.id ? 'rgba(255,122,24,0.15)' : 'transparent'}; color:${shopSortMode === o.id ? '#ff7a18' : '#cbd5e1'}; cursor:pointer; font-size:0.82rem; font-weight:600; transition:all 0.2s;">${o.label}</button>`).join('');
+  container.appendChild(toolbar);
+
+  const sorted = sortShops(noveltyShops);
+  sorted.forEach(shop => {
     const imageUrl = shop.image || 'https://source.unsplash.com/featured/400x260/?souvenir,market';
+    const stars = '★'.repeat(Math.round(shop.rating || 0)) + '☆'.repeat(5 - Math.round(shop.rating || 0));
     const card = document.createElement('div');
     card.className = 'shop-card';
     card.innerHTML = `
@@ -348,7 +418,15 @@ function renderNoveltyShops() {
       <div class="shop-card-content">
         <div class="shop-card-header">
           <h3>${shop.name}</h3>
+          <span class="shop-rating">${(shop.rating || 0).toFixed(1)}</span>
         </div>
+        <div style="display:flex; align-items:center; gap:6px; margin:0 0 6px 0;">
+          <span style="color:#fbbf24; font-size:0.9rem;">${stars}</span>
+          <span style="color:#94a3b8; font-size:0.78rem;">(${shop.reviewCount || 0} review${(shop.reviewCount || 0) === 1 ? '' : 's'})</span>
+        </div>
+        ${shop.address ? `<div class="shop-card-meta"><span>📍 ${shop.address}</span></div>` : ''}
+        ${shop.owner_name ? `<div class="shop-card-meta"><span>👤 ${shop.owner_name}</span></div>` : ''}
+        ${shop.description ? `<p class="shop-card-desc">${shop.description}</p>` : ''}
         <button class="view-shop-btn" onclick="openShopModalFunc(${shop.id})">View Shop</button>
       </div>
     `;
@@ -1417,8 +1495,21 @@ async function renderShopsOnPage() {
     return;
   }
 
-  // Render each shop with simplified card layout
+  // Fetch live ratings for all shops in cache
+  await Promise.all(Object.entries(shopsCache).map(async ([shopId, shop]) => {
+    try {
+      const res = await fetch(apiUrl(`ratings_api.php?action=get_target_ratings&target_type=shop&target_id=${encodeURIComponent(shopId)}`));
+      const d = await res.json();
+      if (d.success && d.statistics) {
+        shop.rating = parseFloat(d.statistics.average_rating) || 0;
+        shop.reviewCount = parseInt(d.statistics.total_reviews) || 0;
+      }
+    } catch(e) { /* skip */ }
+  }));
+
+  // Render each shop with rating display
   Object.entries(shopsCache).forEach(([shopId, shop]) => {
+    const stars = '\u2605'.repeat(Math.round(shop.rating || 0)) + '\u2606'.repeat(5 - Math.round(shop.rating || 0));
     const card = document.createElement('div');
     card.className = 'card shop-card';
     card.setAttribute('data-shop-id', shopId);
@@ -1433,6 +1524,11 @@ async function renderShopsOnPage() {
       </div>
       <div class="card-content">
         <div class="shop-header"><h3>${shop.name}</h3></div>
+        <div style="display:flex; align-items:center; gap:5px; margin:4px 0 8px;">
+          <span style="color:#fbbf24; font-size:0.85rem;">${stars}</span>
+          <span style="font-weight:700; font-size:0.82rem; color:#333;">${(shop.rating||0).toFixed(1)}</span>
+          <span style="color:#999; font-size:0.75rem;">(${shop.reviewCount||0} reviews)</span>
+        </div>
         <div class="shop-actions"><button class="btn btn-primary" onclick="event.stopPropagation(); openShopModal(${shopId})">View Shop</button></div>
       </div>
     `;
@@ -1667,17 +1763,74 @@ function openShopModal(shopId) {
   document.body.style.overflow = 'hidden';
 }
 
-function displayShopProducts(shopId, category) {
+function setProductSortMode(mode, shopId, category) {
+  productSortMode = mode;
+  displayShopProducts(shopId, category);
+}
+
+function sortProducts(products) {
+  const sorted = [...products];
+  switch(productSortMode) {
+    case 'rating':
+      return sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0) || (b.reviewCount || 0) - (a.reviewCount || 0));
+    case 'price-low':
+      return sorted.sort((a, b) => (parseFloat(String(a.price).replace(/[^0-9.]/g,'')) || 0) - (parseFloat(String(b.price).replace(/[^0-9.]/g,'')) || 0));
+    case 'price-high':
+      return sorted.sort((a, b) => (parseFloat(String(b.price).replace(/[^0-9.]/g,'')) || 0) - (parseFloat(String(a.price).replace(/[^0-9.]/g,'')) || 0));
+    case 'name':
+      return sorted.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    case 'best':
+    default:
+      return sorted.sort((a, b) => {
+        const C = 3.0; const m = 2;
+        const sA = ((a.reviewCount||0) * (a.rating||0) + m*C) / ((a.reviewCount||0) + m);
+        const sB = ((b.reviewCount||0) * (b.rating||0) + m*C) / ((b.reviewCount||0) + m);
+        return sB - sA;
+      });
+  }
+}
+
+async function displayShopProducts(shopId, category) {
   // Get products from cache ONLY (no hardcoded fallback)
   let products = productsCache[shopId] || [];
   
   if (category) {
     products = products.filter(p => p.category === category);
   }
+
+  // Fetch live ratings for each product
+  await Promise.all(products.map(async (prod) => {
+    if (prod._ratingFetched) return;
+    try {
+      const res = await fetch(`/capstone/backend/ratings_api.php?action=get_target_ratings&target_type=product&target_id=${encodeURIComponent(prod.id)}`);
+      const d = await res.json();
+      if (d.success && d.statistics) {
+        prod.rating = parseFloat(d.statistics.average_rating) || 0;
+        prod.reviewCount = parseInt(d.statistics.total_reviews) || 0;
+      }
+      prod._ratingFetched = true;
+    } catch(e) { /* skip */ }
+  }));
+
+  products = sortProducts(products);
   
   const listDiv = document.getElementById('shopProductsList');
   listDiv.innerHTML = '';
   listDiv.style.cssText = 'display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:20px; width:100%;';
+
+  // Product sort toolbar
+  const sortBar = document.createElement('div');
+  sortBar.style.cssText = 'grid-column:1/-1; display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-bottom:8px;';
+  const pSortOptions = [
+    { id:'best', label:'🤖 Best Match' },
+    { id:'rating', label:'⭐ Top Rated' },
+    { id:'price-low', label:'💰 Lowest Price' },
+    { id:'price-high', label:'💎 Highest Price' },
+    { id:'name', label:'🔤 Name' }
+  ];
+  sortBar.innerHTML = `<span style="color:#666; font-size:0.82rem; font-weight:600;">Sort:</span>` +
+    pSortOptions.map(o => `<button onclick="event.stopPropagation(); setProductSortMode('${o.id}', ${shopId}, ${category ? "'" + category + "'" : 'null'})" style="padding:4px 12px; border:1px solid ${productSortMode===o.id ? '#667eea' : '#e2e8f0'}; border-radius:999px; background:${productSortMode===o.id ? 'rgba(102,126,234,0.1)' : 'white'}; color:${productSortMode===o.id ? '#667eea' : '#666'}; cursor:pointer; font-size:0.78rem; font-weight:600;">${o.label}</button>`).join('');
+  listDiv.appendChild(sortBar);
   
   if (products.length === 0) {
     const emptyDiv = document.createElement('div');
@@ -1688,6 +1841,7 @@ function displayShopProducts(shopId, category) {
   }
   
   products.forEach(prod => {
+    const prodStars = '★'.repeat(Math.round(prod.rating || 0)) + '☆'.repeat(5 - Math.round(prod.rating || 0));
     const item = document.createElement('div');
     item.style.cssText = 'background:white; border-radius:10px; overflow:hidden; border:1px solid #e0e0e0; cursor:pointer; transition:all 0.3s ease; box-shadow:0 2px 8px rgba(0,0,0,0.1);';
     
@@ -1698,7 +1852,12 @@ function displayShopProducts(shopId, category) {
       </div>
       <div style="padding:15px;">
         <h4 style="margin:0 0 5px 0; color:#333; font-size:1rem;">${prod.name}</h4>
-        <span style="display:inline-block; background:#667eea; color:white; padding:4px 8px; border-radius:4px; font-size:0.8rem; font-weight:600; margin-bottom:10px;">${prod.category}</span>
+        <span style="display:inline-block; background:#667eea; color:white; padding:4px 8px; border-radius:4px; font-size:0.8rem; font-weight:600; margin-bottom:6px;">${prod.category}</span>
+        <div style="display:flex; align-items:center; gap:4px; margin-bottom:8px;">
+          <span style="color:#fbbf24; font-size:0.82rem;">${prodStars}</span>
+          <span style="color:#333; font-weight:700; font-size:0.8rem;">${(prod.rating||0).toFixed(1)}</span>
+          <span style="color:#999; font-size:0.72rem;">(${prod.reviewCount||0})</span>
+        </div>
         <p style="margin:8px 0; color:#666; font-size:0.9rem; line-height:1.4;">${prod.description}</p>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
           <p style="margin:0; color:#27ae60; font-size:1.3rem; font-weight:bold;">${prod.price}</p>

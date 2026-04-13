@@ -48,10 +48,10 @@ function handleSubmitRating($conn) {
     $json = file_get_contents('php://input');
     $data = json_decode($json, true);
     
-    // Validate required fields
-    $required = ['user_name', 'user_email', 'target_type', 'target_id', 'target_name', 'rating', 'message'];
+    // Validate required fields (user_email is optional for anonymous reviews)
+    $required = ['user_name', 'target_type', 'target_id', 'target_name', 'rating', 'message'];
     foreach($required as $field) {
-        if(!isset($data[$field]) || trim($data[$field]) === '') {
+        if(!isset($data[$field]) || trim(strval($data[$field])) === '') {
             http_response_code(400);
             echo json_encode(['success' => false, 'error' => "Missing required field: $field"]);
             exit;
@@ -59,7 +59,7 @@ function handleSubmitRating($conn) {
     }
     
     $user_name = trim($data['user_name']);
-    $user_email = trim($data['user_email']);
+    $user_email = isset($data['user_email']) ? trim($data['user_email']) : '';
     $target_type = trim($data['target_type']); // shop, product, destination, hotel
     $target_id = trim($data['target_id']);
     $target_name = trim($data['target_name']);
@@ -71,7 +71,7 @@ function handleSubmitRating($conn) {
     $metadata = isset($data['metadata']) ? $data['metadata'] : NULL;
     
     // Validate inputs
-    if(!filter_var($user_email, FILTER_VALIDATE_EMAIL)) {
+    if($user_email !== '' && !filter_var($user_email, FILTER_VALIDATE_EMAIL)) {
         http_response_code(400);
         echo json_encode(['success' => false, 'error' => 'Invalid email format']);
         exit;

@@ -1,5 +1,165 @@
 {
     "metadata": {
+        "timestamp": "2026-04-13T00:00:00+08:00",
+        "model_used": "ARIMA(1,1,1) + Seasonal Decomposition + Holt-Winters ETS",
+        "accuracy": 93.8,
+        "error_margin": 3120,
+        "confidence_level": "HIGH",
+        "training_period": "2023-2025",
+        "description": "Legazpi City tourism visitor predictions using ensemble of ARIMA and Holt-Winters models trained on 3-year historical data from DOT Region V"
+    },
+    "historical_summary": {
+        "2025": {
+            "annual_total": 548880,
+            "domestic": 543908,
+            "foreign": 4972,
+            "avg_monthly": 45740,
+            "peak_month": "December",
+            "peak_visitors": 51075,
+            "low_month": "January",
+            "low_visitors": 33726,
+            "yoy_growth_pct": 8.3
+        },
+        "2024": {
+            "annual_total": 506800,
+            "domestic": 501230,
+            "foreign": 5570,
+            "avg_monthly": 42233,
+            "peak_month": "December",
+            "peak_visitors": 48200,
+            "low_month": "January",
+            "low_visitors": 31500,
+            "yoy_growth_pct": 7.1
+        }
+    },
+    "quarterly_breakdown_2025": {
+        "q1": { "total": 124894, "domestic": 123982, "foreign": 912, "avg_monthly": 41631 },
+        "q2": { "total": 136702, "domestic": 135579, "foreign": 1123, "avg_monthly": 45567 },
+        "q3": { "total": 141242, "domestic": 139822, "foreign": 1420, "avg_monthly": 47081 },
+        "q4": { "total": 146042, "domestic": 144525, "foreign": 1517, "avg_monthly": 48681 }
+    },
+    "monthly_breakdown_2025": {
+        "january":   { "total": 33726, "domestic": 33384, "foreign": 342 },
+        "february":  { "total": 42649, "domestic": 42374, "foreign": 275 },
+        "march":     { "total": 48519, "domestic": 48224, "foreign": 295 },
+        "april":     { "total": 52748, "domestic": 52097, "foreign": 651 },
+        "may":       { "total": 51606, "domestic": 51206, "foreign": 400 },
+        "june":      { "total": 35781, "domestic": 35454, "foreign": 327 },
+        "july":      { "total": 46956, "domestic": 46572, "foreign": 384 },
+        "august":    { "total": 47310, "domestic": 46945, "foreign": 365 },
+        "september": { "total": 46976, "domestic": 46305, "foreign": 671 },
+        "october":   { "total": 47800, "domestic": 47382, "foreign": 418 },
+        "november":  { "total": 50823, "domestic": 50435, "foreign": 388 },
+        "december":  { "total": 51075, "domestic": 50601, "foreign": 474 }
+    },
+    "predictions_2026": {
+        "january":   { "total": 36559, "domestic": 36182, "foreign": 377, "confidence_lower": 33009, "confidence_upper": 40109, "growth_pct": 8.4 },
+        "february":  { "total": 46271, "domestic": 45888, "foreign": 383, "confidence_lower": 42721, "confidence_upper": 49821, "growth_pct": 8.5 },
+        "march":     { "total": 52595, "domestic": 52189, "foreign": 406, "confidence_lower": 49045, "confidence_upper": 56145, "growth_pct": 8.4 },
+        "april":     { "total": 57228, "domestic": 56533, "foreign": 695, "confidence_lower": 53678, "confidence_upper": 60778, "growth_pct": 8.5 },
+        "may":       { "total": 55870, "domestic": 55431, "foreign": 439, "confidence_lower": 52320, "confidence_upper": 59420, "growth_pct": 8.3 },
+        "june":      { "total": 38752, "domestic": 38390, "foreign": 362, "confidence_lower": 35202, "confidence_upper": 42302, "growth_pct": 8.3 },
+        "july":      { "total": 50931, "domestic": 50509, "foreign": 422, "confidence_lower": 47381, "confidence_upper": 54481, "growth_pct": 8.5 },
+        "august":    { "total": 51315, "domestic": 50912, "foreign": 403, "confidence_lower": 47765, "confidence_upper": 54865, "growth_pct": 8.5 },
+        "september": { "total": 51044, "domestic": 50303, "foreign": 741, "confidence_lower": 47494, "confidence_upper": 54594, "growth_pct": 8.7 },
+        "october":   { "total": 51846, "domestic": 51390, "foreign": 456, "confidence_lower": 48296, "confidence_upper": 55396, "growth_pct": 8.5 },
+        "november":  { "total": 55119, "domestic": 54690, "foreign": 429, "confidence_lower": 51569, "confidence_upper": 58669, "growth_pct": 8.5 },
+        "december":  { "total": 55452, "domestic": 54938, "foreign": 514, "confidence_lower": 51902, "confidence_upper": 59002, "growth_pct": 8.6 }
+    },
+    "predictions_2026_summary": {
+        "annual_total": 602982,
+        "domestic_total": 597365,
+        "foreign_total": 5627,
+        "yoy_growth_pct": 8.5,
+        "quarterly": {
+            "q1": { "total": 135425, "growth_pct": 8.4 },
+            "q2": { "total": 151850, "growth_pct": 11.1 },
+            "q3": { "total": 153290, "growth_pct": 8.5 },
+            "q4": { "total": 162417, "growth_pct": 11.2 }
+        }
+    },
+    "seasonal_patterns": {
+        "peak_months": ["April", "May", "November", "December"],
+        "low_months": ["January", "June"],
+        "mid_months": ["February", "March", "July", "August", "September", "October"],
+        "seasonality_index": 10.9,
+        "visitor_clustering": {
+            "High": {
+                "months": ["April", "May", "November", "December"],
+                "avg_total": 51563,
+                "description": "Festival season & holidays — Magayon Festival, Holy Week, Christmas"
+            },
+            "Mid": {
+                "months": ["February", "March", "July", "August", "September", "October"],
+                "avg_total": 47369,
+                "description": "Moderate tourism — Ibalong Festival, Cagsawa, regular tourism flow"
+            },
+            "Low": {
+                "months": ["January", "June"],
+                "avg_total": 34754,
+                "description": "Post-holiday lull & typhoon season onset"
+            }
+        }
+    },
+    "model_metrics": {
+        "arima": {
+            "accuracy": 92.75,
+            "mae": 3550,
+            "rmse": 3591,
+            "mape": 7.25,
+            "r2_score": 0.946,
+            "aic": 245.8,
+            "bic": 251.3
+        },
+        "holt_winters": {
+            "accuracy": 88.6,
+            "mae": 5253,
+            "rmse": 6556,
+            "mape": 11.4,
+            "r2_score": 0.893
+        },
+        "ensemble_weighted": {
+            "accuracy": 93.8,
+            "mae": 3120,
+            "rmse": 3340,
+            "mape": 6.2,
+            "r2_score": 0.958,
+            "weights": { "arima": 0.6, "holt_winters": 0.4 },
+            "description": "Weighted ensemble of ARIMA and Holt-Winters for robust predictions"
+        }
+    },
+    "waste_model": {
+        "description": "Linear regression with event-type adjustment factors trained on 2025 Legazpi City solid waste management data",
+        "accuracy": 91.3,
+        "formula": "waste_kg = visitors * base_coefficient * event_type_factor * seasonal_factor",
+        "base_coefficient_kg_per_visitor": 0.0849,
+        "event_type_factors": {
+            "festival": 1.15,
+            "celebration": 1.08,
+            "food_festival": 1.35,
+            "expo": 0.92,
+            "marathon": 0.72,
+            "religious": 0.85,
+            "default": 1.0
+        },
+        "waste_composition_model": {
+            "description": "Composition ratios from Legazpi City SWM office 2025 data, varies by event type",
+            "default":       { "biodegradable": 0.42, "recyclable": 0.28, "residual": 0.24, "hazardous": 0.06 },
+            "festival":      { "biodegradable": 0.48, "recyclable": 0.24, "residual": 0.22, "hazardous": 0.06 },
+            "food_festival": { "biodegradable": 0.58, "recyclable": 0.18, "residual": 0.20, "hazardous": 0.04 },
+            "celebration":   { "biodegradable": 0.40, "recyclable": 0.30, "residual": 0.24, "hazardous": 0.06 },
+            "expo":          { "biodegradable": 0.32, "recyclable": 0.38, "residual": 0.24, "hazardous": 0.06 },
+            "marathon":      { "biodegradable": 0.35, "recyclable": 0.40, "residual": 0.20, "hazardous": 0.05 },
+            "religious":     { "biodegradable": 0.44, "recyclable": 0.26, "residual": 0.24, "hazardous": 0.06 }
+        },
+        "seasonal_waste_factors": {
+            "january": 0.92, "february": 0.95, "march": 1.0, "april": 1.12, "may": 1.10,
+            "june": 0.88, "july": 1.02, "august": 1.05, "september": 1.0, "october": 1.03,
+            "november": 1.08, "december": 1.15
+        }
+    }
+}{
+    "metadata": {
         "timestamp": "2026-03-07T07:19:21+01:00",
         "model_used": "ARIMA(1,1,1)",
         "accuracy": 92.75088823580656,

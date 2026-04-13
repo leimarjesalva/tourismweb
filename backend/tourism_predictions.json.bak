@@ -1,0 +1,192 @@
+{
+    "metadata": {
+        "timestamp": "2026-03-07T07:19:21+01:00",
+        "model_used": "ARIMA(1,1,1)",
+        "accuracy": 92.75088823580656,
+        "error_margin": 3550.2741006409437,
+        "confidence_level": "MEDIUM"
+    },
+    "historical_summary": {
+        "2025": {
+            "annual_total": 548880,
+            "domestic": 543908,
+            "foreign": 4972,
+            "avg_monthly": 45740,
+            "peak_month": "December",
+            "peak_visitors": 51075,
+            "low_month": "January",
+            "low_visitors": 33726
+        }
+    },
+    "quarterly_breakdown_2025": {
+        "q1": {
+            "total": 124894,
+            "domestic": 123982,
+            "foreign": 912
+        },
+        "q2": {
+            "total": 136702,
+            "domestic": 135579,
+            "foreign": 1123
+        },
+        "q3": {
+            "total": 141242,
+            "domestic": 139822,
+            "foreign": 1420
+        },
+        "q4": {
+            "total": 146042,
+            "domestic": 144525,
+            "foreign": 1517
+        }
+    },
+    "monthly_breakdown_2025": {
+        "january": {
+            "total": 33726,
+            "domestic": 33384,
+            "foreign": 342
+        },
+        "february": {
+            "total": 42649,
+            "domestic": 42374,
+            "foreign": 275
+        },
+        "march": {
+            "total": 48519,
+            "domestic": 48224,
+            "foreign": 295
+        },
+        "april": {
+            "total": 52748,
+            "domestic": 52097,
+            "foreign": 651
+        },
+        "may": {
+            "total": 51606,
+            "domestic": 51206,
+            "foreign": 400
+        },
+        "june": {
+            "total": 35781,
+            "domestic": 35454,
+            "foreign": 327
+        },
+        "july": {
+            "total": 46956,
+            "domestic": 46572,
+            "foreign": 384
+        },
+        "august": {
+            "total": 47310,
+            "domestic": 46945,
+            "foreign": 365
+        },
+        "september": {
+            "total": 46976,
+            "domestic": 46305,
+            "foreign": 671
+        },
+        "october": {
+            "total": 47800,
+            "domestic": 47382,
+            "foreign": 418
+        },
+        "november": {
+            "total": 50823,
+            "domestic": 50435,
+            "foreign": 388
+        },
+        "december": {
+            "total": 51075,
+            "domestic": 50601,
+            "foreign": 474
+        }
+    },
+    "predictions_2026_q1": {
+        "january": {
+            "total": 217155,
+            "domestic": 215188,
+            "foreign": 1967
+        },
+        "february": {
+            "total": 268919,
+            "domestic": 266483,
+            "foreign": 2435
+        },
+        "march": {
+            "total": 324153,
+            "domestic": 321217,
+            "foreign": 2936
+        },
+        "quarterly_total": 810228,
+        "growth_vs_2025_q1": 548.7326701873292
+    },
+    "seasonal_patterns": {
+        "peak_months": [
+            "December",
+            "November",
+            "June"
+        ],
+        "low_months": [
+            "January",
+            "May",
+            "February"
+        ],
+        "seasonality_index": 10.904543668777222,
+        "visitor_clustering": {
+            "Low": {
+                "months": [
+                    "February",
+                    "March",
+                    "April",
+                    "May",
+                    "June"
+                ],
+                "avg_total": 45574,
+                "avg_domestic": 45235.4,
+                "avg_foreign": 338.6,
+                "avg_foreign_pct": 0.7459999999999999
+            },
+            "Mid": {
+                "months": [
+                    "July",
+                    "August",
+                    "September",
+                    "October",
+                    "November",
+                    "December"
+                ],
+                "avg_total": 47880.666666666664,
+                "avg_domestic": 47391.166666666664,
+                "avg_foreign": 489.5,
+                "avg_foreign_pct": 1.0216666666666667
+            },
+            "High": {
+                "months": [
+                    "January"
+                ],
+                "avg_total": 33726,
+                "avg_domestic": 33384,
+                "avg_foreign": 342,
+                "avg_foreign_pct": 1.01
+            }
+        }
+    },
+    "model_metrics": {
+        "arima": {
+            "accuracy": 92.75088823580656,
+            "mae": 3550.2741006409437,
+            "rmse": 3591.1534339911927
+        },
+        "holt_winters": {
+            "accuracy": 88.5996620261631,
+            "mae": 5252.8588382546,
+            "rmse": 6556.0764189994425
+        },
+        "polynomial_regression": {
+            "accuracy": -8.229542643193327,
+            "mae": 53057.827940025534,
+            "rmse": 53795.59678045714
+        }
+    }
+}
