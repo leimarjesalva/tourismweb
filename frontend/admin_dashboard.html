@@ -485,7 +485,6 @@
           
           <!-- Page views metrics removed per request -->
       </div>
-      </div>
       <!-- DESTINATION MANAGEMENT TAB -->
       <div id="events" class="tab-content" style="display:none;">
         <div class="section-title">🗺️ Destination Management</div>
@@ -1037,6 +1036,7 @@
       </div>
     </div>
   </div>
+</div>
 
 <script>
 // Helper for backend path resolution
@@ -1224,33 +1224,32 @@ async function adminLogout(){
 }
 
 async function loadAllData(){ 
-  await Promise.all([
-    loadAnalytics(),
-    loadEvents(),
-    loadExperiences(),
-    loadFestivals(),
-    loadAlerts(),
-    loadGuestFeedback(),
-    loadAndDisplayFeedback(),
-    loadPredictions()
+  await Promise.allSettled([
+    loadAnalytics().catch(e => console.error('loadAnalytics failed:', e)),
+    loadEvents().catch(e => console.error('loadEvents failed:', e)),
+    loadExperiences().catch(e => console.error('loadExperiences failed:', e)),
+    loadFestivals().catch(e => console.error('loadFestivals failed:', e)),
+    loadAlerts().catch(e => console.error('loadAlerts failed:', e)),
+    loadGuestFeedback().catch(e => console.error('loadGuestFeedback failed:', e)),
+    loadAndDisplayFeedback().catch(e => console.error('loadAndDisplayFeedback failed:', e)),
+    loadPredictions().catch(e => console.error('loadPredictions failed:', e))
   ]);
 }
 
 async function loadAnalytics(){
+  try {
   const r = await getJSON('../backend/api.php?action=analytics_summary');
+  if (!r || r.error) { console.warn('Analytics API error:', r); return; }
   const formatAvg = (value) => Number(value || 0).toFixed(2);
   const makeStars = (avg) => { const n = Math.round(parseFloat(avg) || 0); return '★'.repeat(n) + '☆'.repeat(5 - n); };
   
-  document.getElementById('stat-destinations').textContent = r.total_destinations || 0;
-  document.getElementById('stat-experiences').textContent = r.total_experiences || 0;
-  
-  document.getElementById('stat-feedback').textContent = r.total_feedback || 0;
-  const fbDetail = document.getElementById('stat-feedback-detail');
-  if(fbDetail) fbDetail.textContent = 'Reviews submitted';
-  const shopEl = document.getElementById('stat-shops');
-  if(shopEl) shopEl.textContent = r.total_shops || 0;
-  const shopDetail = document.getElementById('stat-shops-detail');
-  if(shopDetail) shopDetail.textContent = 'Registered shops';
+  const setEl = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+  setEl('stat-destinations', r.total_destinations || 0);
+  setEl('stat-experiences', r.total_experiences || 0);
+  setEl('stat-feedback', r.total_feedback || 0);
+  setEl('stat-feedback-detail', 'Reviews submitted');
+  setEl('stat-shops', r.total_shops || 0);
+  setEl('stat-shops-detail', 'Registered shops');
   
   // Rating cards
   const ratingConfigs = [
@@ -1319,6 +1318,7 @@ async function loadAnalytics(){
   // top searches list
   const ts = r.top_searches || [];
   const searchOut = document.getElementById('topSearchesList'); if(searchOut){ searchOut.innerHTML = ts.map(s=>`<div style="padding:8px 0; border-bottom:1px solid #eee;"><strong>${s.query_text}</strong> <small style="color:#666;">(${s.c})</small></div>`).join(''); }
+  } catch(e) { console.error('loadAnalytics error:', e); }
 }
 
 async function loadEvents(){
@@ -3148,9 +3148,11 @@ async function loadEventsForAlerts(){
 }
 
 async function loadAlerts(){ 
+  try {
   const r = await getJSON('../backend/api.php?action=get_event_alerts'); 
   console.log('loadAlerts: raw API response', r);
   const out = document.getElementById('alertsList'); 
+  if(!out) return;
   out.innerHTML = ''; 
   const alerts = (r.alerts||[]).slice(); 
   if (!alerts.length){
@@ -3203,6 +3205,7 @@ async function loadAlerts(){
       out.appendChild(div); 
     });
   });
+  } catch(e) { console.error('loadAlerts error:', e); }
 }
 
 async function deleteAlert(id){ 
@@ -3297,6 +3300,7 @@ async function loadGuestLogs(){
 // - #feedbackList (legacy tab)
 // - #dashboardGuestFeedback (dashboard metrics panel)
 async function loadGuestFeedback(){
+  try {
   const r = await getJSON('../backend/api.php?action=list_feedback');
   console.log('[admin] loadGuestFeedback result', r);
   const out = document.getElementById('feedbackList');
@@ -3359,6 +3363,7 @@ async function loadGuestFeedback(){
     if(out) out.appendChild(card);
     if(dashboardOut) dashboardOut.appendChild(card.cloneNode(true));
   });
+  } catch(e) { console.error('loadGuestFeedback error:', e); }
 }
 
 
@@ -4358,7 +4363,7 @@ document.addEventListener('DOMContentLoaded', function(){
   const expForm = document.getElementById('experienceForm');
   if(!expForm) return;
   
-  expForm.addEventListener('submit', async function(e){ 
+  async function experienceCreateHandler(e){ 
     e.preventDefault();
     
     // Validate required fields
@@ -4370,7 +4375,9 @@ document.addEventListener('DOMContentLoaded', function(){
     const data = { 
       title: expForm.title.value.trim(), 
       type: expForm.type.value.trim(), 
-      description: expForm.description.value.trim()
+      description: expForm.description.value.trim(),
+      price: expForm.price.value.trim(),
+      duration: expForm.duration.value.trim()
     };
     
     // Handle image upload if file is selected
@@ -4403,9 +4410,13 @@ document.addEventListener('DOMContentLoaded', function(){
     } catch(err) {
       showSnackbar('API error: ' + err.message, 'error');
     }
-  });
+  }
+  
+  // Store the named reference so editExperience can swap it
+  expForm._createHandler = experienceCreateHandler;
+  expForm.addEventListener('submit', experienceCreateHandler);
 }, {once: true});
-async function loadExperiences(){ const out = document.getElementById('experiencesList'); if(!out) return; out.innerHTML='Loading...'; try{ const r = await getJSON('../backend/api.php?action=list_experiences'); const rows=r.experiences||[]; if(rows.length===0){ out.innerHTML='<div style="color:#666;">No experiences</div>'; return; } out.innerHTML = rows.map(x=>{ const img = x.image?`<img src="${x.image}" style="width:100px;height:70px;object-fit:cover;border-radius:6px;margin-right:10px;"/>`:''; return `<div class="experience-card" style="display:flex;align-items:center;justify-content:space-between;background:white;padding:12px;border-radius:8px;border-left:4px solid #667eea;"><div style="display:flex;align-items:center;gap:12px;"><div>${img}</div><div><strong>${x.title}</strong><div style="color:#666">${x.type||''}</div><div style="color:#777">${x.description?x.description.substring(0,120):''}</div></div></div><div style="display:flex;gap:8px;"><button class="btn" onclick="editExperience(${x.id})">Edit</button><button class="btn btn-danger" onclick="deleteExperience(${x.id})">Delete</button></div></div>`; }).join(''); }catch(e){ out.innerHTML='<div style="color:#f88;">Load failed</div>'; }}
+async function loadExperiences(){ const out = document.getElementById('experiencesList'); if(!out) return; out.innerHTML='Loading...'; try{ const r = await getJSON('../backend/api.php?action=list_experiences'); const rows=r.experiences||[]; if(rows.length===0){ out.innerHTML='<div style="color:#666;">No experiences</div>'; return; } out.innerHTML = rows.map(x=>{ const img = x.image?`<img src="${x.image}" style="width:100px;height:70px;object-fit:cover;border-radius:6px;margin-right:10px;"/>`:''; const price = x.price ? `💰 ₱${Number(x.price).toLocaleString()}` : ''; const duration = x.duration ? `⏱️ ${x.duration}` : ''; const meta = [price, duration].filter(Boolean).join(' • '); return `<div class="experience-card" style="display:flex;align-items:center;justify-content:space-between;background:white;padding:12px;border-radius:8px;border-left:4px solid #667eea;"><div style="display:flex;align-items:center;gap:12px;"><div>${img}</div><div><strong>${x.title}</strong><div style="color:#666">${x.type||''}</div>${meta?`<div style="color:#ff7a18;font-size:0.85rem;">${meta}</div>`:''}<div style="color:#777">${x.description?x.description.substring(0,120):''}</div></div></div><div style="display:flex;gap:8px;"><button class="btn" onclick="editExperience(${x.id})">Edit</button><button class="btn btn-danger" onclick="deleteExperience(${x.id})">Delete</button></div></div>`; }).join(''); }catch(e){ out.innerHTML='<div style="color:#f88;">Load failed</div>'; }}
 async function editExperience(id){ 
   const r = await getJSON('../backend/api.php?action=list_experiences'); 
   const exp = (r.experiences||[]).find(x=>x.id==id); 
@@ -4414,16 +4425,29 @@ async function editExperience(id){
   const f = document.getElementById('experienceForm'); 
   f.title.value = exp.title; 
   f.type.value = exp.type; 
-  f.description.value = exp.description; 
+  f.description.value = exp.description;
+  f.price.value = exp.price || '';
+  f.duration.value = exp.duration || ''; 
   document.querySelector('#experienceForm input[name=image]').value = exp.image || ''; 
   document.getElementById('experienceImagePreview').src = exp.image || ''; 
   document.getElementById('experienceImagePreviewContainer').style.display = exp.image ? 'block' : 'none';
   
-  // change submit handler to perform update
+  // Remove any existing update handler first
+  if (f._updateHandler) {
+    f.removeEventListener('submit', f._updateHandler);
+    f._updateHandler = null;
+  }
+  
+  // Remove the create handler
+  if (f._createHandler) {
+    f.removeEventListener('submit', f._createHandler);
+  }
+  
+  // Create and attach update handler
   const submitHandler = async function upd(e){ 
     e.preventDefault(); 
     const form = e.target; 
-    const payload = { id: id, title: form.title.value, type: form.type.value, description: form.description.value };
+    const payload = { id: id, title: form.title.value, type: form.type.value, description: form.description.value, price: form.price.value, duration: form.duration.value };
     const fileInput = form.querySelector('input[type=file]'); 
     if(fileInput && fileInput.files && fileInput.files[0]){ 
       const up = await uploadExperienceImageFile(fileInput.files[0]); 
@@ -4434,20 +4458,18 @@ async function editExperience(id){
     if(res.success){ 
       showSnackbar('Experience updated','success'); 
       loadExperiences(); 
-      form.removeEventListener('submit', submitHandler); 
-      form.addEventListener('submit', experienceCreateListener); 
+      // Restore create handler
+      form.removeEventListener('submit', submitHandler);
+      form._updateHandler = null;
+      if (form._createHandler) form.addEventListener('submit', form._createHandler);
       resetExperienceForm(); 
       document.getElementById('submitExperienceBtn').textContent = '➕ Add Experience';
       document.getElementById('cancelExperienceEditBtn').style.display = 'none';
     } else showSnackbar('Error updating experience','error'); 
   };
   
-  // swap handlers
-  const form = document.getElementById('experienceForm'); 
-  const experienceCreateListener = form._createListenerRef || null; 
-  if(!form._createListenerRef){ form._createListenerRef = form.onsubmit; }
-  form.removeEventListener('submit', experienceCreateListener); 
-  form.addEventListener('submit', submitHandler);
+  f._updateHandler = submitHandler;
+  f.addEventListener('submit', submitHandler);
   
   // Show update mode UI
   document.getElementById('submitExperienceBtn').textContent = '💾 Update Experience';
@@ -4461,11 +4483,13 @@ function cancelExperienceEdit(){
   document.getElementById('submitExperienceBtn').textContent = '➕ Add Experience';
   document.getElementById('cancelExperienceEditBtn').style.display = 'none';
   
-  // Restore original create handler
-  const experienceCreateListener = f._createListenerRef || null;
-  if(experienceCreateListener) {
-    f.removeEventListener('submit', f.onsubmit);
-    f.addEventListener('submit', experienceCreateListener);
+  // Remove update handler and restore create handler
+  if (f._updateHandler) {
+    f.removeEventListener('submit', f._updateHandler);
+    f._updateHandler = null;
+  }
+  if (f._createHandler) {
+    f.addEventListener('submit', f._createHandler);
   }
 }
 async function deleteExperience(id){ if(!confirm('Delete experience?')) return; const res = await postJSON('../backend/api.php?action=delete_experience',{ id }); if(res.success){ showSnackbar('Deleted','success'); loadExperiences(); } else showSnackbar('Delete failed','error'); }

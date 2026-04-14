@@ -2200,11 +2200,6 @@ async function loadExperiencesFromBackend(){
     const data = await res.json();
     console.log('📊 Experiences data:', data);
     let experiences = data.experiences || [];
-    // if destinations have been loaded, avoid showing any experience that has the same title
-    if (window.destinationsCache && window.destinationsCache.length) {
-      const destNames = window.destinationsCache.map(d=>d.name.toLowerCase());
-      experiences = experiences.filter(e=> !destNames.includes((e.title||'').toLowerCase()));
-    }
     const container = document.getElementById('adminExperiencesContainer');
     if (!container) return;
     

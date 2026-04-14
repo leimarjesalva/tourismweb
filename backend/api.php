@@ -2397,7 +2397,7 @@ if ($action === 'edit_experience'){
     $image = $d['image'] ?? null;
     if ($image) {
         $stmt = $db->prepare('UPDATE local_experiences SET title=?, description=?, type=?, price=?, duration=?, image=? WHERE id=?');
-        $stmt->bind_param('sssdsi',$d['title'],$d['description'],$d['type'],$d['price'],$d['duration'],$image,$d['id']);
+        $stmt->bind_param('sssdssi',$d['title'],$d['description'],$d['type'],$d['price'],$d['duration'],$image,$d['id']);
     } else {
         $stmt = $db->prepare('UPDATE local_experiences SET title=?, description=?, type=?, price=?, duration=? WHERE id=?');
         $stmt->bind_param('sssdsi',$d['title'],$d['description'],$d['type'],$d['price'],$d['duration'],$d['id']);
