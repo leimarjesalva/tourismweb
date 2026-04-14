@@ -228,160 +228,322 @@
       color: #fff !important;
     }
 
-    /* Step 2 layout improvements */
+    /* ===== Step 2 — Full Visual Overhaul ===== */
     .step2-columns {
-      display:grid;
-      grid-template-columns: minmax(320px, 1.4fr) minmax(320px, 1.2fr) minmax(280px, 360px);
-      gap:18px;
-      align-items:start;
-      width:100%;
+      display: grid;
+      grid-template-columns: minmax(400px, 1.3fr) minmax(400px, 1fr);
+      gap: 24px;
+      align-items: start;
+      width: 100%;
     }
     .step2-column {
-      display:grid;
-      gap:18px;
-      min-width:0;
+      display: grid;
+      gap: 20px;
+      min-width: 0;
     }
-    .step2-column.primary {
-      min-width:0;
-    }
-    .step2-column.secondary {
-      min-width:0;
-    }
-    .step2-column.tertiary {
-      min-width:0;
-    }
+
+    /* Glass card base */
     .step2-card {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 22px;
-      padding: 16px;
-      display:grid;
-      gap:12px;
-      min-width:0;
-      overflow:hidden;
+      background: linear-gradient(145deg, rgba(15,23,42,0.85), rgba(30,41,59,0.70));
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 24px;
+      padding: 20px;
+      display: grid;
+      gap: 14px;
+      min-width: 0;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.06);
+      backdrop-filter: blur(12px);
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .step2-card:hover {
+      border-color: rgba(255,255,255,0.12);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.08);
     }
     .step2-card.wide {
-      padding: 18px;
+      padding: 24px;
     }
+
+    /* Hotel recommendations scroll */
     #hotelRecommendations {
-      max-height: 720px;
+      max-height: 740px;
       overflow-y: auto;
-      padding-right: 6px;
+      padding-right: 4px;
     }
     #hotelRecommendations::-webkit-scrollbar {
-      width: 8px;
+      width: 6px;
+    }
+    #hotelRecommendations::-webkit-scrollbar-track {
+      background: transparent;
     }
     #hotelRecommendations::-webkit-scrollbar-thumb {
-      background: rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.12);
       border-radius: 999px;
     }
+    #hotelRecommendations::-webkit-scrollbar-thumb:hover {
+      background: rgba(255,255,255,0.22);
+    }
+
+    /* Header card */
     .step2-header-card {
-      background: rgba(15,23,42,0.95);
+      background: linear-gradient(135deg, rgba(15,23,42,0.96), rgba(30,41,59,0.90));
       border: 1px solid rgba(255,255,255,0.08);
-      box-shadow: 0 30px 70px rgba(0,0,0,0.28);
-      backdrop-filter: blur(14px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.06);
+      backdrop-filter: blur(16px);
       border-radius: 28px;
-      padding: 24px 26px;
-      display:grid;
-      grid-template-columns: 1.5fr minmax(260px, 1fr);
-      gap:24px;
-      align-items:center;
-      min-width:0;
-      overflow:hidden;
+      padding: 28px 30px;
+      display: grid;
+      grid-template-columns: 1.5fr minmax(240px, 1fr);
+      gap: 28px;
+      align-items: center;
+      min-width: 0;
+      overflow: hidden;
+      margin-bottom: 6px;
     }
     .step2-header-card h3 {
-      margin: 12px 0 0 0;
-      font-size: clamp(2rem, 2.5vw, 2.8rem);
-      line-height: 1.05;
+      margin: 10px 0 0 0;
+      font-size: clamp(1.8rem, 2.4vw, 2.6rem);
+      line-height: 1.1;
       color: #ffffff;
+      letter-spacing: -0.02em;
     }
     .step2-header-card p {
-      color: #cbd5e1;
-      font-size: 0.95rem;
-      line-height: 1.8;
+      color: #94a3b8;
+      font-size: 0.92rem;
+      line-height: 1.7;
       margin: 0;
-      max-width: 360px;
+      max-width: 340px;
       text-align: right;
     }
     .step2-header-card span {
-      display:inline-block;
+      display: inline-block;
       color: #fb923c;
-      font-size: 0.82rem;
+      font-size: 0.78rem;
       font-weight: 700;
-      letter-spacing: 0.16em;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
+      background: rgba(251,146,60,0.08);
+      padding: 4px 12px;
+      border-radius: 999px;
     }
     .step2-header-card .step2-header-copy {
-      display:flex;
-      align-items:flex-start;
-      justify-content:flex-end;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-end;
     }
     .step2-main-content {
-      display:grid;
-      gap:18px;
-      min-width:0;
+      display: grid;
+      gap: 20px;
+      min-width: 0;
     }
     #hotelLocation,
     #hotelsList {
       display: none !important;
     }
+
+    /* Hotel card styling */
+    .hotel-rec-card {
+      display: grid;
+      grid-template-columns: 130px 1fr;
+      gap: 18px;
+      padding: 18px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: linear-gradient(145deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+      margin-bottom: 14px;
+      transition: all 0.3s ease;
+    }
+    .hotel-rec-card:hover {
+      border-color: rgba(255,255,255,0.14);
+      background: linear-gradient(145deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03));
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    }
+    .hotel-rec-card.selected {
+      border-color: rgba(52,211,153,0.45);
+      background: linear-gradient(145deg, rgba(52,211,153,0.10), rgba(52,211,153,0.04));
+      box-shadow: 0 0 0 1px rgba(52,211,153,0.15), 0 8px 24px rgba(52,211,153,0.08);
+    }
+    .hotel-rec-card img {
+      width: 130px;
+      min-height: 150px;
+      max-height: 220px;
+      object-fit: cover;
+      border-radius: 16px;
+    }
+
+    /* Sort pill buttons */
+    .hotel-sort-btn {
+      padding: 7px 14px;
+      border-radius: 999px;
+      background: transparent;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 600;
+      border: 1px solid rgba(255,255,255,0.10);
+      transition: all 0.2s ease;
+    }
+    .hotel-sort-btn:hover {
+      background: rgba(255,255,255,0.06);
+      color: #e2e8f0;
+    }
+    .hotel-sort-btn.active {
+      border-color: #34d399;
+      background: rgba(52,211,153,0.10);
+      color: #34d399;
+    }
+
+    /* Day tab pills */
+    .day-tab-btn {
+      padding: 10px 18px;
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.03);
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 0.88rem;
+      font-weight: 600;
+      transition: all 0.25s ease;
+    }
+    .day-tab-btn:hover {
+      background: rgba(255,255,255,0.08);
+      color: #e2e8f0;
+    }
+    .day-tab-btn.active {
+      background: linear-gradient(135deg, #34d399, #10b981);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 4px 14px rgba(52,211,153,0.30);
+    }
+
+    /* Budget progress bar */
+    .budget-progress-track {
+      height: 10px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+    .budget-progress-track::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.06);
+      pointer-events: none;
+    }
+    .budget-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #34d399, #22c55e);
+      border-radius: 999px;
+      transition: width 0.5s ease;
+    }
+
+    /* Responsive */
     @media (max-width: 1120px) {
       .step2-columns {
         grid-template-columns: 1fr;
       }
-      .step2-column.secondary,
-      .step2-column.tertiary {
+      .step2-column.secondary {
         width: 100%;
       }
       .step2-header-card {
         grid-template-columns: 1fr;
       }
+      .step2-header-card p {
+        text-align: left;
+      }
+      .step2-summary-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+      }
     }
     @media (max-width: 760px) {
       .step2-header-card {
-        gap:16px;
-        padding: 16px;
+        gap: 16px;
+        padding: 18px;
+      }
+      .hotel-rec-card {
+        grid-template-columns: 100px 1fr;
+        gap: 12px;
+        padding: 14px;
+      }
+      .hotel-rec-card img {
+        width: 100px;
+        min-height: 120px;
       }
     }
     .step2-panel-heading {
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      flex-wrap:wrap;
-      margin-bottom:16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
     }
     .step2-button-group {
-      display:grid;
-      gap:12px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 8px;
     }
     .step2-button-group button {
-      width:100%;
-      padding:16px 20px;
-      border-radius:18px;
-      font-weight:800;
-      font-size:1rem;
-      cursor:pointer;
-      transition: transform .2s ease, box-shadow .2s ease;
+      width: 100%;
+      padding: 15px 20px;
+      border-radius: 16px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
     .step2-button-group button:hover {
-      transform: translateY(-1px);
+      transform: translateY(-2px);
     }
     .button-primary {
-      border:none;
+      border: none;
       background: linear-gradient(135deg, #34d399, #22c55e);
-      color:#fff;
+      color: #fff;
+      box-shadow: 0 6px 20px rgba(52,211,153,0.25);
+    }
+    .button-primary:hover {
+      box-shadow: 0 10px 28px rgba(52,211,153,0.35);
     }
     .button-secondary {
-      border:1px solid rgba(255,255,255,0.16);
-      background:transparent;
-      color:#fff;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.03);
+      color: #cbd5e1;
+    }
+    .button-secondary:hover {
+      background: rgba(255,255,255,0.06);
     }
     .step2-summary-grid {
-      display:grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap:16px;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+    }
+    .step2-stat-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px;
+      padding: 14px 16px;
+      transition: background 0.2s ease;
+    }
+    .step2-stat-card:hover {
+      background: rgba(255,255,255,0.07);
+    }
+    .step2-stat-card .stat-label {
+      color: #64748b;
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .step2-stat-card .stat-value {
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.05rem;
+      margin-top: 6px;
     }
     @media (max-width: 1120px) {
       .step2-grid {
@@ -393,8 +555,14 @@
     }
     @media (max-width: 760px) {
       .step2-panel-heading {
-        flex-direction:column;
-        align-items:flex-start;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .step2-summary-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .step2-button-group {
+        grid-template-columns: 1fr;
       }
     }
 
@@ -409,6 +577,250 @@
     .btn-primary { background: linear-gradient(135deg, #ff7a18 0%, #ff6a88 100%); color: white; box-shadow: 0 8px 20px rgba(255,122,24,0.3); }
     .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 14px 32px rgba(255,122,24,0.5); }
     .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── System Feedback Section ── */
+    .system-feedback-section {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      width: 100%;
+      padding: 48px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .system-feedback-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+    .system-fb-form-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 28px;
+      backdrop-filter: blur(10px);
+    }
+    .system-fb-form-card label {
+      color: #cbd5e1;
+      font-weight: 600;
+      font-size: 13px;
+      display: block;
+      margin-bottom: 6px;
+    }
+    .system-fb-form-card input,
+    .system-fb-form-card textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.06);
+      color: #fff;
+      font-size: 13px;
+      transition: border-color 0.3s;
+      box-sizing: border-box;
+    }
+    .system-fb-form-card input:focus,
+    .system-fb-form-card textarea:focus {
+      outline: none;
+      border-color: #ff7a18;
+    }
+    .system-fb-stars {
+      display: flex;
+      gap: 6px;
+      cursor: pointer;
+    }
+    .system-fb-stars span {
+      font-size: 28px;
+      color: #4a5568;
+      transition: color 0.2s, transform 0.2s;
+    }
+    .system-fb-stars span:hover,
+    .system-fb-stars span.active {
+      color: #fbbf24;
+      transform: scale(1.15);
+    }
+
+    /* ── Infinite Sliding Feedback Carousel ── */
+    .feedback-carousel-section {
+      padding: 32px 0 16px;
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+    }
+    .feedback-carousel-section::before,
+    .feedback-carousel-section::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      width: 100px;
+      height: 100%;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .feedback-carousel-section::before {
+      left: 0;
+      background: linear-gradient(to right, #0f172a, transparent);
+    }
+    .feedback-carousel-section::after {
+      right: 0;
+      background: linear-gradient(to left, #1e293b, transparent);
+    }
+    .feedback-carousel-header {
+      text-align: center;
+      margin-bottom: 24px;
+      padding: 0 24px;
+      position: relative;
+      z-index: 3;
+    }
+    .feedback-carousel-header h3 {
+      color: #fff;
+      font-size: 20px;
+      font-weight: 800;
+      margin: 0 0 4px 0;
+    }
+    .feedback-carousel-header p {
+      color: rgba(255,255,255,0.45);
+      font-size: 13px;
+      margin: 0;
+    }
+    .carousel-track-wrapper {
+      overflow: hidden;
+      width: 100%;
+      position: relative;
+    }
+    .carousel-track {
+      display: flex;
+      gap: 18px;
+      width: max-content;
+      will-change: transform;
+    }
+    .carousel-track.animating {
+      animation: infiniteSlide var(--carousel-duration, 30s) linear infinite;
+    }
+    .carousel-track.animating:hover {
+      animation-play-state: paused;
+    }
+    @keyframes infiniteSlide {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .carousel-card {
+      flex: 0 0 300px;
+      background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 20px;
+      color: #fff;
+      transition: transform 0.4s cubic-bezier(.25,.8,.25,1), box-shadow 0.4s ease, border-color 0.4s, background 0.4s;
+      cursor: default;
+      position: relative;
+      overflow: hidden;
+    }
+    .carousel-card::before {
+      content: '"';
+      position: absolute;
+      top: 10px;
+      right: 16px;
+      font-size: 48px;
+      color: rgba(255,122,24,0.1);
+      font-family: Georgia, serif;
+      line-height: 1;
+      transition: color 0.4s, transform 0.4s;
+    }
+    .carousel-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 20px;
+      right: 20px;
+      height: 3px;
+      border-radius: 3px 3px 0 0;
+      background: linear-gradient(90deg, #ff7a18, #fbbf24, #ff6a88);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+    }
+    .carousel-card:hover {
+      transform: translateY(-8px) scale(1.03);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.35), 0 0 30px rgba(255,122,24,0.1);
+      border-color: rgba(255,255,255,0.18);
+      background: linear-gradient(145deg, rgba(255,255,255,0.13), rgba(255,255,255,0.05));
+    }
+    .carousel-card:hover::before {
+      color: rgba(255,122,24,0.3);
+      transform: scale(1.15) rotate(-5deg);
+    }
+    .carousel-card:hover::after {
+      opacity: 1;
+    }
+    .carousel-card:hover .carousel-card-stars {
+      filter: brightness(1.3);
+      text-shadow: 0 0 8px rgba(251,191,36,0.4);
+    }
+    .carousel-card:hover .carousel-card-author {
+      text-shadow: 0 0 6px rgba(255,122,24,0.3);
+    }
+    .carousel-card:hover .carousel-card-rating {
+      background: rgba(255,122,24,0.25);
+      box-shadow: 0 0 10px rgba(255,122,24,0.15);
+    }
+    .carousel-card-stars {
+      font-size: 16px;
+      margin-bottom: 10px;
+      letter-spacing: 2px;
+      color: #fbbf24;
+      transition: filter 0.4s, text-shadow 0.4s;
+    }
+    .carousel-card-message {
+      font-size: 13px;
+      line-height: 1.65;
+      color: rgba(255,255,255,0.8);
+      margin-bottom: 14px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      font-style: italic;
+    }
+    .carousel-card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding-top: 12px;
+    }
+    .carousel-card-author {
+      font-weight: 700;
+      font-size: 12px;
+      color: #ff7a18;
+      transition: text-shadow 0.4s;
+    }
+    .carousel-card-date {
+      font-size: 10px;
+      color: rgba(255,255,255,0.35);
+      margin-top: 2px;
+    }
+    .carousel-card-rating {
+      background: rgba(255,122,24,0.15);
+      color: #fbbf24;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      transition: background 0.4s, box-shadow 0.4s;
+    }
+    .carousel-empty {
+      text-align: center;
+      padding: 32px 24px;
+      color: rgba(255,255,255,0.45);
+      font-size: 14px;
+      width: 100%;
+    }
 
   </style>
 </head>
@@ -971,13 +1383,18 @@ async function loadCommunityEvents(){
           description: ev.description || 'A destination in Legazpi City.',
           highlights: [],
           tags: tagMap[evType] || ['culture'],
-          budget: 'moderate',
+          budget: ev.entrance_fee !== null && ev.entrance_fee !== undefined
+            ? (parseFloat(ev.entrance_fee) <= 0 ? 'free' : parseFloat(ev.entrance_fee) <= 100 ? 'budget' : parseFloat(ev.entrance_fee) <= 500 ? 'moderate' : 'premium')
+            : 'unknown',
           category: evType.charAt(0).toUpperCase() + evType.slice(1),
           rating: ev.rating || 0,
           reviews: ev.reviewCount || 0,
           address: ev.location || 'Legazpi City, Albay',
           hours: (ev.start_time || '09:00') + ' – ' + (ev.end_time || '17:00'),
-          fee: 'Check on site',
+          entrance_fee: ev.entrance_fee !== null && ev.entrance_fee !== undefined ? parseFloat(ev.entrance_fee) : null,
+          fee: ev.entrance_fee !== null && ev.entrance_fee !== undefined
+            ? (parseFloat(ev.entrance_fee) <= 0 ? 'Free' : '₱' + parseFloat(ev.entrance_fee).toLocaleString())
+            : 'Not set',
           crowdLevel: crowdPercent >= 75 ? 'Very busy' : crowdPercent >= 50 ? 'Moderately busy' : 'Light crowd',
           crowdPercent: crowdPercent
         };
@@ -1294,7 +1711,7 @@ function showCurrentLocationRoute() {
     return;
   }
 
-  navigator.geolocation.getCurrentPosition(position => {
+  navigator.geolocation.getCurrentPosition(async position => {
     const userLat = position.coords.latitude;
     const userLng = position.coords.longitude;
     const map = window.map;
@@ -1319,7 +1736,7 @@ function showCurrentLocationRoute() {
       color: '#fff',
       weight: 2,
       fillOpacity: 1
-    }).addTo(map).bindPopup('You are here').openPopup();
+    }).addTo(map).bindPopup('📍 You are here').openPopup();
 
     window.currentLocationEndMarker = L.circleMarker([destination.lat, destination.lng], {
       radius: 9,
@@ -1329,21 +1746,44 @@ function showCurrentLocationRoute() {
       fillOpacity: 1
     }).addTo(map).bindPopup('Destination');
 
-    window.currentLocationRouteLine = L.polyline([
-      [userLat, userLng],
-      [destination.lat, destination.lng]
-    ], {
-      color: '#9f7aea',
-      weight: 5,
-      opacity: 0.75,
-      dashArray: '8,6'
-    }).addTo(map);
+    // Use OSRM for actual road routing
+    try {
+      const serviceUrl = `https://router.project-osrm.org/route/v1/driving/${userLng},${userLat};${destination.lng},${destination.lat}?overview=full&geometries=geojson`;
+      const res = await fetch(serviceUrl);
+      const data = await res.json();
+      if (data && data.code === 'Ok' && data.routes && data.routes.length) {
+        const route = data.routes[0];
+        const geoCoords = route.geometry.coordinates.map(pt => [pt[1], pt[0]]);
+        window.currentLocationRouteLine = L.polyline(geoCoords, {
+          color: '#9f7aea',
+          weight: 5,
+          opacity: 0.85
+        }).addTo(map);
+        const bounds = window.currentLocationRouteLine.getBounds();
+        bounds.extend([userLat, userLng]);
+        map.fitBounds(bounds, { padding: [40, 40] });
 
-    const bounds = L.latLngBounds([
-      [userLat, userLng],
-      [destination.lat, destination.lng]
-    ]);
-    map.fitBounds(bounds, { padding: [40, 40] });
+        const distKm = (route.distance / 1000).toFixed(1);
+        const durMin = Math.round(route.duration / 60);
+        window.currentLocationStartMarker.bindPopup(`📍 You are here<br><small>${distKm} km • ~${durMin} min drive</small>`).openPopup();
+      } else {
+        // Fallback: straight line
+        window.currentLocationRouteLine = L.polyline([
+          [userLat, userLng],
+          [destination.lat, destination.lng]
+        ], { color: '#9f7aea', weight: 5, opacity: 0.75, dashArray: '8,6' }).addTo(map);
+        const bounds = L.latLngBounds([[userLat, userLng], [destination.lat, destination.lng]]);
+        map.fitBounds(bounds, { padding: [40, 40] });
+      }
+    } catch (e) {
+      console.warn('OSRM route failed, using straight line:', e);
+      window.currentLocationRouteLine = L.polyline([
+        [userLat, userLng],
+        [destination.lat, destination.lng]
+      ], { color: '#9f7aea', weight: 5, opacity: 0.75, dashArray: '8,6' }).addTo(map);
+      const bounds = L.latLngBounds([[userLat, userLng], [destination.lat, destination.lng]]);
+      map.fitBounds(bounds, { padding: [40, 40] });
+    }
   }, error => {
     console.warn('Geolocation failed:', error);
     alert('Unable to retrieve your location. Please allow location access.');
@@ -1352,6 +1792,24 @@ function showCurrentLocationRoute() {
     timeout: 12000,
     maximumAge: 60000
   });
+}
+
+// Navigate from current location to the destination shown in the itinerary map info card
+function navigateToDestinationWithCurrentLocation() {
+  const destName = document.getElementById('mapInfoTitle')?.textContent;
+  if (!destName || destName === 'Place Name') {
+    alert('Please select a destination on the map first.');
+    return;
+  }
+
+  const coords = itineraryDestinationCoords[destName] || itineraryHotelCoords[destName];
+  if (!coords) {
+    alert('Coordinates not available for this destination.');
+    return;
+  }
+
+  // Use the overview map to render the route
+  renderItineraryOverviewRoute(destName);
 }
 
 // ======================== LEAFLET EVENT MAP INITIALIZATION ========================
@@ -2944,7 +3402,8 @@ function openEventDetailModal(ev) {
 document.addEventListener('DOMContentLoaded', function() {
   loadCommunityEvents();
   fetchAllDbHotels().then(() => fetchAllHotelRatings());
-  fetchAllDbShops();
+  fetchAllDbShops().then(() => fetchAllShopRatings());
+  loadSystemFeedbackCarousel();
   // default to map view; load maps lazily
   if (document.getElementById('mapTabBtn')) {
     toggleEventTab('map');
@@ -3741,7 +4200,7 @@ function renderModalPredictionCharts(ev) {
     </div>
 
     <!-- Shops Grid -->
-    <div id="shopsContainer" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:2.5rem; width:100%; justify-items:center;">
+    <div id="shopsContainer" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:2.5rem; width:100%; align-items:stretch;">
       <!-- Shops will be loaded dynamically here -->
     </div>
   </div>
@@ -3806,22 +4265,14 @@ function renderModalPredictionCharts(ev) {
             </button>
           </div>
           
-          <!-- Rating Summary Card -->
-          <div id="shopRatingSummary" style="background: linear-gradient(135deg, #f8f9ff 0%, #fafbfc 100%); border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; text-align: center; margin-bottom: 16px;">
-            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 16px; align-items: center;">
-              <div style="text-align: left;">
+          <!-- Rating Summary -->
+          <div id="shopRatingSummary" style="background: linear-gradient(135deg, #f8f9ff 0%, #fafbfc 100%); border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; gap: 16px;">
+              <div style="text-align: center; min-width: 80px;">
                 <div style="font-size: 2.4rem; font-weight: 800; color: #667eea;" id="shopAvgRating">0.0</div>
-                <div style="color: #fbbf24; font-size: 1rem; margin: 4px 0; display: flex; gap: 2px;" id="shopStarDisplay">☆☆☆☆☆</div>
-                <div style="color: #64748b; font-size: 0.85rem;" id="shopReviewCount">No reviews yet</div>
+                <div style="color: #fbbf24; font-size: 1rem; margin: 4px 0; display: flex; gap: 2px; justify-content: center;" id="shopStarDisplay">☆☆☆☆☆</div>
               </div>
-              <div style="text-align: center; padding: 12px; background: rgba(16,179,145,0.1); border-radius: 8px;">
-                <div style="font-size: 1.2rem; font-weight: 700; color: #10b981;" id="shopPositiveCount">0</div>
-                <div style="font-size: 0.75rem; color: #64748b; margin-top: 4px;">Positive</div>
-              </div>
-              <div style="text-align: center; padding: 12px; background: rgba(59,130,246,0.1); border-radius: 8px;">
-                <div style="font-size: 1.2rem; font-weight: 700; color: #3b82f6;" id="shopTotalCount">0</div>
-                <div style="font-size: 0.75rem; color: #64748b; margin-top: 4px;">Total Reviews</div>
-              </div>
+              <div style="color: #64748b; font-size: 0.85rem;" id="shopReviewCount">No reviews yet</div>
             </div>
           </div>
           
@@ -3856,12 +4307,13 @@ function renderModalPredictionCharts(ev) {
       
       document.getElementById('shopModalName').textContent = shop.name;
       document.getElementById('shopModalDescription').textContent = shop.description || 'No description available';
-      document.getElementById('shopModalImage').src = shop.image || 'https://source.unsplash.com/featured/900x600/?souvenir,market';
+      document.getElementById('shopModalImage').src = getShopImageUrl(shop.image, shop.name);
+      document.getElementById('shopModalImage').onerror = function() { this.onerror=null; this.src='https://via.placeholder.com/900x600?text=' + encodeURIComponent(shop.name); };
       document.getElementById('shopModalAddress').textContent = shop.address || 'Address not available';
       document.getElementById('shopModalContact').textContent = shop.phone || shop.contact || 'Contact not available';
       document.getElementById('shopModalOwner').textContent = shop.landmark || shop.owner_name || '';
       
-      // Load and display shop ratings - SIMPLIFIED & ROBUST VERSION
+      // Load and display shop ratings - ENHANCED with categories
       if (shop && shop.id) {
         const shopId = shop.id;
         const displayDiv = document.getElementById('shopRatingDisplay');
@@ -3869,82 +4321,91 @@ function renderModalPredictionCharts(ev) {
         if (!displayDiv) {
           console.error('❌ shopRatingDisplay div not found!');
         } else {
-          console.log('🔄 API Call: get_target_ratings for shop ID:', shopId);
           displayDiv.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 20px; color: #999;">⏳ Loading reviews...</div>';
+          window._allShopReviews = [];
+          window._allShopProductReviews = [];
           
-          // Single API call that returns everything
-          fetch(`/capstone/backend/ratings_api.php?action=get_target_ratings&target_type=shop&target_id=${shopId}`)
-            .then(response => {
-              console.log('📡 HTTP Response:', response.status);
-              if (!response.ok) throw new Error(`HTTP ${response.status}`);
-              return response.json();
-            })
-            .then(data => {
-              console.log('📦 API Response:', data);
+          // Reset summary while loading
+          const avgElemReset = document.getElementById('shopAvgRating');
+          const starElemReset = document.getElementById('shopStarDisplay');
+          const countElemReset = document.getElementById('shopReviewCount');
+          if (avgElemReset) avgElemReset.textContent = '—';
+          if (starElemReset) starElemReset.innerHTML = '☆☆☆☆☆';
+          if (countElemReset) countElemReset.textContent = 'Loading...';
+          
+          // Fetch shop reviews by both ID and name
+          const shopFetchById = fetch(`/capstone/backend/ratings_api.php?action=get_target_ratings&target_type=shop&target_id=${shopId}`)
+            .then(r => r.ok ? r.json() : { success: false })
+            .catch(() => ({ success: false }));
+          
+          const shopFetchByName = fetch(`/capstone/backend/ratings_api.php?action=get_target_ratings&target_type=shop&target_id=${encodeURIComponent(shop.name)}`)
+            .then(r => r.ok ? r.json() : { success: false })
+            .catch(() => ({ success: false }));
+          
+          // Also fetch products for this shop and their reviews
+          const productsFetch = fetch(`/capstone/backend/api.php?action=list_products&shop_id=${shopId}`)
+            .then(r => r.ok ? r.json() : { products: [] })
+            .catch(() => ({ products: [] }));
+          
+          Promise.all([shopFetchById, shopFetchByName, productsFetch]).then(async ([shopDataById, shopDataByName, productsData]) => {
+              if (!document.getElementById('shopRatingDisplay')) return;
               
-              // Extract data from response
-              const reviews = data.reviews || [];
-              const stats = data.statistics || {};
+              console.log('🔵 Shop reviews by ID:', shopDataById);
+              console.log('🔵 Shop reviews by name:', shopDataByName);
               
-              console.log('📊 Extracted:', reviews.length, 'reviews');
+              // Merge shop reviews from both queries, deduplicate by id
+              const reviewsById = (shopDataById.reviews || []);
+              const reviewsByName = (shopDataByName.reviews || []);
+              const mergedShopReviews = [...reviewsById];
+              const seenIds = new Set(reviewsById.map(r => r.id));
+              reviewsByName.forEach(r => { if (!seenIds.has(r.id)) mergedShopReviews.push(r); });
+              const shopReviews = mergedShopReviews.map(r => ({ ...r, _reviewType: 'shop' }));
               
-              // Safety check - make sure displayDiv still exists
-              if (!document.getElementById('shopRatingDisplay')) {
-                console.warn('⚠️ Display div disappeared, modal likely closed');
-                return;
+              console.log('🔵 Merged shop reviews:', shopReviews.length, shopReviews);
+              
+              // Fetch product reviews for each product belonging to this shop
+              const products = productsData.products || [];
+              let productReviews = [];
+              if (products.length > 0) {
+                const productReviewFetches = products.map(p =>
+                  fetch(`/capstone/backend/ratings_api.php?action=get_target_ratings&target_type=product&target_id=${p.id}`)
+                    .then(r => r.ok ? r.json() : { reviews: [] })
+                    .catch(() => ({ reviews: [] }))
+                );
+                const productResults = await Promise.all(productReviewFetches);
+                productResults.forEach(pr => {
+                  (pr.reviews || []).forEach(r => productReviews.push({ ...r, _reviewType: 'product' }));
+                });
               }
               
-              // Update summary stats
-              const totalReviews = parseInt(stats.total_reviews) || 0;
-              const avgRating = parseFloat(stats.average_rating) || 0;
-              const positive = parseInt(stats.positive_reviews) || 0;
+              window._allShopReviews = shopReviews;
+              window._allShopProductReviews = productReviews;
               
-              console.log('📊 Stats: total=' + totalReviews + ', avg=' + avgRating + ', positive=' + positive);
+              console.log('🔵 _allShopReviews set to:', window._allShopReviews.length, window._allShopReviews);
+              console.log('🔵 _allShopProductReviews set to:', window._allShopProductReviews.length);
               
-              // Update all summary fields
+              const allReviews = [...shopReviews, ...productReviews];
+              const totalReviews = allReviews.length;
+              const avgRating = totalReviews > 0 ? allReviews.reduce((s, r) => s + (parseInt(r.rating) || 0), 0) / totalReviews : 0;
+              const positive = allReviews.filter(r => parseInt(r.rating) >= 4).length;
+              
+              // Update summary fields
               const avgElem = document.getElementById('shopAvgRating');
               const starElem = document.getElementById('shopStarDisplay');
               const countElem = document.getElementById('shopReviewCount');
-              const posElem = document.getElementById('shopPositiveCount');
-              const totalElem = document.getElementById('shopTotalCount');
               
               if (avgElem) avgElem.textContent = totalReviews > 0 ? avgRating.toFixed(1) : '—';
               if (starElem) starElem.innerHTML = totalReviews > 0 ? createSimpleStarDisplay(avgRating) : '☆☆☆☆☆';
               if (countElem) countElem.textContent = totalReviews > 0 ? `Based on ${totalReviews} review${totalReviews !== 1 ? 's' : ''}` : 'No ratings yet';
-              if (posElem) posElem.textContent = totalReviews > 0 ? positive : '0';
-              if (totalElem) totalElem.textContent = totalReviews > 0 ? totalReviews : '0';
               
-              console.log('✅ Updated summary card');
-              
-              // Display reviews list
-              const reviewDiv = document.getElementById('shopRatingDisplay');
-              if (reviewDiv) {
-                reviewDiv.innerHTML = '';
-                
-                if (reviews.length === 0) {
-                  console.log('📝 No reviews - showing empty state');
-                  reviewDiv.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; background: linear-gradient(135deg, rgba(249,250,251,0.5), rgba(248,249,255,0.5)); border-radius: 10px; border: 1px dashed #e2e8f0;"><p style="color: #999; margin: 0; font-size: 14px; font-weight: 600;">📝 No reviews yet. Be the first to review!</p></div>';
-                } else {
-                  console.log('🎨 Rendering ' + reviews.length + ' review(s)');
-                  reviews.forEach(review => {
-                    try {
-                      const card = createShopReviewCard(review);
-                      reviewDiv.appendChild(card);
-                    } catch(e) {
-                      console.error('❌ Error rendering review:', e);
-                    }
-                  });
-                  console.log('✅ All reviews rendered');
-                }
-              } else {
-                console.error('❌ shopRatingDisplay div missing when trying to display');
-              }
+              // Display all reviews directly
+              displayAllShopReviews(allReviews);
             })
             .catch(error => {
               console.error('❌ API Error:', error);
               const reviewDiv = document.getElementById('shopRatingDisplay');
               if (reviewDiv) {
-                reviewDiv.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; background: rgba(239,68,68,0.1); border-radius: 10px; border: 1px solid rgba(239,68,68,0.3);"><p style="color: #ef4444; margin: 0; font-size: 14px;">⚠️ Error loading: ' + error.message + '</p></div>';
+                reviewDiv.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; background: rgba(239,68,68,0.1); border-radius: 10px; border: 1px solid rgba(239,68,68,0.3);"><p style="color: #ef4444; margin: 0; font-size: 14px;">⚠️ Error loading reviews</p></div>';
               }
             });
         }
@@ -4002,19 +4463,20 @@ function renderModalPredictionCharts(ev) {
         let ratingDisplay = '';
         if (stats && stats.total_reviews > 0) {
           const avgRating = parseFloat(stats.average_rating || 0).toFixed(1);
-          const stars = '⭐'.repeat(Math.round(parseFloat(avgRating))) + '☆'.repeat(5 - Math.round(parseFloat(avgRating)));
+          const fullStars = Math.round(parseFloat(avgRating));
+          const starsHtml = '<span style="color:#fbbf24;">★</span>'.repeat(fullStars) + '<span style="color:#cbd5e1;">★</span>'.repeat(5 - fullStars);
           ratingDisplay = `
-            <div style="background: linear-gradient(135deg, #fbbf2420, #fbbf2410); border: 1px solid #fbbf2440; border-radius: 8px; padding: 10px; text-align: center; margin-top: 6px;">
-              <div style="color: #fbbf24; font-size: 18px; font-weight: 700; letter-spacing: 1px;">${avgRating}</div>
-              <div style="color: #fbbf24; font-size: 13px; margin: 2px 0; letter-spacing: 2px;">${stars}</div>
-              <div style="color: #f59e0b; font-size: 11px; font-weight: 600;">Based on ${stats.total_reviews} ${stats.total_reviews === 1 ? 'review' : 'reviews'}</div>
+            <div style="display:flex; align-items:center; gap:4px; margin-top:6px;">
+              <span style="font-size:12px;">${starsHtml}</span>
+              <span style="color:#64748b; font-size:11px; font-weight:600;">${avgRating}</span>
+              <span style="color:#94a3b8; font-size:10px;">(${stats.total_reviews})</span>
             </div>
           `;
         } else {
           ratingDisplay = `
-            <div style="background: rgba(209, 213, 219, 0.2); border: 1px solid #d1d5db; border-radius: 8px; padding: 10px; text-align: center; margin-top: 6px;">
-              <div style="color: #999; font-size: 12px;">No ratings yet</div>
-              <div style="color: #bbb; font-size: 10px; margin-top: 4px;">Be the first to rate!</div>
+            <div style="margin-top:6px;">
+              <span style="color:#cbd5e1; font-size:12px;">★★★★★</span>
+              <span style="color:#94a3b8; font-size:10px; margin-left:4px;">No reviews</span>
             </div>
           `;
         }
@@ -4027,8 +4489,8 @@ function renderModalPredictionCharts(ev) {
               </div>
             </div>
             <div style="padding: 12px; border-top: 1px solid #e2e8f0;">
-              <div style="font-weight: 700; color: #0f172a; font-size: 0.9rem; word-break: break-word; line-height: 1.2; margin-bottom: 4px; min-height: 36px;">${product.name}</div>
-              <div style="font-size: 13px; color: #667eea; font-weight: 600; margin-bottom: 8px;">₱${parseFloat(product.price || 0).toFixed(2)}</div>
+              <div style="font-weight: 700; color: #0f172a; font-size: 0.9rem; word-break: break-word; line-height: 1.2; margin-bottom: 6px; min-height: 36px;">${product.name}</div>
+              <div style="font-size: 16px; color: #667eea; font-weight: 700;">₱${parseFloat(product.price || 0).toFixed(2)}</div>
               ${ratingDisplay}
               <div style="text-align: center; font-size: 11px; color: #667eea; margin-top: 8px; padding-top: 8px; border-top: 1px solid #e2e8f0; font-weight: 600;">✨ Write a Review</div>
             </div>
@@ -4130,6 +4592,36 @@ function renderModalPredictionCharts(ev) {
     `;
 
     return card;
+  }
+
+  // Store all reviews for filtering — use window. to ensure global access across closures
+  window._allShopReviews = [];
+  window._allShopProductReviews = [];
+
+  // Display all shop reviews directly
+  function displayAllShopReviews(reviews) {
+    const reviewDiv = document.getElementById('shopRatingDisplay');
+    if (!reviewDiv) return;
+    reviewDiv.innerHTML = '';
+
+    const sorted = [...(reviews || [])].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
+    if (sorted.length === 0) {
+      reviewDiv.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:30px; background:linear-gradient(135deg, rgba(249,250,251,0.5), rgba(248,249,255,0.5)); border-radius:10px; border:1px dashed #e2e8f0;"><p style="color:#999; margin:0; font-size:14px;">📝 No reviews yet.</p></div>';
+      return;
+    }
+
+    sorted.forEach(review => {
+      try {
+        const card = createShopReviewCard(review);
+        const typeLabel = review._reviewType === 'product' ? '🛒 Product' : '🛍️ Shop';
+        const badge = document.createElement('div');
+        badge.style.cssText = 'display:inline-block; padding:2px 8px; border-radius:999px; font-size:0.7rem; font-weight:600; margin-bottom:6px; background:rgba(102,126,234,0.08); color:#667eea;';
+        badge.textContent = typeLabel + (review.target_name ? ' • ' + review.target_name : '');
+        card.insertBefore(badge, card.firstChild);
+        reviewDiv.appendChild(card);
+      } catch(e) { console.error('Error rendering review:', e); }
+    });
   }
   
   // ============= UTILITY FUNCTIONS =============
@@ -4246,17 +4738,23 @@ function renderModalPredictionCharts(ev) {
             <span style="color: #a0aec0; font-size: 0.95rem; max-width: 220px;">Enter your travel dates, budget and traveler details first, then choose destinations that match your plan.</span>
           </div>
 
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; margin-bottom: 16px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 16px;">
             <div>
               <label style="display:block; color:#cbd5e1; margin-bottom: 8px; font-weight:700;">Travel Dates</label>
-              <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px;">
-                <input type="date" id="tripStartDate" class="itinerary-input" style="width:100%;" />
-                <input type="date" id="tripEndDate" class="itinerary-input" style="width:100%;" />
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div>
+                  <label style="display:block; color:#94a3b8; font-size:0.82rem; margin-bottom:4px;">📅 Check-in</label>
+                  <input type="date" id="tripStartDate" class="itinerary-input" style="width:100%;" />
+                </div>
+                <div>
+                  <label style="display:block; color:#94a3b8; font-size:0.82rem; margin-bottom:4px;">📅 Check-out</label>
+                  <input type="date" id="tripEndDate" class="itinerary-input" style="width:100%;" />
+                </div>
               </div>
             </div>
             <div>
               <label style="display:block; color:#cbd5e1; margin-bottom: 8px; font-weight:700;">Travelers</label>
-              <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px;">
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <div>
                   <label style="display:block; color:#94a3b8; font-size:0.82rem; margin-bottom:4px;">👤 Adults</label>
                   <input type="number" id="tripAdults" class="itinerary-input" min="1" value="2" placeholder="Adults" />
@@ -4405,17 +4903,21 @@ function renderModalPredictionCharts(ev) {
       </div>
       <div id="destinationBudgetSummary" style="display:none; background: rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius: 18px; padding: 18px; color:#fff; min-width:260px; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;">
         <div style="text-align:left;">
-          <div style="color:#94a3b8; font-size:0.8rem; margin-bottom:6px;">Selected cost</div>
+          <div style="color:#94a3b8; font-size:0.8rem; margin-bottom:6px;">🎟️ Entrance Fees</div>
           <div id="selectedCostValue" style="color:#fff; font-weight:700; font-size:1rem;">₱300</div>
         </div>
         <div style="text-align:left;">
-          <div style="color:#94a3b8; font-size:0.8rem; margin-bottom:6px;">Budget per person</div>
+          <div style="color:#94a3b8; font-size:0.8rem; margin-bottom:6px;">💰 Your Travel Budget</div>
           <div id="selectedTotalBudgetValue" style="color:#fff; font-weight:700; font-size:1rem;">₱10,000</div>
         </div>
         <div style="text-align:left;">
-          <div style="color:#94a3b8; font-size:0.8rem; margin-bottom:6px;">Remaining</div>
+          <div style="color:#94a3b8; font-size:0.8rem; margin-bottom:6px;">💵 Balance Left</div>
           <div id="selectedRemainingValue" style="color:#fff; font-weight:700; font-size:1rem;">₱9,700</div>
         </div>
+      </div>
+      <div id="budgetAlertBanner" style="display:none; width:100%; margin-top:12px; padding:14px 20px; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.30); border-radius:14px; color:#fca5a5; font-size:0.88rem; line-height:1.5; align-items:center; gap:10px;">
+        <span style="font-size:1.2rem;">⚠️</span>
+        <span id="budgetAlertText">Your budget may not be enough for the selected destinations.</span>
       </div>
     </div>
 
@@ -4431,67 +4933,64 @@ function renderModalPredictionCharts(ev) {
     <div id="itineraryFormSection" style="display:none; width:100%; margin-top: 24px;">
       <div class="step2-header-card">
         <div>
-          <span>Step 2 - Itinerary Details</span>
+          <span>Step 2 — Itinerary Details</span>
           <h3>Your 1-Day Bicol itinerary</h3>
+          <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+            <div style="display:inline-flex; align-items:center; gap:6px; background:rgba(52,211,153,0.08); padding:5px 12px; border-radius:999px; font-size:0.82rem; color:#34d399; font-weight:600;">
+              <span style="font-size:0.9rem;">📍</span> <span id="headerDestCount">0</span> destinations
+            </div>
+            <div style="display:inline-flex; align-items:center; gap:6px; background:rgba(99,102,241,0.08); padding:5px 12px; border-radius:999px; font-size:0.82rem; color:#818cf8; font-weight:600;">
+              <span style="font-size:0.9rem;">👥</span> <span id="headerTravelerCount">1</span> travelers
+            </div>
+          </div>
         </div>
         <div class="step2-header-copy">
-          <p>Review the itinerary for each day, then choose your hotel and confirm the trip.</p>
+          <p>Review the itinerary for each day, choose your hotel, and confirm the trip.</p>
         </div>
       </div>
 
       <div class="step2-columns">
+        <!-- LEFT: Daily Itinerary + Trip Summary -->
         <div class="step2-column primary">
-          <div id="resultsPlaceholder" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 22px; padding: 18px; color:#cbd5e1;">
-            <h4 style="color:#fff; font-size:1.4rem; margin:0 0 10px 0;">Your itinerary will appear here</h4>
-            <p style="margin:0; line-height:1.7;">Once your itinerary is generated, the day tabs and route details appear in this panel.</p>
+          <div id="resultsPlaceholder" style="background: linear-gradient(145deg, rgba(15,23,42,0.85), rgba(30,41,59,0.70)); border: 1px solid rgba(255,255,255,0.07); border-radius: 24px; padding: 24px; color:#94a3b8; box-shadow: 0 8px 32px rgba(0,0,0,0.18);">
+            <h4 style="color:#e2e8f0; font-size:1.3rem; margin:0 0 10px 0; letter-spacing:-0.01em;">Your itinerary will appear here</h4>
+            <p style="margin:0; line-height:1.7; font-size:0.92rem;">Once your itinerary is generated, the day tabs and route details appear in this panel.</p>
           </div>
 
-          <div id="resultsContainer" style="display:none; flex-direction:column; gap:16px;">
-            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 22px; padding: 18px;">
+          <div id="resultsContainer" style="display:none; flex-direction:column; gap:18px;">
+            <div style="background: linear-gradient(145deg, rgba(15,23,42,0.85), rgba(30,41,59,0.70)); border: 1px solid rgba(255,255,255,0.07); border-radius: 24px; padding: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.18);">
               <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
                 <div>
-                  <div style="color:#ff7a18; font-size:0.82rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;">Daily itinerary</div>
-                  <h4 style="color:#fff; font-size:1.35rem; font-weight:800; margin:8px 0 0 0;">Your destinations across days</h4>
+                  <div style="color:#fb923c; font-size:0.78rem; font-weight:700; letter-spacing:0.14em; text-transform:uppercase;">Daily itinerary</div>
+                  <h4 style="color:#fff; font-size:1.25rem; font-weight:800; margin:8px 0 0 0; letter-spacing:-0.01em;">Your destinations across days</h4>
                 </div>
-                <div id="budgetProgressText" style="color:#a0aec0; font-size:0.92rem; white-space:nowrap;">0% used</div>
+                <div id="budgetProgressText" style="color:#64748b; font-size:0.85rem; white-space:nowrap; background:rgba(255,255,255,0.04); padding:6px 14px; border-radius:999px; font-weight:600;">0% used</div>
               </div>
               <div id="dayTabs" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
             </div>
 
-            <div id="dayContent" style="display:flex; flex-direction:column; gap:12px;"></div>
-            <div id="dayByDayActivities" style="display:flex; flex-direction:column; gap:12px;"></div>
+            <div id="dayContent" style="display:flex; flex-direction:column; gap:14px;"></div>
+            <div id="dayByDayActivities" style="display:flex; flex-direction:column; gap:14px;"></div>
 
-            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 22px; padding: 18px;">
-              <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px; color:#94a3b8;">
-                <div style="font-weight:700; letter-spacing:0.04em;">Hotel allocation</div>
-                <div id="hotelAllocationText" style="color:#a0aec0; font-size:0.95rem;">Hotel allocation details</div>
+            <div style="background: linear-gradient(145deg, rgba(15,23,42,0.85), rgba(30,41,59,0.70)); border: 1px solid rgba(255,255,255,0.07); border-radius: 24px; padding: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.18);">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px;">
+                <div style="font-weight:700; letter-spacing:0.04em; color:#94a3b8; font-size:0.9rem;">🏨 Hotel allocation</div>
+                <div id="hotelAllocationText" style="color:#64748b; font-size:0.88rem; background:rgba(255,255,255,0.04); padding:5px 12px; border-radius:999px; font-weight:600;">Hotel allocation details</div>
               </div>
-              <div style="height: 12px; background: rgba(255,255,255,0.08); border-radius:999px; overflow:hidden;">
-                <div id="budgetProgressBar" style="width:0%; height:100%; background: linear-gradient(135deg, #34d399, #10b981);"></div>
+              <div class="budget-progress-track">
+                <div id="budgetProgressBar" class="budget-progress-fill" style="width:0%;"></div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="step2-column secondary">
-          <div id="hotelRecommendations" class="step2-card"></div>
-          <div id="routePanel" style="display:none; margin-top:0; padding:20px; border:1px solid rgba(255,255,255,0.12); border-radius:20px; background: rgba(15,23,42,0.92); color:#d1d5db;">
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px;">
-              <div>
-                <div style="font-size:0.85rem; color:#94a3b8;">Route planner</div>
-                <h4 style="color:#fff; margin:8px 0 0 0;">Current route</h4>
-              </div>
-            </div>
-            <div id="routeInfo" style="color:#cbd5e1; font-size:0.95rem; line-height:1.6;">Route from your current location to the selected destination will appear here.</div>
-          </div>
-        </div>
-
-        <div class="step2-column tertiary">
+          <!-- Trip Summary (below itinerary) -->
           <div id="summaryCard" class="step2-card wide">
-              <div>
-                <div style="color:#ff7a18; font-size:0.85rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;">Trip Summary</div>
-                <h3 id="summaryTitle" style="color:#fff; font-size:1.75rem; font-weight:800; margin:10px 0 0 0;">Your itinerary</h3>
-                <div id="summarySubtitle" style="color:#94a3b8; margin-top:8px; font-size:0.95rem;">At a glance</div>
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+                <div>
+                  <div style="color:#fb923c; font-size:0.78rem; font-weight:700; letter-spacing:0.14em; text-transform:uppercase;">Trip Summary</div>
+                  <h3 id="summaryTitle" style="color:#fff; font-size:1.4rem; font-weight:800; margin:8px 0 0 0; letter-spacing:-0.02em;">Your itinerary</h3>
+                </div>
+                <div id="summarySubtitle" style="color:#64748b; font-size:0.85rem;">At a glance</div>
               </div>
               <div style="display:none;" aria-hidden="true">
                 <div id="formSelectedDestCount"></div>
@@ -4499,53 +4998,77 @@ function renderModalPredictionCharts(ev) {
                 <div id="formSelectedBudget"></div>
                 <div id="formSelectedBudgetAmount"></div>
               </div>
-              <div style="display:grid; gap:10px;">
-                <label for="tripTitle" style="color:#cbd5e1; font-size:0.9rem; font-weight:700;">Trip title</label>
-                <input id="tripTitle" type="text" placeholder="My Legazpi escape" style="width:100%; padding:14px 16px; border-radius:16px; border:1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.05); color:#fff; outline:none; font-size:1rem;" />
-              </div>
-              <div class="step2-summary-grid">
-                <div style="background: rgba(255,255,255,0.04); border-radius: 18px; padding: 16px;">
-                  <div style="color:#94a3b8; font-size:0.85rem;">Destinations</div>
-                  <div id="summaryDest" style="color:#fff; font-weight:700; font-size:1.1rem; margin-top:6px;">-</div>
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; align-items:end;">
+                <div style="display:grid; gap:8px;">
+                  <label for="tripTitle" style="color:#94a3b8; font-size:0.82rem; font-weight:700;">Trip title</label>
+                  <input id="tripTitle" type="text" placeholder="My Legazpi escape" style="width:100%; padding:12px 14px; border-radius:14px; border:1px solid rgba(255,255,255,0.10); background: rgba(255,255,255,0.04); color:#fff; outline:none; font-size:0.92rem; transition:border-color 0.2s;" onfocus="this.style.borderColor='rgba(99,102,241,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.10)'" />
                 </div>
-                <div style="background: rgba(255,255,255,0.04); border-radius: 18px; padding: 16px;">
-                  <div style="color:#94a3b8; font-size:0.85rem;">Duration</div>
-                  <div id="summaryDays" style="color:#fff; font-weight:700; font-size:1.1rem; margin-top:6px;">-</div>
-                </div>
-                <div style="background: rgba(255,255,255,0.04); border-radius: 18px; padding: 16px;">
-                  <div style="color:#94a3b8; font-size:0.85rem;">Travelers</div>
-                  <div id="summaryTravelers" style="color:#fff; font-weight:700; font-size:1.1rem; margin-top:6px;">-</div>
-                </div>
-                <div style="background: rgba(255,255,255,0.04); border-radius: 18px; padding: 16px;">
-                  <div style="color:#94a3b8; font-size:0.85rem;">Style</div>
-                  <div id="summaryStyle" style="color:#fff; font-weight:700; font-size:1.1rem; margin-top:6px;">-</div>
-                </div>
-                <div style="background: rgba(255,255,255,0.04); border-radius: 18px; padding: 16px;">
-                  <div style="color:#94a3b8; font-size:0.85rem;">Budget</div>
-                  <div id="summaryBudget" style="color:#fff; font-weight:700; font-size:1.1rem; margin-top:6px;">-</div>
-                </div>
-                <div style="background: rgba(255,255,255,0.04); border-radius: 18px; padding: 16px;">
-                  <div style="color:#94a3b8; font-size:0.85rem;">Est. Cost</div>
-                  <div id="summaryEstCost" style="color:#fff; font-weight:700; font-size:1.1rem; margin-top:6px;">-</div>
-                </div>
-              </div>
-              <div style="display:grid; gap:12px; margin-top:16px; padding:16px; background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:18px;">
-                <div style="display:flex; align-items:center; gap:12px;">
-                  <img id="summaryHotelImage" src="https://via.placeholder.com/60x60?text=Hotel" alt="Selected hotel" style="width:60px; height:60px; object-fit:cover; border-radius:16px; border:1px solid rgba(255,255,255,0.12);" />
-                  <div>
-                    <div style="color:#94a3b8; font-size:0.85rem;">Selected Accommodation</div>
-                    <div id="summaryAccommodation" style="color:#fff; font-weight:700; font-size:1rem; margin-top:4px;">Not selected</div>
+                <div style="display:grid; gap:12px; margin-top:8px; padding:14px 16px; background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:16px;">
+                  <div style="display:flex; align-items:center; gap:14px;">
+                    <img id="summaryHotelImage" src="https://via.placeholder.com/60x60?text=Hotel" alt="Selected hotel" style="width:48px; height:48px; object-fit:cover; border-radius:12px; border:1px solid rgba(255,255,255,0.10);" />
+                    <div>
+                      <div style="color:#64748b; font-size:0.72rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em;">Accommodation</div>
+                      <div id="summaryAccommodation" style="color:#fff; font-weight:700; font-size:0.9rem; margin-top:3px;">Not selected</div>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div class="step2-button-group">
+              <div class="step2-summary-grid" style="grid-template-columns: repeat(6, 1fr);">
+                <div class="step2-stat-card">
+                  <div class="stat-label">Destinations</div>
+                  <div id="summaryDest" class="stat-value">-</div>
+                </div>
+                <div class="step2-stat-card">
+                  <div class="stat-label">Duration</div>
+                  <div id="summaryDays" class="stat-value">-</div>
+                </div>
+                <div class="step2-stat-card">
+                  <div class="stat-label">Travelers</div>
+                  <div id="summaryTravelers" class="stat-value">-</div>
+                </div>
+                <div class="step2-stat-card">
+                  <div class="stat-label">Style</div>
+                  <div id="summaryStyle" class="stat-value">-</div>
+                </div>
+                <div class="step2-stat-card">
+                  <div class="stat-label">Budget</div>
+                  <div id="summaryBudget" class="stat-value">-</div>
+                </div>
+                <div class="step2-stat-card">
+                  <div class="stat-label">Est. Cost</div>
+                  <div id="summaryEstCost" class="stat-value">-</div>
+                </div>
+              </div>
+              <div class="step2-button-group" style="grid-template-columns: 1fr 1fr 1fr;">
                 <button type="button" onclick="confirmItinerary()" class="button-primary">✓ Confirm Itinerary</button>
+                <button type="button" onclick="editDestinations()" class="button-secondary">✏️ Edit Destinations</button>
                 <button type="button" onclick="changeRoute()" class="button-secondary">↩ Change Route</button>
               </div>
             </div>
+        </div>
+
+        <!-- RIGHT: Hotel Recommendations -->
+        <div class="step2-column secondary">
+          <div id="hotelRecommendations" class="step2-card"></div>
+          <div id="routePanel" style="display:none; margin-top:0; padding:20px; border:1px solid rgba(255,255,255,0.07); border-radius:22px; background: linear-gradient(145deg, rgba(15,23,42,0.88), rgba(30,41,59,0.72)); color:#d1d5db; box-shadow:0 8px 28px rgba(0,0,0,0.16);">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px;">
+              <div>
+                <div style="font-size:0.78rem; color:#64748b; font-weight:600; text-transform:uppercase; letter-spacing:0.1em;">Route planner</div>
+                <h4 style="color:#fff; margin:8px 0 0 0; font-size:1.1rem;">Current route</h4>
+              </div>
+              <button type="button" onclick="closeCurrentRoute()" style="padding:6px 12px; border:none; border-radius:10px; background:rgba(255,255,255,0.06); color:#94a3b8; cursor:pointer; font-size:0.78rem; font-weight:600;" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">✕ Close</button>
+            </div>
+            <div style="display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;">
+              <button id="routeToDestinationBtn" type="button" onclick="setItineraryRouteTarget('destination')" style="flex:1; min-width:120px; padding:10px 14px; border:1px solid rgba(99,102,241,0.3); border-radius:12px; background:rgba(99,102,241,0.10); color:#818cf8; font-weight:700; font-size:0.82rem; cursor:pointer; transition:all 0.2s;">📍 Route to destination</button>
+              <button id="routeToHotelBtn" type="button" onclick="setItineraryRouteTarget('hotel')" style="flex:1; min-width:120px; padding:10px 14px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; background:rgba(255,255,255,0.04); color:#94a3b8; font-weight:700; font-size:0.82rem; cursor:pointer; transition:all 0.2s;">🏨 Route to selected hotel</button>
+            </div>
+            <div id="routeInfo" style="color:#94a3b8; font-size:0.9rem; line-height:1.6; margin-bottom:14px;">Route from your current location to the selected destination will appear here.</div>
+            <div id="itineraryRouteMap" style="width:100%; min-height:280px; border-radius:16px; background:#0b1220; overflow:hidden;"></div>
+            <div id="routeDetailsCard" style="display:none; margin-top:14px; padding:16px; border-radius:16px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);"></div>
           </div>
         </div>
       </div>
+    </div>
 
     <div id="destinationCarouselStep" style="width: 100%; display: block;">
       <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;">
@@ -4635,10 +5158,82 @@ function renderModalPredictionCharts(ev) {
 
       <div style="display:flex; flex-wrap:wrap; gap:12px; justify-content:center; width:100%;">
         <button type="button" onclick="saveSummaryPDF()" style="min-width:220px; padding:16px 22px; border:none; border-radius:18px; background: linear-gradient(135deg, #ff7a18, #ff6a88); color:#fff; font-weight:800; cursor:pointer;">📥 Download File</button>
+        <button type="button" onclick="editDestinations()" style="min-width:220px; padding:16px 22px; border:1px solid rgba(255,255,255,0.16); border-radius:18px; background: rgba(99,102,241,0.12); color:#818cf8; font-weight:700; cursor:pointer;">✏️ Edit Destinations</button>
         <button type="button" onclick="changeRoute()" style="min-width:220px; padding:16px 22px; border:1px solid rgba(255,255,255,0.16); border-radius:18px; background: transparent; color:#fff; font-weight:700; cursor:pointer;">↩ Change Route</button>
       </div>
     </div>
   </section>
+
+<!-- =================== SYSTEM FEEDBACK & CAROUSEL =================== -->
+<section class="system-feedback-section">
+  <div class="system-feedback-inner">
+    <!-- Header -->
+    <div style="text-align: center;">
+      <span style="color: #ff7a18; font-size: 0.85rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <span style="display: inline-block; width: 20px; height: 2px; background: #ff7a18; border-radius: 2px;"></span>
+        Your Voice Matters
+        <span style="display: inline-block; width: 20px; height: 2px; background: #ff7a18; border-radius: 2px;"></span>
+      </span>
+      <h2 style="color: #fff; font-size: 1.8rem; font-weight: 800; margin: 8px 0 4px 0;">Rate & Review the System</h2>
+      <p style="color: #94a3b8; font-size: 0.9rem; max-width: 500px; margin: 0 auto;">Help us improve Legazpi Explorer by sharing your experience.</p>
+    </div>
+
+    <!-- Feedback Form -->
+    <div class="system-fb-form-card" style="max-width: 580px; margin: 0 auto; width: 100%;">
+      <form id="systemFeedbackForm" onsubmit="submitSystemFeedback(event)">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+          <div>
+            <label>Your Name</label>
+            <input type="text" id="sysFbName" placeholder="Enter your name" required />
+          </div>
+          <div>
+            <label>Email</label>
+            <input type="email" id="sysFbEmail" placeholder="your@email.com" required />
+          </div>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <label>Your Rating</label>
+          <div class="system-fb-stars" id="sysFbStars">
+            <span data-value="1" onclick="setSystemRating(1)">☆</span>
+            <span data-value="2" onclick="setSystemRating(2)">☆</span>
+            <span data-value="3" onclick="setSystemRating(3)">☆</span>
+            <span data-value="4" onclick="setSystemRating(4)">☆</span>
+            <span data-value="5" onclick="setSystemRating(5)">☆</span>
+          </div>
+          <input type="hidden" id="sysFbRating" value="0" />
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <label>Your Feedback</label>
+          <textarea id="sysFbMessage" rows="3" placeholder="Tell us about your experience with the system..." required></textarea>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+          <input type="checkbox" id="sysFbAnonymous" style="width: auto; accent-color: #ff7a18;" />
+          <label for="sysFbAnonymous" style="margin: 0; cursor: pointer; font-size: 12px;">Submit anonymously</label>
+        </div>
+
+        <button type="submit" id="sysFbSubmitBtn" style="width: 100%; padding: 13px; background: linear-gradient(135deg, #ff7a18, #ff6a88); color: white; border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 30px rgba(255,122,24,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+          💬 Submit Feedback
+        </button>
+      </form>
+    </div>
+
+    <!-- Infinite Sliding Carousel -->
+    <div class="feedback-carousel-section">
+      <div class="feedback-carousel-header">
+        <h3>🌟 What Users Are Saying</h3>
+        <p>Real-time system feedback from our users</p>
+      </div>
+      <div class="carousel-track-wrapper">
+        <div class="carousel-track" id="systemFeedbackCarouselTrack">
+          <div class="carousel-empty">Loading feedback...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- Feedback sections moved into Shop and Itinerary sections -->
 
@@ -4680,6 +5275,18 @@ const hotelPriceMap = {};
 const shopReviewCountMap = {};
 const shopRatingMap = {};
 
+// Normalize shop image URL — handles paths from API that may already be relative
+function getShopImageUrl(imagePath, fallbackName) {
+  if (!imagePath) return 'https://via.placeholder.com/400x260?text=' + encodeURIComponent(fallbackName || 'Shop');
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) return imagePath;
+  if (imagePath.startsWith('/')) return imagePath;
+  // Extract just the filename from any path format
+  const filename = imagePath.split('/').pop();
+  if (!filename) return 'https://via.placeholder.com/400x260?text=' + encodeURIComponent(fallbackName || 'Shop');
+  const base = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '');
+  return base + '/../backend/uploads/' + filename;
+}
+
 // Destination data – populated dynamically from the events API via loadCommunityEvents()
 const destinationData = {};
 
@@ -4712,6 +5319,9 @@ function estimateTransport(distKm) {
   };
 }
 
+// Resolved base path for backend (detected from successful API fetch)
+let resolvedBackendBase = '../backend/';
+
 // Fetch all hotels from database
 async function fetchAllDbHotels() {
   try {
@@ -4723,13 +5333,20 @@ async function fetchAllDbHotels() {
           const data = await res.json();
           if (data.hotels) {
             allDbHotels = data.hotels;
+            // Resolve the backend base from the successful fetch URL
+            try {
+              const resolved = new URL(path, window.location.href);
+              resolvedBackendBase = resolved.href.replace('api.php?action=list_itinerary_hotels', '');
+            } catch(e) {
+              resolvedBackendBase = path.replace('api.php?action=list_itinerary_hotels', '');
+            }
             // Populate legacy maps for compatibility
             allDbHotels.forEach(h => {
               itineraryHotelCoords[h.name] = { lat: parseFloat(h.latitude), lon: parseFloat(h.longitude) };
               hotelPriceMap[h.name] = parseInt(h.rate_per_night) || 2000;
               hotelRatingMap[h.name] = parseFloat(h.rating) || 0;
             });
-            console.log(`Loaded ${allDbHotels.length} hotels from database`);
+            console.log(`Loaded ${allDbHotels.length} hotels from database (base: ${resolvedBackendBase})`);
             return;
           }
         }
@@ -4775,7 +5392,7 @@ function getNearestHotels(destName, radiusKm = 5) {
         distance: dist < 1 ? `~${Math.round(dist * 1000)} m` : `~${dist.toFixed(1)} km`,
         distanceKm: dist,
         price: parseInt(h.rate_per_night) || 2000,
-        rating: parseFloat(h.rating) || 4.0,
+        rating: parseFloat(h.rating) || 0,
         reviewCount: hotelReviewCountMap[h.name] || 0,
         category: h.category || 'standard',
         image: h.image || null,
@@ -4804,10 +5421,163 @@ async function fetchAllHotelRatings() {
   }));
 }
 
-function getHotelImage(hotelName) {
-  const hotel = allDbHotels.find(h => h.name === hotelName);
-  if (hotel && hotel.image) return '../' + hotel.image;
-  return 'https://via.placeholder.com/400x240?text=' + encodeURIComponent(hotelName);
+async function fetchAllShopRatings() {
+  await Promise.all(allDbShops.map(async (shop) => {
+    const name = shop.name || shop.NAME;
+    const id = shop.id;
+    try {
+      const res = await fetch(`../backend/ratings_api.php?action=get_target_ratings&target_type=shop&target_id=${encodeURIComponent(id)}`);
+      const data = await res.json();
+      if (data.success && data.statistics) {
+        const avg = parseFloat(data.statistics.average_rating) || 0;
+        if (avg > 0) shopRatingMap[name] = avg;
+        shopReviewCountMap[name] = parseInt(data.statistics.total_reviews) || 0;
+      }
+    } catch(e) { /* skip */ }
+  }));
+}
+
+// ── System Feedback & Carousel ──
+let _systemFbRating = 0;
+
+function setSystemRating(val) {
+  _systemFbRating = val;
+  document.getElementById('sysFbRating').value = val;
+  const stars = document.querySelectorAll('#sysFbStars span');
+  stars.forEach(s => {
+    const v = parseInt(s.getAttribute('data-value'));
+    s.textContent = v <= val ? '★' : '☆';
+    s.classList.toggle('active', v <= val);
+  });
+}
+
+async function submitSystemFeedback(e) {
+  e.preventDefault();
+  const btn = document.getElementById('sysFbSubmitBtn');
+  const name = document.getElementById('sysFbName').value.trim();
+  const email = document.getElementById('sysFbEmail').value.trim();
+  const message = document.getElementById('sysFbMessage').value.trim();
+  const anonymous = document.getElementById('sysFbAnonymous').checked;
+  const rating = _systemFbRating;
+
+  if (!rating || rating < 1) { alert('Please select a star rating.'); return; }
+  if (!message) { alert('Please enter your feedback.'); return; }
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Submitting...';
+
+  try {
+    const res = await fetch('../backend/ratings_api.php?action=submit_rating', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        target_type: 'system',
+        target_id: 'legazpi_explorer',
+        target_name: 'Legazpi Explorer System',
+        rating: rating,
+        message: message,
+        user_name: name,
+        user_email: email,
+        anonymous: anonymous
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert('✅ Thank you for your feedback!');
+      document.getElementById('systemFeedbackForm').reset();
+      setSystemRating(0);
+      loadSystemFeedbackCarousel();
+    } else {
+      alert('❌ Error: ' + (data.error || 'Failed to submit'));
+    }
+  } catch (err) {
+    alert('❌ Network error: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💬 Submit Feedback';
+  }
+}
+
+async function loadSystemFeedbackCarousel() {
+  const track = document.getElementById('systemFeedbackCarouselTrack');
+  if (!track) return;
+
+  // Remove animation class while loading
+  track.classList.remove('animating');
+
+  try {
+    const res = await fetch('../backend/ratings_api.php?action=get_target_ratings&target_type=system&target_id=legazpi_explorer');
+    const data = await res.json();
+    let feedbacks = (data.reviews || []).filter(f => parseInt(f.rating) > 0);
+
+    if (feedbacks.length === 0) {
+      track.innerHTML = '<div class="carousel-empty">😔 No system feedback yet. Be the first to share your experience!</div>';
+      return;
+    }
+
+    function buildCard(f) {
+      const r = parseInt(f.rating || 0);
+      const stars = '★'.repeat(r) + '☆'.repeat(5 - r);
+      const uname = f.anonymous
+        ? (f.user_name && f.user_name.length > 2 ? f.user_name.substring(0, 2) + '***' : 'Anonymous')
+        : (f.user_name || 'Guest');
+      const msg = (f.message || 'No comment.').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+      const date = f.created_at ? new Date(f.created_at).toLocaleDateString() : '';
+
+      return `<div class="carousel-card">
+        <div class="carousel-card-stars">${stars}</div>
+        <div class="carousel-card-message">${msg}</div>
+        <div class="carousel-card-footer">
+          <div>
+            <div class="carousel-card-author">${uname.replace(/</g, '&lt;')}</div>
+            <div class="carousel-card-date">${date}</div>
+          </div>
+          <span class="carousel-card-rating">${r}/5 ⭐</span>
+        </div>
+      </div>`;
+    }
+
+    const html = feedbacks.map(buildCard).join('');
+
+    // Need at least enough cards to fill viewport; duplicate only if few
+    if (feedbacks.length < 6) {
+      // Repeat enough times to fill and enable seamless scroll
+      const repeats = Math.ceil(12 / feedbacks.length);
+      track.innerHTML = html.repeat(repeats);
+    } else {
+      // Two sets is enough for seamless loop
+      track.innerHTML = html + html;
+    }
+
+    const duration = Math.max(15, feedbacks.length * 4);
+    track.style.setProperty('--carousel-duration', duration + 's');
+
+    // Trigger animation after a brief layout paint
+    requestAnimationFrame(() => {
+      track.classList.add('animating');
+    });
+
+  } catch (e) {
+    console.error('System carousel error:', e);
+    track.innerHTML = '<div class="carousel-empty">⚠️ Could not load feedback.</div>';
+  }
+}
+
+function getHotelImage(hotelName, imgPath) {
+  // Use provided image path directly, or fall back to DB lookup
+  const img = imgPath || (() => {
+    const hotel = allDbHotels.find(h => h.name === hotelName);
+    return hotel && hotel.image ? hotel.image : null;
+  })();
+  if (!img) return 'https://via.placeholder.com/400x240?text=' + encodeURIComponent(hotelName);
+  if (img.startsWith('http://') || img.startsWith('https://')) return img;
+  if (img.startsWith('/')) return img;
+  // Extract just the filename from any path format
+  const filename = img.split('/').pop();
+  if (!filename) return 'https://via.placeholder.com/400x240?text=' + encodeURIComponent(hotelName);
+  // Build absolute URL from page origin to guarantee correct resolution
+  const base = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '');
+  return base + '/../backend/uploads/' + filename;
 }
 
 function getHotelPrice(hotelName) {
@@ -4873,26 +5643,24 @@ function parseDestinationFee(dest) {
 
 function getDestinationPrice(dest) {
   if (!dest) return 0;
+  if (typeof dest.entrance_fee === 'number') return dest.entrance_fee;
+  if (dest.entrance_fee !== null && dest.entrance_fee !== undefined && dest.entrance_fee !== '') return parseFloat(dest.entrance_fee) || 0;
   const feeValue = parseDestinationFee(dest);
   if (feeValue !== null) return feeValue;
-
-  switch (dest.budget) {
-    case 'budget': return 300;
-    case 'moderate': return 650;
-    case 'premium': return 1500;
-    default: return 500;
-  }
+  return 0;
 }
 
 function calculateSelectedCost() {
+  const totalTravelers = (tripPreferences.adults || 1) + (tripPreferences.kids || 0);
   return selectedDestinationNames.reduce((sum, name) => {
     const dest = destinationData[name];
-    return sum + getDestinationPrice(dest);
+    return sum + (getDestinationPrice(dest) * totalTravelers);
   }, 0);
 }
 
 function calculateTotalBudget() {
-  return tripPreferences.budget;
+  const totalTravelers = (tripPreferences.adults || 1) + (tripPreferences.kids || 0);
+  return tripPreferences.budget * totalTravelers;
 }
 
 function toggleDestinationSelection(destName) {
@@ -4936,39 +5704,73 @@ function updateBudgetSummary() {
   const totalBudgetEl = document.getElementById('selectedTotalBudgetValue');
   const selectedCostEl = document.getElementById('selectedCostValue');
   const remainingEl = document.getElementById('selectedRemainingValue');
+  const alertBanner = document.getElementById('budgetAlertBanner');
+  const alertText = document.getElementById('budgetAlertText');
   if (!summaryCard || !totalBudgetEl || !selectedCostEl || !remainingEl) return;
 
   const selectedCount = selectedDestinationNames.length;
   if (!selectedCount) {
     summaryCard.style.display = 'none';
+    if (alertBanner) alertBanner.style.display = 'none';
     return;
   }
   summaryCard.style.display = 'grid';
 
-  const totalBudget = calculateTotalBudget();
+  const totalTravelers = (tripPreferences.adults || 1) + (tripPreferences.kids || 0);
+  const perPersonBudget = tripPreferences.budget || 5000;
+  const totalBudget = perPersonBudget * totalTravelers;
   const selectedCost = calculateSelectedCost();
+  const perPersonCost = totalTravelers > 0 ? Math.round(selectedCost / totalTravelers) : selectedCost;
   const remaining = totalBudget - selectedCost;
+  const perPersonRemaining = totalTravelers > 0 ? Math.round(remaining / totalTravelers) : remaining;
 
-  const newTotal = `₱${totalBudget.toLocaleString('en-PH')}`;
   const newSelected = `₱${selectedCost.toLocaleString('en-PH')}`;
+  const newTotal = `₱${totalBudget.toLocaleString('en-PH')}`;
   const newRemaining = remaining >= 0
     ? `₱${remaining.toLocaleString('en-PH')}`
-    : `₱${Math.abs(remaining).toLocaleString('en-PH')} over`;
+    : `-₱${Math.abs(remaining).toLocaleString('en-PH')}`;
 
-  if (totalBudgetEl.textContent !== newTotal) {
-    totalBudgetEl.textContent = newTotal;
-    totalBudgetEl.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.04)' }, { transform: 'scale(1)' }], { duration: 220, easing: 'ease-out' });
-  }
-  if (selectedCostEl.textContent !== newSelected) {
-    selectedCostEl.textContent = newSelected;
+  const costDetail = totalTravelers > 1 ? ` (₱${perPersonCost.toLocaleString('en-PH')}/pax)` : '';
+  const budgetDetail = totalTravelers > 1 ? ` (₱${perPersonBudget.toLocaleString('en-PH')}/pax × ${totalTravelers})` : '';
+  const remainDetail = totalTravelers > 1 ? ` (₱${Math.abs(perPersonRemaining).toLocaleString('en-PH')}/pax)` : '';
+
+  if (selectedCostEl.textContent !== newSelected + costDetail) {
+    selectedCostEl.textContent = newSelected + costDetail;
     selectedCostEl.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.04)' }, { transform: 'scale(1)' }], { duration: 220, easing: 'ease-out' });
   }
-  if (remainingEl.textContent !== newRemaining) {
-    remainingEl.textContent = newRemaining;
+  if (totalBudgetEl.textContent !== newTotal + budgetDetail) {
+    totalBudgetEl.textContent = newTotal + budgetDetail;
+    totalBudgetEl.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.04)' }, { transform: 'scale(1)' }], { duration: 220, easing: 'ease-out' });
+  }
+  if (remainingEl.textContent !== newRemaining + remainDetail) {
+    remainingEl.textContent = newRemaining + remainDetail;
     remainingEl.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.04)' }, { transform: 'scale(1)' }], { duration: 220, easing: 'ease-out' });
   }
 
-  remainingEl.style.color = remaining < 0 ? '#fb7185' : '#fff';
+  remainingEl.style.color = remaining < 0 ? '#fb7185' : '#34d399';
+
+  // Budget alert banner
+  if (alertBanner && alertText) {
+    const tripDays = Math.max(1, getSelectedDurationDays() || 1);
+    const nights = Math.max(1, tripDays - 1) || 1;
+    const hotelAlloc = Math.max(0, remaining * 0.50);
+    const perNight = Math.round(hotelAlloc / nights);
+    const cheapestHotel = allDbHotels.length ? Math.min(...allDbHotels.map(h => parseInt(h.rate_per_night) || 9999)) : 1200;
+
+    if (remaining < 0) {
+      alertBanner.style.display = 'flex';
+      alertBanner.style.background = 'rgba(239,68,68,0.12)';
+      alertBanner.style.borderColor = 'rgba(239,68,68,0.30)';
+      alertText.innerHTML = `<strong>Over budget!</strong> Your entrance fees alone exceed your travel budget by ₱${Math.abs(remaining).toLocaleString('en-PH')}. Increase your budget or remove some destinations.`;
+    } else if (perNight < cheapestHotel) {
+      alertBanner.style.display = 'flex';
+      alertBanner.style.background = 'rgba(251,191,36,0.10)';
+      alertBanner.style.borderColor = 'rgba(251,191,36,0.25)';
+      alertText.innerHTML = `<strong>Tight budget!</strong> After entrance fees, your hotel budget is only ₱${perNight.toLocaleString('en-PH')}/night — cheapest hotel starts at ₱${cheapestHotel.toLocaleString('en-PH')}/night. Consider increasing your budget to at least ₱${Math.ceil((cheapestHotel * nights * 2 + selectedCost) / totalTravelers / 500) * 500}/person.`;
+    } else {
+      alertBanner.style.display = 'none';
+    }
+  }
 }
 
 function updateBudgetDisplay() {
@@ -5013,7 +5815,10 @@ function applyTripPreferences() {
   updateBudgetDisplay();
   renderRecommendedDestinations();
   renderItineraryOverviewMarkers();
+  document.getElementById('destinationSelectionToolbar').style.display = 'flex';
   document.getElementById('destinationCarouselStep').style.display = 'block';
+  const selSummary = document.getElementById('selectedDestinationSummary');
+  if (selSummary && selectedDestinationNames.length) selSummary.style.display = 'flex';
   document.getElementById('destinationCarouselStep').scrollIntoView({ behavior: 'smooth' });
   updateMapStatus(`Budget ₱${tripPreferences.budget.toLocaleString('en-PH')} · ${tripPreferences.adults} adult(s), ${tripPreferences.kids} kid(s) · ${tripPreferences.travelStyle}`);
 }
@@ -5093,7 +5898,7 @@ function renderItineraryOverviewMarkers() {
     const lat = parseFloat(hotel.latitude);
     const lng = parseFloat(hotel.longitude);
     if (!lat || !lng) return;
-    const imgSrc = hotel.image ? ('../' + hotel.image) : 'https://via.placeholder.com/88x88?text=Hotel';
+    const imgSrc = getHotelImage(hotel.name, hotel.image);
     const rating = hotelRatingMap[hotel.name] || parseFloat(hotel.rating) || 0;
     const price = parseInt(hotel.rate_per_night) || 0;
 
@@ -5128,7 +5933,7 @@ function renderItineraryOverviewMarkers() {
     const lat = parseFloat(shop.latitude);
     const lng = parseFloat(shop.longitude);
     if (!lat || !lng) return;
-    const imgSrc = shop.image ? ('../' + shop.image) : 'https://via.placeholder.com/88x88?text=Shop';
+    const imgSrc = getShopImageUrl(shop.image, shop.name || shop.NAME);
     const rating = shopRatingMap[shop.name || shop.NAME] || 0;
 
     const shopIcon = L.divIcon({
@@ -5172,7 +5977,7 @@ function renderItineraryOverviewMarkers() {
 function showHotelInfoCard(hotel) {
   const infoCard = document.getElementById('mapInfoCard');
   if (!infoCard) return;
-  const imgSrc = hotel.image ? ('../' + hotel.image) : 'https://via.placeholder.com/400x240?text=Hotel';
+  const imgSrc = getHotelImage(hotel.name, hotel.image);
   const rating = hotelRatingMap[hotel.name] || parseFloat(hotel.rating) || 0;
   const price = parseInt(hotel.rate_per_night) || 0;
   const reviewCount = hotelReviewCountMap[hotel.name] || 0;
@@ -5283,7 +6088,7 @@ function showShopInfoCard(shop) {
   const infoCard = document.getElementById('mapInfoCard');
   if (!infoCard) return;
   const shopName = shop.name || shop.NAME;
-  const imgSrc = shop.image ? ('../' + shop.image) : 'https://via.placeholder.com/400x240?text=Shop';
+  const imgSrc = getShopImageUrl(shop.image, shopName);
   const rating = shopRatingMap[shopName] || 0;
   const reviewCount = shopReviewCountMap[shopName] || 0;
 
@@ -5346,45 +6151,57 @@ function showShopInfoCard(shop) {
 
 async function loadShopInfoRating(shop) {
   const shopName = shop.name || shop.NAME;
+  const shopId = shop.id || shop.ID;
   try {
-    const res = await fetch(apiUrl(`ratings_api.php?action=get_target_ratings&target_type=shop&target_id=${encodeURIComponent(shopName)}`));
-    const data = await res.json();
-    if (data.success && data.statistics) {
-      const avg = parseFloat(data.statistics.average_rating) || 0;
-      const total = data.statistics.total_reviews || 0;
-      shopRatingMap[shopName] = avg > 0 ? avg : 0;
-      shopReviewCountMap[shopName] = total;
-      const starEl = document.getElementById('mapInfoStarRating');
-      if (starEl) {
-        starEl.innerHTML = Array(5).fill(0).map((_, i) => `<span style="color:${i < Math.round(avg) ? '#ffd166' : '#64748b'};">★</span>`).join('') +
-          ` <span style="font-size:0.9rem; color:#fff; margin-left:4px;">${avg.toFixed(1)}/5</span>`;
-      }
-      document.getElementById('mapInfoReviewText').textContent = `${avg.toFixed(1)} • ${total} review${total === 1 ? '' : 's'}`;
-      const countEl = document.getElementById('mapInfoReviewCount');
-      if (countEl) countEl.textContent = `${total} review${total === 1 ? '' : 's'}`;
-      const reviewsListEl = document.getElementById('mapInfoReviewsList');
-      if (reviewsListEl && data.reviews && data.reviews.length > 0) {
-        const reviewsHtml = data.reviews.slice(0, 5).map(r => {
-          const stars = '★'.repeat(parseInt(r.rating) || 0) + '☆'.repeat(5 - (parseInt(r.rating) || 0));
-          const name = r.user_name || 'Anonymous';
-          const date = new Date(r.created_at).toLocaleDateString();
-          return `<div style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.06);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-              <span style="font-weight:600; color:#e2e8f0; font-size:0.82rem;">${name}</span>
-              <span style="color:#64748b; font-size:0.72rem;">${date}</span>
-            </div>
-            <div style="color:#fbbf24; font-size:0.78rem; margin-bottom:4px;">${stars}</div>
-            <div style="color:#cbd5e1; font-size:0.82rem; line-height:1.5;">${r.message || ''}</div>
-          </div>`;
-        }).join('');
-        reviewsListEl.innerHTML = `<div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:14px 16px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <div style="font-size:0.82rem; font-weight:700; color:#fb923c; letter-spacing:0.06em;">💬 Shop Reviews</div>
-            <div style="font-size:0.72rem; color:#94a3b8;">${total} total</div>
-          </div>${reviewsHtml}</div>`;
-      } else if (reviewsListEl) {
-        reviewsListEl.innerHTML = '<div style="color:#64748b; font-size:0.82rem; padding:10px 0;">No reviews yet.</div>';
-      }
+    // Fetch by both ID and name to cover all stored reviews
+    const [resById, resByName] = await Promise.all([
+      shopId ? fetch(apiUrl(`ratings_api.php?action=get_target_ratings&target_type=shop&target_id=${encodeURIComponent(shopId)}`)) : Promise.resolve(null),
+      fetch(apiUrl(`ratings_api.php?action=get_target_ratings&target_type=shop&target_id=${encodeURIComponent(shopName)}`))
+    ]);
+    const dataById = resById ? await resById.json() : { success: false };
+    const dataByName = await resByName.json();
+    
+    // Merge reviews from both queries, deduplicate by id
+    const reviewsById = (dataById.success && dataById.reviews) ? dataById.reviews : [];
+    const reviewsByName = (dataByName.success && dataByName.reviews) ? dataByName.reviews : [];
+    const allReviews = [...reviewsById];
+    const seenIds = new Set(reviewsById.map(r => r.id));
+    reviewsByName.forEach(r => { if (!seenIds.has(r.id)) allReviews.push(r); });
+    
+    const total = allReviews.length;
+    const avg = total > 0 ? allReviews.reduce((s, r) => s + (parseFloat(r.rating) || 0), 0) / total : 0;
+    shopRatingMap[shopName] = avg > 0 ? avg : 0;
+    shopReviewCountMap[shopName] = total;
+    const starEl = document.getElementById('mapInfoStarRating');
+    if (starEl) {
+      starEl.innerHTML = Array(5).fill(0).map((_, i) => `<span style="color:${i < Math.round(avg) ? '#ffd166' : '#64748b'};">★</span>`).join('') +
+        ` <span style="font-size:0.9rem; color:#fff; margin-left:4px;">${avg.toFixed(1)}/5</span>`;
+    }
+    document.getElementById('mapInfoReviewText').textContent = `${avg.toFixed(1)} • ${total} review${total === 1 ? '' : 's'}`;
+    const countEl = document.getElementById('mapInfoReviewCount');
+    if (countEl) countEl.textContent = `${total} review${total === 1 ? '' : 's'}`;
+    const reviewsListEl = document.getElementById('mapInfoReviewsList');
+    if (reviewsListEl && allReviews.length > 0) {
+      const reviewsHtml = allReviews.slice(0, 5).map(r => {
+        const stars = '★'.repeat(parseInt(r.rating) || 0) + '☆'.repeat(5 - (parseInt(r.rating) || 0));
+        const name = r.user_name || 'Anonymous';
+        const date = new Date(r.created_at).toLocaleDateString();
+        return `<div style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.06);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <span style="font-weight:600; color:#e2e8f0; font-size:0.82rem;">${name}</span>
+            <span style="color:#64748b; font-size:0.72rem;">${date}</span>
+          </div>
+          <div style="color:#fbbf24; font-size:0.78rem; margin-bottom:4px;">${stars}</div>
+          <div style="color:#cbd5e1; font-size:0.82rem; line-height:1.5;">${r.message || ''}</div>
+        </div>`;
+      }).join('');
+      reviewsListEl.innerHTML = `<div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:14px 16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <div style="font-size:0.82rem; font-weight:700; color:#fb923c; letter-spacing:0.06em;">💬 Shop Reviews</div>
+          <div style="font-size:0.72rem; color:#94a3b8;">${total} total</div>
+        </div>${reviewsHtml}</div>`;
+    } else if (reviewsListEl) {
+      reviewsListEl.innerHTML = '<div style="color:#64748b; font-size:0.82rem; padding:10px 0;">No reviews yet.</div>';
     }
   } catch(e) { console.warn('Failed to load shop rating:', e); }
 }
@@ -5613,21 +6430,22 @@ function getItineraryDayPlans(destination, category, days) {
   return plans;
 }
 
-function getBudgetLevel() {
-  const value = tripPreferences.budget;
-  if (value <= 3000) return 'budget';
-  if (value <= 7000) return 'moderate';
-  return 'premium';
-}
-
 function destinationMatchesPreferences(destName) {
   const dest = destinationData[destName];
   if (!dest) return false;
 
   const styles = tripPreferences.travelStyles || [tripPreferences.travelStyle || 'nature'];
-  const budgetLevel = getBudgetLevel();
   const matchesStyle = styles.includes('mixed') || (dest.tags && dest.tags.some(tag => styles.includes(tag)));
-  const matchesBudget = !dest.budget || dest.budget === budgetLevel || (budgetLevel === 'premium' && dest.budget !== 'budget');
+  
+  // Budget matching: free destinations always match; paid ones checked against user budget
+  let matchesBudget = true;
+  if (dest.entrance_fee !== null && dest.entrance_fee !== undefined && dest.entrance_fee > 0) {
+    // User budget is per-person total trip budget; entrance fee is per visit
+    // Match if the entrance fee is within a reasonable portion (20%) of their per-day budget
+    const tripDays = Math.max(1, getSelectedDurationDays() || 1);
+    const dailyBudget = (tripPreferences.budget || 5000) / tripDays;
+    matchesBudget = dest.entrance_fee <= dailyBudget * 0.3;
+  }
 
   return matchesStyle && matchesBudget;
 }
@@ -5662,16 +6480,7 @@ function destinationMatchesCategory(destName) {
   return (dest.category && dest.category.toLowerCase() === normalizedCategory) || (dest.tags && dest.tags.map(tag => tag.toLowerCase()).includes(normalizedCategory));
 }
 
-function getDestinationPrice(dest) {
-  if (!dest) return 0;
-  if (typeof dest.price === 'number') return dest.price;
-  switch (dest.budget) {
-    case 'budget': return 300;
-    case 'moderate': return 650;
-    case 'premium': return 1500;
-    default: return 500;
-  }
-}
+// getDestinationPrice defined above — uses entrance_fee from DB
 
 function sortDestinationNames(list) {
   return list.slice().sort((a, b) => {
@@ -5690,10 +6499,16 @@ function sortDestinationNames(list) {
         if (aMatch !== bMatch) return aMatch - bMatch;
         return (destB.rating || 0) - (destA.rating || 0);
       }
-      case 'lowest_cost':
-        return (destinationBudgetRank[destA.budget] || 99) - (destinationBudgetRank[destB.budget] || 99);
-      case 'highest_cost':
-        return (destinationBudgetRank[destB.budget] || 99) - (destinationBudgetRank[destA.budget] || 99);
+      case 'lowest_cost': {
+        const feeA = destA.entrance_fee !== null && destA.entrance_fee !== undefined ? destA.entrance_fee : 9999;
+        const feeB = destB.entrance_fee !== null && destB.entrance_fee !== undefined ? destB.entrance_fee : 9999;
+        return feeA - feeB || (destB.rating || 0) - (destA.rating || 0);
+      }
+      case 'highest_cost': {
+        const feeA2 = destA.entrance_fee !== null && destA.entrance_fee !== undefined ? destA.entrance_fee : -1;
+        const feeB2 = destB.entrance_fee !== null && destB.entrance_fee !== undefined ? destB.entrance_fee : -1;
+        return feeB2 - feeA2 || (destB.rating || 0) - (destA.rating || 0);
+      }
       case 'least_crowded_first':
         return (destA.crowdPercent || 0) - (destB.crowdPercent || 0);
       default:
@@ -5740,15 +6555,20 @@ function renderRecommendedDestinations() {
 
     const imgUrl = dest.image || 'https://via.placeholder.com/400x240?text=Destination';
     const summary = (dest.description || 'A destination in Legazpi City.').length > 90 ? (dest.description || '').substring(0, 90) + '...' : (dest.description || 'A destination in Legazpi City.');
-    const price = getDestinationPrice(dest);
-    const starCount = Math.round(dest.rating || 4);
+    const starCount = Math.round(dest.rating || 0);
     const stars = '★'.repeat(Math.min(5, starCount));
-    const reviewCount = dest.reviews ? `${dest.reviews.toLocaleString()} guest review${dest.reviews === 1 ? '' : 's'}` : '1 guest review';
+    const reviewCount = dest.reviews ? `${dest.reviews.toLocaleString()} guest review${dest.reviews === 1 ? '' : 's'}` : '0 guest reviews';
     const tagLabel = dest.category || dest.tags?.[0] || 'Travel';
     const isCrowded = dest.crowdPercent >= 75 || /very busy/i.test(dest.crowdLevel || '');
     const isPacked = dest.crowdPercent >= 90 || /full capacity|fully packed/i.test(dest.crowdLevel || '');
     const crowdStatus = isPacked ? 'Fully packed' : isCrowded ? 'Very busy' : dest.crowdLevel || 'Light crowd';
     const crowdColor = isPacked ? '#fda4af' : isCrowded ? '#fde68a' : '#94a3b8';
+    // Smart entrance fee display
+    const feeValue = dest.entrance_fee;
+    const isFree = feeValue !== null && feeValue !== undefined && feeValue <= 0;
+    const hasFee = feeValue !== null && feeValue !== undefined && feeValue > 0;
+    const feeLabel = isFree ? '🆓 Free / Open Area' : hasFee ? `💰 ₱${feeValue.toLocaleString()} entrance` : '';
+    const feeBadgeColor = isFree ? '#34d399' : hasFee ? '#fbbf24' : '#94a3b8';
     // Build reviews HTML
     const recentReviews = (dest.reviewList || []).slice(0, 3);
     let reviewsHTML = '';
@@ -5784,14 +6604,10 @@ function renderRecommendedDestinations() {
         <p style="color:#cbd5e1; font-size:0.82rem; line-height:1.5; margin:0 0 10px 0; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${summary}</p>
         <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;">
           <span style="background:rgba(255,122,24,0.12); color:#ffb347; padding:5px 8px; border-radius:8px; font-size:0.73rem;">${tagLabel}</span>
-          <span style="background:rgba(255,255,255,0.05); color:#94a3b8; padding:5px 8px; border-radius:8px; font-size:0.73rem;">${dest.budget ? dest.budget.charAt(0).toUpperCase() + dest.budget.slice(1) : 'Flexible'}</span>
+          ${feeLabel ? `<span style="background:rgba(255,255,255,0.05); color:${feeBadgeColor}; padding:5px 8px; border-radius:8px; font-size:0.73rem; font-weight:600;">${feeLabel}</span>` : ''}
           <span style="background:rgba(255,255,255,0.05); color:${crowdColor}; padding:5px 8px; border-radius:8px; font-size:0.73rem;">${crowdStatus}</span>
         </div>
         <div style="display:flex; gap:8px; margin-bottom:10px;">
-          <div style="flex:1; background:rgba(255,255,255,0.05); color:#fff; padding:10px 12px; border-radius:12px; font-size:0.82rem; overflow:hidden;">
-            <div style="color:#94a3b8; font-size:0.7rem; margin-bottom:4px;">Price</div>
-            <div style="font-weight:700;">₱${price}/pax</div>
-          </div>
           <div style="flex:1; background:rgba(255,255,255,0.05); color:#fff; padding:10px 12px; border-radius:12px; font-size:0.82rem; overflow:hidden;">
             <div style="color:#94a3b8; font-size:0.7rem; margin-bottom:4px;">Rating</div>
             <div style="display:flex; align-items:center; gap:4px;">
@@ -6718,7 +7534,10 @@ function renderHotelRecommendations() {
   const destination = currentDestination || selectedDestinationNames[0] || 'Current route';
   const nights = Math.max(1, getSelectedDurationDays() - 1) || 1;
   const totalTravelers = (tripPreferences.adults || 1) + (tripPreferences.kids || 0);
-  const hotelAllocation = Math.round(tripPreferences.budget * 0.35);
+  const groupBudget = tripPreferences.budget * totalTravelers;
+  const entranceCost = calculateSelectedCost();
+  const remainingAfterEntrance = groupBudget - entranceCost;
+  const hotelAllocation = Math.max(0, Math.round(remainingAfterEntrance * 0.50));
   const perNight = Math.round(hotelAllocation / nights);
   const sortOptions = [
     { id: 'best', label: 'Best Match' },
@@ -6728,15 +7547,23 @@ function renderHotelRecommendations() {
   ];
 
   const sortButtons = sortOptions.map(option => `
-    <button type="button" onclick="setHotelSortMode('${option.id}')" style="padding:8px 14px; border:1px solid ${hotelSortMode === option.id ? '#34d399' : 'rgba(255,255,255,0.12)'}; border-radius:999px; background:${hotelSortMode === option.id ? 'rgba(52,211,153,0.12)' : 'transparent'}; color:#fff; cursor:pointer; font-size:0.85rem;">${option.label}</button>
+    <button type="button" class="hotel-sort-btn ${hotelSortMode === option.id ? 'active' : ''}" onclick="setHotelSortMode('${option.id}')">${option.label}</button>
   `).join('');
 
-  // Get hotels dynamically from DB within 5km radius
+  // Get hotels dynamically from DB — expand radius until we have at least 3
   let hotels = getNearestHotels(destination, 5);
-  // If no hotels within 5km, expand to 10km and show notice
   let expandedRadius = false;
-  if (!hotels.length) {
+  if (hotels.length < 3) {
     hotels = getNearestHotels(destination, 10);
+    if (hotels.length > 0 && hotels.length >= 3) expandedRadius = true;
+  }
+  if (hotels.length < 3) {
+    hotels = getNearestHotels(destination, 25);
+    expandedRadius = hotels.length > 0;
+  }
+  // Last resort: show ALL hotels sorted by distance
+  if (hotels.length < 3 && allDbHotels.length) {
+    hotels = getNearestHotels(destination, 9999);
     expandedRadius = true;
   }
   // Update review counts from fetched ratings
@@ -6747,7 +7574,7 @@ function renderHotelRecommendations() {
   }));
 
   const inBudget = hotels.filter(h => h.price <= perNight);
-  const pool = inBudget.length ? inBudget : hotels;
+  const pool = inBudget.length >= 3 ? inBudget : hotels;
   const sortedHotels = [...pool].sort((a, b) => {
     if (hotelSortMode === 'rating') {
       return b.rating - a.rating || a.distanceKm - b.distanceKm || a.price - b.price;
@@ -6758,48 +7585,64 @@ function renderHotelRecommendations() {
     if (hotelSortMode === 'distance') {
       return a.distanceKm - b.distanceKm || b.rating - a.rating || a.price - b.price;
     }
-    // Best match: budget fit + rating + proximity
-    return b.rating - a.rating || a.distanceKm - b.distanceKm || a.price - b.price;
-  }).slice(0, 3);
+    // Best match: composite score (budget fit 40%, rating 35%, proximity 25%)
+    const scoreA = (a.price <= perNight ? 40 : Math.max(0, 40 - ((a.price - perNight) / perNight) * 40))
+      + (a.rating / 5) * 35
+      + Math.max(0, 25 - (a.distanceKm * 5));
+    const scoreB = (b.price <= perNight ? 40 : Math.max(0, 40 - ((b.price - perNight) / perNight) * 40))
+      + (b.rating / 5) * 35
+      + Math.max(0, 25 - (b.distanceKm * 5));
+    return scoreB - scoreA;
+  }).slice(0, Math.max(3, inBudget.length ? 3 : 3));
 
   let fallbackNotice = '';
   if (!hotels.length) {
     fallbackNotice = '<div style="color:#fbbf24; font-size:0.95rem; margin-bottom:12px;">No hotels found near this destination. Add hotels in the admin dashboard.</div>';
-  } else if (expandedRadius) {
-    fallbackNotice = '<div style="color:#fbbf24; font-size:0.95rem; margin-bottom:12px;">No hotels within 5 km. Showing nearest hotels within 10 km.</div>';
+  } else if (expandedRadius && inBudget.length >= 3) {
+    fallbackNotice = '<div style="color:#38bdf8; font-size:0.88rem; margin-bottom:12px; padding:10px 14px; background:rgba(56,189,248,0.08); border-radius:12px;">📍 Showing hotels within extended range for better options.</div>';
   } else if (!inBudget.length) {
-    fallbackNotice = '<div style="color:#fbbf24; font-size:0.95rem; margin-bottom:12px;">No hotels found within budget for this destination. Showing the nearest top-rated options instead.</div>';
+    fallbackNotice = '<div style="color:#fbbf24; font-size:0.88rem; margin-bottom:12px; padding:10px 14px; background:rgba(251,191,36,0.08); border-radius:12px;">⚠️ No hotels fit your ₱' + perNight.toLocaleString('en-PH') + '/night budget. Showing nearest affordable options — consider increasing your budget.</div>';
+    showSnackbar(`Budget Alert\nNo hotels fit your ₱${perNight.toLocaleString('en-PH')}/night budget for ${destination}. Consider increasing your budget or reducing destinations.`, 'warning', 6000);
+  } else if (expandedRadius) {
+    fallbackNotice = '<div style="color:#38bdf8; font-size:0.88rem; margin-bottom:12px; padding:10px 14px; background:rgba(56,189,248,0.08); border-radius:12px;">📍 Expanded search radius to find at least 3 hotels near your destinations.</div>';
   }
   const hotelCards = sortedHotels.map(h => {
     const isSelected = selectedAccommodation && selectedAccommodation.name === h.name;
+    const hotelImgSrc = getHotelImage(h.name, h.image);
+    const imgFile = (h.image || '').split('/').pop();
+    const priceInBudget = h.price <= perNight;
+    const priceColor = priceInBudget ? '#34d399' : h.price <= perNight * 1.3 ? '#fbbf24' : '#fb7185';
     return `
-      <div style="display:grid; grid-template-columns: 120px 1fr; gap: 16px; padding:18px; border-radius:18px; background: ${isSelected ? 'rgba(52,211,153,0.16)' : 'rgba(255,255,255,0.04)'}; border: 1px solid ${isSelected ? 'rgba(52,211,153,0.5)' : 'rgba(255,255,255,0.08)'}; margin-bottom: 14px;">
-        <img src="${getHotelImage(h.name)}" alt="${h.name}" style="width:120px; height:100%; object-fit:cover; border-radius:16px;" />
+      <div class="hotel-rec-card ${isSelected ? 'selected' : ''}">
+        <img src="${hotelImgSrc}" alt="${h.name}" onerror="if(this.dataset.retry!=='1'){this.dataset.retry='1';this.src='../backend/uploads/${imgFile}';}else if(this.dataset.retry!=='2'){this.dataset.retry='2';this.src='/capstone/backend/uploads/${imgFile}';}else{this.onerror=null;this.src='https://via.placeholder.com/400x240?text=${encodeURIComponent(h.name)}';}" />
         <div style="display:flex; flex-direction:column; gap:10px;">
           <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
             <div>
-              <div style="font-size:0.85rem; color:#94a3b8; margin-bottom:6px;">Nearest hotel suggestion</div>
-              <div style="font-weight:700; color:#fff; font-size:1.05rem;">${h.name}</div>
-              <div style="font-size:0.85rem; color:#a0aec0; margin-top:4px;">${h.location} • ${h.distance || 'Nearby'}</div>
+              <div style="font-size:0.75rem; color:#64748b; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:5px;">Nearest hotel suggestion</div>
+              <div style="font-weight:700; color:#fff; font-size:1.02rem; letter-spacing:-0.01em;">${h.name}</div>
+              <div style="font-size:0.82rem; color:#64748b; margin-top:4px;">${h.location} • ${h.distance || 'Nearby'}</div>
             </div>
-            <div style="text-align:right; color:#fff; font-weight:700; font-size:1rem;">₱${h.price}</div>
+            <div style="text-align:right;">
+              <div style="color:${priceColor}; font-weight:800; font-size:1.05rem; white-space:nowrap;">₱${h.price.toLocaleString('en-PH')}</div>
+              <div style="font-size:0.72rem; color:#64748b; margin-top:3px;">${priceInBudget ? '✓ fits budget' : 'over budget'}</div>
+            </div>
           </div>
-          <div style="display:flex; align-items:center; gap:8px; font-size:0.9rem; color:#facc15;">
+          <div style="display:flex; align-items:center; gap:8px; font-size:0.88rem;">
             <div style="display:flex; gap:2px;">
-              ${Array(5).fill(0).map((_, idx) => `<span style="color:${idx < Math.round(h.rating) ? '#ffd166' : '#64748b'};">★</span>`).join('')}
+              ${Array(5).fill(0).map((_, idx) => `<span style="color:${idx < Math.round(h.rating) ? '#fbbf24' : '#334155'};">★</span>`).join('')}
             </div>
-            <span style="color:#cbd5e1; font-weight:700;">${h.rating.toFixed(1)}/5</span>
-            <span style="color:#94a3b8; font-size:0.8rem;">(${h.reviewCount || 0} reviews)</span>
+            <span style="color:#e2e8f0; font-weight:700; font-size:0.85rem;">${h.rating.toFixed(1)}</span>
+            <span style="color:#64748b; font-size:0.78rem;">(${h.reviewCount || 0})</span>
           </div>
-          <div style="display:grid; gap:6px; font-size:0.85rem; color:#cbd5e1;">
+          <div style="display:grid; gap:5px; font-size:0.82rem; color:#94a3b8;">
             ${Object.entries(h.transport || {}).slice(0, 3).map(([type, info]) => `<div>• ${type.charAt(0).toUpperCase() + type.slice(1)}: ${info}</div>`).join('')}
           </div>
-          <div style="margin-top:8px;">
-            <div class="hotel-reviews-display" data-hotel="${h.name.replace(/'/g, "\\'")}" style="margin-top:8px; padding:8px 12px; border-radius:12px; background:rgba(255,255,255,0.05); max-height:150px; overflow-y:auto; font-size:0.8rem; color:#cbd5e1; display:none;"></div>
+          <div style="margin-top:4px;">
+            <div class="hotel-reviews-display" data-hotel="${h.name.replace(/'/g, "\\'")}" style="margin-top:6px; padding:8px 12px; border-radius:12px; background:rgba(255,255,255,0.04); max-height:140px; overflow-y:auto; font-size:0.78rem; color:#94a3b8; display:none;"></div>
           </div>
-          <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:10px;">
-            <button type="button" onclick="toggleAccommodationSelection('${escapeHtmlAttribute(h.name)}','${escapeHtmlAttribute(h.location)}')" style="padding:12px 16px; border:none; border-radius:14px; background: ${isSelected ? '#0f766e' : 'linear-gradient(135deg, #667eea, #764fa2)'}; color:#fff; font-weight:700; cursor:pointer; width:max-content;">${isSelected ? 'Selected — click again to undo' : 'Select hotel'}</button>
-            <button type="button" onclick="openHotelFeedback('${h.name.replace(/'/g, "\\'")}')" style="padding:12px 16px; border:none; border-radius:14px; background:linear-gradient(135deg, #6366f1, #8b5cf6); color:#fff; font-weight:700; cursor:pointer; width:max-content; display:flex; align-items:center; gap:6px;">⭐ Rate & Review</button>
+          <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;">
+            <button type="button" onclick="toggleAccommodationSelection('${escapeHtmlAttribute(h.name)}','${escapeHtmlAttribute(h.location)}')" style="padding:10px 16px; border:none; border-radius:12px; background: ${isSelected ? '#0f766e' : 'linear-gradient(135deg, #6366f1, #8b5cf6)'}; color:#fff; font-weight:700; cursor:pointer; font-size:0.85rem; transition:transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">${isSelected ? '✓ Selected — tap to undo' : 'Select hotel'}</button>
+            <button type="button" onclick="openHotelFeedback('${h.name.replace(/'/g, "\\'")}')" style="padding:10px 16px; border:none; border-radius:12px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.10); color:#e2e8f0; font-weight:700; cursor:pointer; font-size:0.85rem; display:flex; align-items:center; gap:6px; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">⭐ Rate</button>
           </div>
         </div>
       </div>
@@ -6807,23 +7650,22 @@ function renderHotelRecommendations() {
   }).join('');
 
   hotelRecommendations.innerHTML = `
-    <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:14px; align-items:center; margin-bottom:16px;">
+    <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:14px; align-items:center; margin-bottom:18px;">
       <div>
-        <div style="color:#ff7a18; font-size:0.82rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;">Hotel Recommendations</div>
-        <h4 style="color:#fff; font-size:1.35rem; font-weight:800; margin:8px 0 0 0;">Nearest hotels by destination</h4>
+        <div style="color:#fb923c; font-size:0.78rem; font-weight:700; letter-spacing:0.14em; text-transform:uppercase;">Hotel Recommendations</div>
+        <h4 style="color:#fff; font-size:1.25rem; font-weight:800; margin:8px 0 0 0; letter-spacing:-0.01em;">Nearest hotels by destination</h4>
       </div>
-      <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
-        <span style="color:#94a3b8; font-size:0.9rem;">Sort by:</span>
+      <div style="display:flex; flex-wrap:wrap; gap:6px; align-items:center;">
         ${sortButtons}
       </div>
     </div>
-    <div style="background: rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:22px; padding:20px;">
+    <div style="background: linear-gradient(145deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.06); border-radius:22px; padding:20px;">
       <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
         <div>
-          <div style="color:#ff7a18; font-size:0.85rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;">${destination}</div>
-          <div style="color:#94a3b8; font-size:0.95rem; margin-top:4px;">Top hotel choices for this destination</div>
+          <div style="color:#fb923c; font-size:0.82rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;">${destination}</div>
+          <div style="color:#64748b; font-size:0.88rem; margin-top:4px;">Top hotel choices for this destination</div>
         </div>
-        <div style="color:#94a3b8; font-size:0.95rem;">Budget: ₱${hotelAllocation.toLocaleString('en-PH')} (₱${perNight.toLocaleString('en-PH')}/night × ${nights})</div>
+        <div style="color:#94a3b8; font-size:0.85rem; background:rgba(255,255,255,0.04); padding:6px 14px; border-radius:999px; font-weight:600;">₱${hotelAllocation.toLocaleString('en-PH')} <span style="color:#64748b;">(₱${perNight.toLocaleString('en-PH')}/night × ${nights})</span></div>
       </div>
       ${fallbackNotice}
       ${hotelCards}
@@ -6872,6 +7714,7 @@ function setHotelSortMode(mode) {
 }
 
 let itineraryDayAssignments = [];
+let activeDayIndex = 0;
 
 function renderItineraryResults() {
   const resultsContainer = document.getElementById('resultsContainer');
@@ -6893,7 +7736,8 @@ function renderItineraryResults() {
   const totalBudget = calculateTotalBudget();
   const selectedCost = calculateSelectedCost();
   const usedPercent = totalBudget > 0 ? Math.min(100, Math.round((selectedCost / totalBudget) * 100)) : 0;
-  const hotelAllocation = Math.round(totalBudget * 0.35);
+  const remainingAfterEntrance = totalBudget - selectedCost;
+  const hotelAllocation = Math.max(0, Math.round(remainingAfterEntrance * 0.50));
   const travelStyle = tripPreferences.travelStyles.length === 5
     ? 'Mixed'
     : tripPreferences.travelStyles.map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(', ');
@@ -6911,9 +7755,16 @@ function renderItineraryResults() {
   if (hotelAllocText) hotelAllocText.textContent = `₱${hotelAllocation.toLocaleString('en-PH')} total (₱${perNightAlloc.toLocaleString('en-PH')}/night × ${nightsForAlloc} night${nightsForAlloc > 1 ? 's' : ''})`;
   if (progressBar) progressBar.style.width = `${usedPercent}%`;
 
+  // Update header badges
+  const headerDestCount = document.getElementById('headerDestCount');
+  const headerTravelerCount = document.getElementById('headerTravelerCount');
+  if (headerDestCount) headerDestCount.textContent = selectedDestinationNames.length;
+  if (headerTravelerCount) headerTravelerCount.textContent = (tripPreferences.adults || 1) + (tripPreferences.kids || 0);
+
   const assignments = distributeDestinationsAcrossDays(selectedDestinationNames, days);
   itineraryDayAssignments = assignments;
-  setupDayTabs(assignments);
+  activeDayIndex = 0;
+  setupDayTabs(assignments, 0);
   displayDayItinerary(0);
   renderHotelRecommendations();
   const placeholder = document.getElementById('resultsPlaceholder');
@@ -6921,42 +7772,51 @@ function renderItineraryResults() {
     placeholder.style.display = 'none';
   }
   if (resultsContainer) resultsContainer.style.display = 'flex';
+
+  // Show route planner and render route to first destination
+  const routePanel = document.getElementById('routePanel');
+  if (routePanel && currentDestination) {
+    routePanel.style.display = 'block';
+    itineraryRouteTarget = 'destination';
+    updateRouteButtons();
+    renderItineraryRoute('destination').catch(err => console.warn('Initial route render failed', err));
+  }
 }
 
-function setupDayTabs(assignments) {
+function setupDayTabs(assignments, activeDay) {
   const tabContainer = document.getElementById('dayTabs');
   if (!tabContainer) return;
   tabContainer.innerHTML = '';
+  const active = typeof activeDay === 'number' ? activeDay : activeDayIndex;
 
   assignments.forEach((dayList, index) => {
     const button = document.createElement('button');
     button.type = 'button';
+    button.className = 'day-tab-btn' + (index === active ? ' active' : '');
     button.textContent = `Day ${index + 1} (${dayList.length} stop${dayList.length === 1 ? '' : 's'})`;
-    button.style.padding = '12px 18px';
-    button.style.border = '1px solid rgba(255,255,255,0.14)';
-    button.style.borderRadius = '16px';
-    button.style.background = index === 0 ? 'linear-gradient(135deg, #34d399, #10b981)' : 'rgba(255,255,255,0.04)';
-    button.style.color = index === 0 ? '#fff' : '#cbd5e1';
-    button.style.cursor = 'pointer';
     button.onclick = () => displayDayItinerary(index);
     tabContainer.appendChild(button);
   });
 }
 
 function displayDayItinerary(dayIndex) {
+  activeDayIndex = dayIndex;
   const assignments = itineraryDayAssignments;
   const dayContent = document.getElementById('dayContent');
   const tabContainer = document.getElementById('dayTabs');
   if (!dayContent || !tabContainer) return;
 
   Array.from(tabContainer.children).forEach((btn, idx) => {
-    btn.style.background = idx === dayIndex ? 'linear-gradient(135deg, #34d399, #10b981)' : 'rgba(255,255,255,0.04)';
-    btn.style.color = idx === dayIndex ? '#fff' : '#cbd5e1';
+    btn.className = 'day-tab-btn' + (idx === dayIndex ? ' active' : '');
   });
 
   const dayDestinations = assignments[dayIndex] || [];
   if (!dayDestinations.length) {
-    dayContent.innerHTML = `<div style="padding:22px; border-radius:18px; background: rgba(255,255,255,0.04); color:#a0aec0;">No stops assigned for Day ${dayIndex + 1}. Please adjust your selected destinations or days.</div>`;
+    dayContent.innerHTML = `<div style="padding:22px; border-radius:18px; background: rgba(255,255,255,0.04); color:#a0aec0;">No stops assigned for Day ${dayIndex + 1}. Add destinations below.</div>
+    <div id="addStopContainer" style="display:flex; flex-direction:column; gap:10px; padding:10px 0;">
+      <button type="button" onclick="toggleAddStopPicker(${dayIndex})" style="padding:10px 22px; border:1px dashed rgba(99,102,241,0.4); border-radius:14px; background:rgba(99,102,241,0.06); color:#818cf8; font-weight:700; font-size:0.88rem; cursor:pointer; transition:all 0.2s; width:100%;" onmouseover="this.style.background='rgba(99,102,241,0.14)'; this.style.borderColor='rgba(99,102,241,0.6)'" onmouseout="this.style.background='rgba(99,102,241,0.06)'; this.style.borderColor='rgba(99,102,241,0.4)'">➕ Add Stop to Day ${dayIndex + 1}</button>
+      <div id="stopPickerDropdown" style="display:none;"></div>
+    </div>`;
     return;
   }
 
@@ -6964,30 +7824,125 @@ function displayDayItinerary(dayIndex) {
     const dest = destinationData[destName] || {};
     const startTime = formatTime(480 + idx * 120);
     return `
-      <div style="display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; padding:16px; border-radius:20px; background: rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); margin-bottom:12px;">
+      <div style="display:flex; flex-wrap:wrap; justify-content:space-between; gap:14px; padding:18px; border-radius:22px; background: linear-gradient(145deg, rgba(15,23,42,0.85), rgba(30,41,59,0.70)); border:1px solid rgba(255,255,255,0.06); margin-bottom:4px; box-shadow:0 4px 18px rgba(0,0,0,0.12); transition:border-color 0.2s;" onmouseover="this.style.borderColor='rgba(255,255,255,0.14)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.06)'">
         <div style="min-width:0; flex:1;">
           <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:10px;">
             <div>
-              <div style="color:#94a3b8; font-size:0.78rem; margin-bottom:6px;">${startTime}</div>
-              <h4 style="color:#fff; margin:0; font-size:1.15rem;">${destName}</h4>
+              <div style="color:#64748b; font-size:0.75rem; font-weight:600; margin-bottom:5px; display:inline-flex; align-items:center; gap:6px;"><span style="background:rgba(99,102,241,0.10); color:#818cf8; padding:2px 8px; border-radius:999px;">Stop ${idx + 1}</span> ${startTime}</div>
+              <h4 style="color:#fff; margin:0; font-size:1.1rem; letter-spacing:-0.01em;">${destName}</h4>
             </div>
-            <button type="button" onclick="removeDestinationStop('${destName.replace(/'/g,'\\\'')}')" style="padding:10px 14px; border:none; border-radius:14px; background:#ef4444; color:#fff; font-weight:700; cursor:pointer;">Remove</button>
+            <button type="button" onclick="removeDestinationStop('${destName.replace(/'/g,'\\\'')}')" style="padding:8px 14px; border:none; border-radius:12px; background:rgba(239,68,68,0.12); color:#f87171; font-weight:700; cursor:pointer; font-size:0.82rem; transition:background 0.2s;" onmouseover="this.style.background='rgba(239,68,68,0.22)'" onmouseout="this.style.background='rgba(239,68,68,0.12)'">✕ Remove</button>
           </div>
-          <div style="color:#a0aec0; font-size:0.92rem; line-height:1.6;">${dest.description || 'Suggested stop for your itinerary.'}</div>
+          <div style="color:#94a3b8; font-size:0.88rem; line-height:1.6;">${dest.description || 'Suggested stop for your itinerary.'}</div>
         </div>
-        <div style="min-width:220px; max-width:260px; display:grid; gap:8px;">
-          <div style="background: rgba(255,255,255,0.05); border-radius:16px; padding:14px;">
-            <div style="color:#94a3b8; font-size:0.78rem; margin-bottom:4px;">Estimated stay</div>
-            <div style="font-weight:700; color:#fff;">2–3 hours</div>
+        <div style="min-width:200px; max-width:240px; display:grid; gap:8px;">
+          <div style="background: rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.05); border-radius:14px; padding:12px 14px;">
+            <div style="color:#64748b; font-size:0.75rem; font-weight:600; margin-bottom:4px;">⏱ Estimated stay</div>
+            <div style="font-weight:700; color:#e2e8f0; font-size:0.92rem;">2–3 hours</div>
           </div>
-          <div style="background: rgba(255,255,255,0.05); border-radius:16px; padding:14px;">
-            <div style="color:#94a3b8; font-size:0.78rem; margin-bottom:4px;">Budget tier</div>
-            <div style="font-weight:700; color:#fff;">${dest.budget ? dest.budget.charAt(0).toUpperCase() + dest.budget.slice(1) : 'Flexible'}</div>
+          <div style="background: rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.05); border-radius:14px; padding:12px 14px;">
+            <div style="color:#64748b; font-size:0.75rem; font-weight:600; margin-bottom:4px;">💰 Budget tier</div>
+            <div style="font-weight:700; color:#e2e8f0; font-size:0.92rem;">${dest.budget ? dest.budget.charAt(0).toUpperCase() + dest.budget.slice(1) : 'Flexible'}</div>
           </div>
         </div>
       </div>
     `;
   }).join('');
+
+  // Add "➕ Add Destination" button at the bottom of the day's stops
+  dayContent.innerHTML += `
+    <div id="addStopContainer" style="display:flex; flex-direction:column; gap:10px; padding:10px 0;">
+      <button type="button" onclick="toggleAddStopPicker(${dayIndex})" style="padding:10px 22px; border:1px dashed rgba(99,102,241,0.4); border-radius:14px; background:rgba(99,102,241,0.06); color:#818cf8; font-weight:700; font-size:0.88rem; cursor:pointer; transition:all 0.2s; width:100%;" onmouseover="this.style.background='rgba(99,102,241,0.14)'; this.style.borderColor='rgba(99,102,241,0.6)'" onmouseout="this.style.background='rgba(99,102,241,0.06)'; this.style.borderColor='rgba(99,102,241,0.4)'">➕ Add Stop to Day ${dayIndex + 1}</button>
+      <div id="stopPickerDropdown" style="display:none;"></div>
+    </div>
+  `;
+}
+
+// Track active day for the stop picker
+let activeAddStopDay = 0;
+
+function toggleAddStopPicker(dayIndex) {
+  activeAddStopDay = dayIndex;
+  const dropdown = document.getElementById('stopPickerDropdown');
+  if (!dropdown) return;
+
+  if (dropdown.style.display !== 'none') {
+    dropdown.style.display = 'none';
+    return;
+  }
+
+  // Get destinations not already assigned to this day
+  const dayDests = itineraryDayAssignments[dayIndex] || [];
+  const allDests = Object.keys(destinationData);
+  const available = allDests.filter(d => !dayDests.includes(d));
+
+  if (!available.length) {
+    dropdown.innerHTML = '<div style="padding:14px; border-radius:14px; background:rgba(255,255,255,0.04); color:#94a3b8; font-size:0.88rem;">No more destinations available to add.</div>';
+    dropdown.style.display = 'block';
+    return;
+  }
+
+  dropdown.innerHTML = `
+    <div style="background: linear-gradient(145deg, rgba(15,23,42,0.92), rgba(30,41,59,0.80)); border:1px solid rgba(99,102,241,0.2); border-radius:18px; padding:14px; max-height:320px; overflow-y:auto;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <div style="color:#818cf8; font-size:0.82rem; font-weight:700;">Select destinations to add</div>
+        <button type="button" onclick="document.getElementById('stopPickerDropdown').style.display='none'" style="padding:4px 10px; border:none; border-radius:8px; background:rgba(255,255,255,0.06); color:#94a3b8; cursor:pointer; font-size:0.78rem;">✕ Close</button>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        ${available.map(destName => {
+          const dest = destinationData[destName] || {};
+          const alreadySelected = selectedDestinationNames.includes(destName);
+          return `
+            <button type="button" onclick="addStopToDay(${dayIndex}, '${destName.replace(/'/g, "\\'")}')" style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border:1px solid ${alreadySelected ? 'rgba(52,211,153,0.2)' : 'rgba(255,255,255,0.06)'}; border-radius:12px; background:${alreadySelected ? 'rgba(52,211,153,0.06)' : 'rgba(255,255,255,0.03)'}; color:#e2e8f0; cursor:pointer; font-size:0.88rem; text-align:left; transition:all 0.2s;" onmouseover="this.style.background='rgba(99,102,241,0.12)'; this.style.borderColor='rgba(99,102,241,0.3)'" onmouseout="this.style.background='${alreadySelected ? 'rgba(52,211,153,0.06)' : 'rgba(255,255,255,0.03)'}'; this.style.borderColor='${alreadySelected ? 'rgba(52,211,153,0.2)' : 'rgba(255,255,255,0.06)'}'">
+              <div>
+                <div style="font-weight:700; font-size:0.9rem;">${destName}</div>
+                <div style="color:#64748b; font-size:0.78rem; margin-top:2px;">${dest.budget ? dest.budget.charAt(0).toUpperCase() + dest.budget.slice(1) + ' tier' : 'Flexible'} ${alreadySelected ? '• already in trip' : ''}</div>
+              </div>
+              <span style="color:#818cf8; font-weight:700; font-size:1.1rem;">+</span>
+            </button>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+  dropdown.style.display = 'block';
+}
+
+function addStopToDay(dayIndex, destName) {
+  // Add to selectedDestinationNames if not already there
+  if (!selectedDestinationNames.includes(destName)) {
+    selectedDestinationNames.push(destName);
+  }
+
+  // Add to the specific day's assignments directly
+  if (!itineraryDayAssignments[dayIndex]) {
+    itineraryDayAssignments[dayIndex] = [];
+  }
+  if (!itineraryDayAssignments[dayIndex].includes(destName)) {
+    itineraryDayAssignments[dayIndex].push(destName);
+  }
+
+  // Update day tabs to show new stop count
+  setupDayTabs(itineraryDayAssignments);
+
+  // Update summary counts and budget
+  if (!currentDestination) currentDestination = destName;
+  updateBudgetSummary();
+  updateSelectedSummary();
+
+  // Update header badges
+  const headerDestCount = document.getElementById('headerDestCount');
+  if (headerDestCount) headerDestCount.textContent = selectedDestinationNames.length;
+
+  // Update summary stat
+  const summaryDest = document.getElementById('summaryDest');
+  if (summaryDest) summaryDest.textContent = `${selectedDestinationNames.length} destinations`;
+  const summaryEstCost = document.getElementById('summaryEstCost');
+  if (summaryEstCost) summaryEstCost.textContent = `₱${calculateSelectedCost().toLocaleString('en-PH')}`;
+
+  // Re-render the current day (preserves manual assignments)
+  displayDayItinerary(dayIndex);
+  renderHotelRecommendations();
 }
 
 function removeDestinationStop(destName) {
@@ -6997,9 +7952,36 @@ function removeDestinationStop(destName) {
   if (currentDestination === destName) {
     currentDestination = selectedDestinationNames[0] || null;
   }
+
+  // Remove from specific day assignment
+  let removedFromDay = -1;
+  for (let d = 0; d < itineraryDayAssignments.length; d++) {
+    const dayIdx = itineraryDayAssignments[d].indexOf(destName);
+    if (dayIdx >= 0) {
+      itineraryDayAssignments[d].splice(dayIdx, 1);
+      removedFromDay = d;
+      break;
+    }
+  }
+
+  // Update day tabs with new counts
+  setupDayTabs(itineraryDayAssignments);
+
+  // Update summary stats
   updateBudgetSummary();
   updateSelectedSummary();
-  renderItineraryResults();
+  const headerDestCount = document.getElementById('headerDestCount');
+  if (headerDestCount) headerDestCount.textContent = selectedDestinationNames.length;
+  const summaryDest = document.getElementById('summaryDest');
+  if (summaryDest) summaryDest.textContent = `${selectedDestinationNames.length} destinations`;
+  const summaryEstCost = document.getElementById('summaryEstCost');
+  if (summaryEstCost) summaryEstCost.textContent = `₱${calculateSelectedCost().toLocaleString('en-PH')}`;
+
+  // Re-render the day we removed from
+  if (removedFromDay >= 0) {
+    displayDayItinerary(removedFromDay);
+  }
+  renderHotelRecommendations();
   renderRecommendedDestinations();
 }
 
@@ -7025,6 +8007,10 @@ function resetItineraryFlow() {
   document.getElementById('destinationCarouselStep').style.display = 'none';
   document.getElementById('itineraryFormSection').style.display = 'none';
   document.getElementById('resultsContainer').style.display = 'none';
+  const destToolbar = document.getElementById('destinationSelectionToolbar');
+  if (destToolbar) destToolbar.style.display = 'none';
+  const destSummary = document.getElementById('selectedDestinationSummary');
+  if (destSummary) destSummary.style.display = 'none';
   const actionButtons = document.getElementById('actionButtons');
   if (actionButtons) {
     actionButtons.style.display = 'none';
@@ -7052,6 +8038,39 @@ function resetItineraryFlow() {
 // Change route - go back to destination selection
 function changeRoute() {
   resetItineraryFlow();
+}
+
+// Edit destinations without resetting preferences (Step 3 → Step 2)
+function editDestinations() {
+  closeDestinationModal();
+
+  // Hide Step 3 (itinerary form & results) but keep preferences
+  const itineraryForm = document.getElementById('itineraryFormSection');
+  const resultsContainer = document.getElementById('resultsContainer');
+  const confirmationPage = document.getElementById('itineraryConfirmationPage');
+  if (itineraryForm) itineraryForm.style.display = 'none';
+  if (resultsContainer) resultsContainer.style.display = 'none';
+  if (confirmationPage) confirmationPage.style.display = 'none';
+
+  // Show the itinerary section and destination carousel (Step 2)
+  const itinerarySection = document.getElementById('itineraries');
+  if (itinerarySection) itinerarySection.style.display = 'flex';
+  const preferencesSection = document.getElementById('tripPreferencesStep');
+  if (preferencesSection) preferencesSection.style.display = 'none';
+  document.getElementById('destinationCarouselStep').style.display = 'block';
+  const destToolbar = document.getElementById('destinationSelectionToolbar');
+  if (destToolbar) destToolbar.style.display = 'flex';
+  const destSummary = document.getElementById('selectedDestinationSummary');
+  if (destSummary && selectedDestinationNames.length) destSummary.style.display = 'flex';
+
+  // Re-render destinations with current selections highlighted
+  renderRecommendedDestinations();
+  renderItineraryOverviewMarkers();
+  updateSelectedSummary();
+
+  setTimeout(() => {
+    document.getElementById('destinationCarouselStep').scrollIntoView({ behavior: 'smooth' });
+  }, 300);
 }
 
 // Select accommodation and update summary
@@ -8128,6 +9147,9 @@ async function renderItineraryRoute(target = 'destination') {
       attribution: '© OpenStreetMap contributors',
       maxZoom: 19
     }).addTo(itineraryRouteMap);
+    setTimeout(() => { if (itineraryRouteMap) itineraryRouteMap.invalidateSize(); }, 300);
+  } else {
+    itineraryRouteMap.invalidateSize();
   }
 
   clearItineraryRouteMap();

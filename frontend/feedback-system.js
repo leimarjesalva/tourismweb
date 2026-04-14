@@ -694,10 +694,12 @@ class FeedbackSystem {
         document.getElementById('feedbackForm').style.display = 'none';
         document.getElementById('feedbackSuccessMessage').style.display = 'block';
         
-        // Refresh the page to show new feedback immediately
-        console.log('🔄 Reloading page to show new feedback...');
+        // Reset form and close modal after showing success
         setTimeout(() => {
-          location.reload();
+          this.resetForm();
+          this.closeModal();
+          submitBtn.disabled = false;
+          submitBtn.textContent = '📤 Submit Feedback';
         }, 2000);
       } else {
         alert('Error: ' + (result.error || 'Failed to submit feedback'));

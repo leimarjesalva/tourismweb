@@ -2035,6 +2035,8 @@ select, select option {
 
 #shop .shop-card {
   min-height: 420px;
+  height: 100%;
+  max-width: none;
   background: white;
   border-radius: 16px;
   overflow: hidden;
@@ -2104,7 +2106,7 @@ select, select option {
   padding: 20px; 
   display: flex; 
   flex-direction: column; 
-  gap: 12px; 
+  gap: 10px; 
   flex: 1;
 }
 
@@ -2132,10 +2134,13 @@ select, select option {
 
 #shop .shop-card .shop-desc { 
   color: #666; 
-  font-size: 0.9rem; 
+  font-size: 0.88rem; 
   line-height: 1.6; 
-  margin: 0; 
-  flex: 1;
+  margin: 0;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 #shop .shop-card .product-previews { 
@@ -2167,26 +2172,28 @@ select, select option {
   gap: 12px; 
   margin-top: auto;
   padding-top: 16px;
-  border-top: 1px solid rgba(255,255,255,0.12);
+  border-top: 1px solid rgba(0,0,0,0.06);
 }
 
 #shop .shop-card .btn.btn-primary { 
   background: linear-gradient(135deg, #ff7a18, #ff6a88); 
   border: none; 
   color: white; 
-  padding: 11px 18px; 
-  border-radius: 8px; 
+  padding: 13px 20px; 
+  border-radius: 12px; 
   cursor: pointer;
   font-weight: 700;
   transition: all 0.3s;
   font-size: 0.9rem;
   width: 100%;
-  max-width: 220px;
+  text-align: center;
+  letter-spacing: 0.3px;
 }
 
 #shop .shop-card .btn.btn-primary:hover { 
   transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(255,122,24,0.3);
+  box-shadow: 0 8px 24px rgba(255,122,24,0.35);
+  background: linear-gradient(135deg, #e86d12, #e5567a);
 }
 
 @media (max-width: 1200px) {

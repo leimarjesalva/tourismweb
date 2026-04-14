@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head><title>Hotel Image Debug</title></head>
+<body style="background:#1a1a2e; color:white; font-family:sans-serif; padding:20px;">
+<h2>Hotel Image Debug</h2>
+<div id="output"></div>
+<script>
+async function test() {
+  const out = document.getElementById('output');
+  const paths = ['../backend/api.php?action=list_itinerary_hotels', 'backend/api.php?action=list_itinerary_hotels', '/capstone/backend/api.php?action=list_itinerary_hotels'];
+  let resolvedBase = '../backend/';
+  let hotels = [];
+  
+  for (const path of paths) {
+    try {
+      const res = await fetch(path);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.hotels) {
+          hotels = data.hotels;
+          try {
+            const resolved = new URL(path, window.location.href);
+            resolvedBase = resolved.href.replace('api.php?action=list_itinerary_hotels', '');
+          } catch(e) {
+            resolvedBase = path.replace('api.php?action=list_itinerary_hotels', '');
+          }
+          out.innerHTML += `<p style="color:lime;">✅ API worked with: <code>${path}</code></p>`;
+          out.innerHTML += `<p>resolvedBackendBase = <code>${resolvedBase}</code></p>`;
+          out.innerHTML += `<p>window.location.href = <code>${window.location.href}</code></p>`;
+          break;
+        }
+      }
+    } catch(e) {
+      out.innerHTML += `<p style="color:red;">❌ Failed: <code>${path}</code> — ${e.message}</p>`;
+    }
+  }
+  
+  out.innerHTML += `<h3>${hotels.length} Hotels:</h3>`;
+  hotels.forEach(h => {
+    const dbImg = h.image || 'NULL';
+    const uploadsFile = dbImg.replace(/^(\.\.\/)*backend\/uploads\//, '');
+    const resolvedUrl = resolvedBase + 'uploads/' + uploadsFile;
+    const simpleUrl = '../backend/uploads/' + uploadsFile;
+    const absUrl = '/capstone/backend/uploads/' + uploadsFile;
+    
+    out.innerHTML += `
+      <div style="border:1px solid #444; padding:15px; margin:10px 0; border-radius:8px;">
+        <p><strong>${h.name}</strong> (id: ${h.id})</p>
+        <p>DB image field: <code>${dbImg}</code></p>
+        <p>uploads file: <code>${uploadsFile}</code></p>
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+          <div>
+            <p style="font-size:0.8rem;">resolvedBase path:<br><code>${resolvedUrl}</code></p>
+            <img src="${resolvedUrl}" style="width:120px; height:80px; object-fit:cover; border:2px solid lime;" 
+              onerror="this.style.border='2px solid red'; this.alt='FAILED';" />
+          </div>
+          <div>
+            <p style="font-size:0.8rem;">simple ../ path:<br><code>${simpleUrl}</code></p>
+            <img src="${simpleUrl}" style="width:120px; height:80px; object-fit:cover; border:2px solid yellow;" 
+              onerror="this.style.border='2px solid red'; this.alt='FAILED';" />
+          </div>
+          <div>
+            <p style="font-size:0.8rem;">absolute /capstone/ path:<br><code>${absUrl}</code></p>
+            <img src="${absUrl}" style="width:120px; height:80px; object-fit:cover; border:2px solid cyan;" 
+              onerror="this.style.border='2px solid red'; this.alt='FAILED';" />
+          </div>
+        </div>
+      </div>
+    `;
+  });
+}
+test();
+</script>
+</body>
+</html>

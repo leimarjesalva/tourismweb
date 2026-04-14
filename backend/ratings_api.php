@@ -423,32 +423,32 @@ function updateTargetAverageRating($conn, $target_type, $target_id) {
     $row = $result->fetch_assoc();
     $avg_rating = $row['avg_rating'] ?: 0;
     
-    // Update the appropriate table
-    switch($target_type) {
-        case 'shop':
-            $updateQuery = "UPDATE shops SET rating = ? WHERE id = ?";
-            $updateStmt = $conn->prepare($updateQuery);
-            $updateStmt->bind_param('ds', $avg_rating, $target_id);
-            $updateStmt->execute();
-            break;
-        case 'product':
-            $updateQuery = "UPDATE products SET rating = ? WHERE id = ?";
-            $updateStmt = $conn->prepare($updateQuery);
-            $updateStmt->bind_param('ds', $avg_rating, $target_id);
-            $updateStmt->execute();
-            break;
-        case 'destination':
-            $updateQuery = "UPDATE destinations SET average_rating = ? WHERE id = ?";
-            $updateStmt = $conn->prepare($updateQuery);
-            $updateStmt->bind_param('ds', $avg_rating, $target_id);
-            $updateStmt->execute();
-            break;
-        case 'hotel':
-            $updateQuery = "UPDATE hotels SET average_rating = ? WHERE id = ?";
-            $updateStmt = $conn->prepare($updateQuery);
-            $updateStmt->bind_param('ds', $avg_rating, $target_id);
-            $updateStmt->execute();
-            break;
+    // Update the appropriate table (silently skip if column doesn't exist)
+    try {
+        switch($target_type) {
+            case 'shop':
+                $updateQuery = "UPDATE shops SET rating = ? WHERE id = ?";
+                $updateStmt = $conn->prepare($updateQuery);
+                if($updateStmt) { $updateStmt->bind_param('ds', $avg_rating, $target_id); $updateStmt->execute(); }
+                break;
+            case 'product':
+                $updateQuery = "UPDATE products SET rating = ? WHERE id = ?";
+                $updateStmt = $conn->prepare($updateQuery);
+                if($updateStmt) { $updateStmt->bind_param('ds', $avg_rating, $target_id); $updateStmt->execute(); }
+                break;
+            case 'destination':
+                $updateQuery = "UPDATE destinations SET average_rating = ? WHERE id = ?";
+                $updateStmt = $conn->prepare($updateQuery);
+                if($updateStmt) { $updateStmt->bind_param('ds', $avg_rating, $target_id); $updateStmt->execute(); }
+                break;
+            case 'hotel':
+                $updateQuery = "UPDATE itinerary_hotels SET average_rating = ? WHERE id = ?";
+                $updateStmt = $conn->prepare($updateQuery);
+                if($updateStmt) { $updateStmt->bind_param('ds', $avg_rating, $target_id); $updateStmt->execute(); }
+                break;
+        }
+    } catch(Exception $e) {
+        error_log("Warning: Could not update average_rating cache for $target_type/$target_id: " . $e->getMessage());
     }
 }
 ?>

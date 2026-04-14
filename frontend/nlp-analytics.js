@@ -351,6 +351,20 @@ class NLPAnalytics {
               </div>
             </div>
           ` : ''}
+          
+          ${item.emotions && item.emotions.length > 0 ? `
+            <div style="margin-top: 6px;">
+              <span style="font-size: 0.75rem; color: #999; font-weight: 600;">EMOTIONS:</span>
+              <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;">
+                ${item.emotions.map(em => {
+                  const eEmoji = {joy:'😊',frustration:'😤',surprise:'😲',disappointment:'😔',gratitude:'🙏',trust:'🤝'}[em] || '💬';
+                  return `<span style="background:rgba(139,92,246,0.1); color:#8b5cf6; padding:2px 8px; border-radius:4px; font-size:0.78rem;">${eEmoji} ${em}</span>`;
+                }).join('')}
+              </div>
+            </div>
+          ` : ''}
+          
+          ${item.intensity ? `<div style="margin-top: 6px;"><span style="font-size: 0.72rem; color: #999; font-weight: 600;">INTENSITY:</span> <span style="font-size: 0.78rem; font-weight: 600; color: ${item.intensity === 'strong' ? '#ef4444' : item.intensity === 'moderate' ? '#f59e0b' : '#999'};">${item.intensity}</span></div>` : ''}
         </div>
       `;
     }).join('');
@@ -394,6 +408,78 @@ class NLPAnalytics {
       return;
     }
 
+    // Emotion badges HTML
+    const emotionEmojis = { joy: '😊', frustration: '😤', surprise: '😲', disappointment: '😔', gratitude: '🙏', trust: '🤝' };
+    const emotionColors = { joy: '#10b981', frustration: '#ef4444', surprise: '#8b5cf6', disappointment: '#f59e0b', gratitude: '#3b82f6', trust: '#06b6d4' };
+    const emotionHTML = data.emotion_distribution && Object.keys(data.emotion_distribution).length > 0
+      ? Object.entries(data.emotion_distribution).map(([em, count]) =>
+          `<span style="display:inline-flex; align-items:center; gap:4px; padding:5px 10px; border-radius:999px; font-size:0.82rem; font-weight:600; background:${emotionColors[em] || '#667eea'}20; color:${emotionColors[em] || '#667eea'}; border:1px solid ${emotionColors[em] || '#667eea'}30;">${emotionEmojis[em] || '💬'} ${this.capitalizeFirst(em)} <small>(${count})</small></span>`
+        ).join('')
+      : '<span style="color:#999; font-size:0.85rem;">No strong emotions detected</span>';
+
+    // Aspect sentiment cards HTML
+    const aspectSentHTML = data.aspect_sentiments && Object.keys(data.aspect_sentiments).length > 0
+      ? Object.entries(data.aspect_sentiments).map(([asp, info]) => {
+          const aspColor = info.sentiment === 'positive' ? '#10b981' : info.sentiment === 'negative' ? '#ef4444' : '#f59e0b';
+          const aspEmoji = info.sentiment === 'positive' ? '👍' : info.sentiment === 'negative' ? '👎' : '➖';
+          return `<div style="background:white; padding:12px; border-radius:8px; border-left:3px solid ${aspColor}; min-width:140px;">
+            <div style="font-size:0.78rem; color:#999; font-weight:600; text-transform:uppercase;">${asp}</div>
+            <div style="font-size:1.1rem; font-weight:800; color:${aspColor}; margin:4px 0;">${aspEmoji} ${info.average_score >= 0 ? '+' : ''}${info.average_score}</div>
+            <div style="font-size:0.72rem; color:#999;">${info.total_mentions} mention${info.total_mentions > 1 ? 's' : ''}</div>
+          </div>`;
+        }).join('')
+      : '';
+
+    // Improvement suggestions HTML
+    const suggestionsHTML = data.improvement_suggestions && data.improvement_suggestions.length > 0
+      ? data.improvement_suggestions.map(s => {
+          const priorityColor = s.priority === 'high' ? '#ef4444' : s.priority === 'medium' ? '#f59e0b' : '#3b82f6';
+          const priorityBg = s.priority === 'high' ? 'rgba(239,68,68,0.08)' : s.priority === 'medium' ? 'rgba(245,158,11,0.08)' : 'rgba(59,130,246,0.08)';
+          return `<div style="background:${priorityBg}; border:1px solid ${priorityColor}30; border-radius:10px; padding:14px; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <span style="font-weight:700; color:#0f172a; font-size:0.9rem;">${this.capitalizeFirst(s.aspect)}</span>
+              <span style="font-size:0.72rem; font-weight:700; color:${priorityColor}; text-transform:uppercase; padding:2px 8px; border-radius:999px; background:${priorityColor}15; border:1px solid ${priorityColor}30;">${s.priority} priority</span>
+            </div>
+            <p style="margin:0 0 8px 0; color:#555; font-size:0.85rem; line-height:1.5;">${s.suggestion}</p>
+            <div style="font-size:0.78rem; color:#999;">${s.complaint_count} complaint${s.complaint_count > 1 ? 's' : ''} reported</div>
+            ${s.sample_complaints && s.sample_complaints.length > 0 ? `
+              <details style="margin-top:8px;"><summary style="cursor:pointer; font-size:0.78rem; color:#667eea; font-weight:600;">View sample complaints</summary>
+                <div style="margin-top:6px; display:grid; gap:6px;">
+                  ${s.sample_complaints.map(c => `<div style="font-size:0.78rem; color:#666; padding:6px 10px; background:rgba(0,0,0,0.03); border-radius:6px; font-style:italic;">"${c}"</div>`).join('')}
+                </div>
+              </details>` : ''}
+          </div>`;
+        }).join('')
+      : '<div style="color:#10b981; font-size:0.88rem; padding:12px;">✅ No significant issues found — guest feedback is mostly positive!</div>';
+
+    // Highlights HTML
+    const highlightsHTML = (() => {
+      const best = data.highlights?.best_reviews || [];
+      const worst = data.highlights?.worst_reviews || [];
+      if (!best.length && !worst.length) return '';
+      return `
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
+          ${best.length > 0 ? `<div style="background:white; padding:16px; border-radius:8px; border-left:4px solid #10b981;">
+            <h4 style="margin:0 0 12px 0; color:#10b981; font-size:0.9rem;">🌟 Top Positive Reviews</h4>
+            ${best.map(r => `<div style="padding:8px 0; border-bottom:1px solid #f1f5f9; font-size:0.82rem; color:#555; line-height:1.5;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span style="font-weight:600; color:#0f172a;">${r.user}</span><span style="color:#fbbf24;">${'★'.repeat(r.rating)}</span></div>
+              "${r.message}"
+            </div>`).join('')}
+          </div>` : ''}
+          ${worst.length > 0 ? `<div style="background:white; padding:16px; border-radius:8px; border-left:4px solid #ef4444;">
+            <h4 style="margin:0 0 12px 0; color:#ef4444; font-size:0.9rem;">⚠️ Critical Reviews</h4>
+            ${worst.map(r => `<div style="padding:8px 0; border-bottom:1px solid #f1f5f9; font-size:0.82rem; color:#555; line-height:1.5;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span style="font-weight:600; color:#0f172a;">${r.user}</span><span style="color:#fbbf24;">${'★'.repeat(r.rating)}</span></div>
+              "${r.message}"
+            </div>`).join('')}
+          </div>` : ''}
+        </div>`;
+    })();
+
+    // Intensity breakdown
+    const intDist = data.intensity_distribution || {};
+    const intTotal = Object.values(intDist).reduce((a, b) => a + b, 0) || 1;
+
     // Build dashboard
     const dashboardHTML = `
       <div style="
@@ -401,9 +487,9 @@ class NLPAnalytics {
         border-radius: 12px;
         padding: 24px;
       ">
-        ${shopId ? `<h3 style="margin-top: 0; color: #0f172a;">${data.shop_name} - NLP Analysis</h3>` : '<h3 style="margin-top: 0; color: #0f172a;">📊 Overall NLP Analytics</h3>'}
+        ${shopId ? `<h3 style="margin-top: 0; color: #0f172a;">${data.shop_name} - NLP Analysis</h3>` : '<h3 style="margin-top: 0; color: #0f172a;">📊 AI-Powered NLP Analytics</h3>'}
         
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-bottom: 24px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
           <div style="background: white; padding: 16px; border-radius: 8px; border-left: 4px solid #10b981;">
             <div style="font-size: 0.85rem; color: #999; font-weight: 600; margin-bottom: 4px;">TOTAL FEEDBACK</div>
             <div style="font-size: 2rem; font-weight: 800; color: #0f172a;">${data.total_feedback || 0}</div>
@@ -411,19 +497,36 @@ class NLPAnalytics {
           
           <div style="background: white; padding: 16px; border-radius: 8px; border-left: 4px solid #667eea;">
             <div style="font-size: 0.85rem; color: #999; font-weight: 600; margin-bottom: 4px;">AVG SENTIMENT</div>
-            <div style="font-size: 2rem; font-weight: 800; color: #667eea;">${(data.average_sentiment_score || 0).toFixed(2)}</div>
-            <div style="font-size: 0.75rem; color: #999; margin-top: 4px;">-1 to +1 scale</div>
+            <div style="font-size: 2rem; font-weight: 800; color: ${(data.average_sentiment_score || 0) >= 0 ? '#10b981' : '#ef4444'};">${(data.average_sentiment_score || 0).toFixed(3)}</div>
+            <div style="font-size: 0.75rem; color: #999; margin-top: 4px;">-1.0 (negative) to +1.0 (positive)</div>
           </div>
           
           <div style="background: white; padding: 16px; border-radius: 8px; border-left: 4px solid #f59e0b;">
             <div style="font-size: 0.85rem; color: #999; font-weight: 600; margin-bottom: 4px;">SENTIMENT MIX</div>
             <div style="font-size: 0.9rem; line-height: 1.6;">
-              <div>😊 ${data.sentiment_distribution.positive || 0}</div>
-              <div>😐 ${data.sentiment_distribution.neutral || 0}</div>
-              <div>😞 ${data.sentiment_distribution.negative || 0}</div>
+              <div>😊 Positive: <strong>${data.sentiment_distribution?.positive || 0}</strong></div>
+              <div>😐 Neutral: <strong>${data.sentiment_distribution?.neutral || 0}</strong></div>
+              <div>😞 Negative: <strong>${data.sentiment_distribution?.negative || 0}</strong></div>
+            </div>
+          </div>
+          
+          <div style="background: white; padding: 16px; border-radius: 8px; border-left: 4px solid #8b5cf6;">
+            <div style="font-size: 0.85rem; color: #999; font-weight: 600; margin-bottom: 4px;">INTENSITY</div>
+            <div style="font-size: 0.85rem; line-height: 1.7;">
+              <div>🔥 Strong: <strong>${intDist.strong || 0}</strong> <small style="color:#999;">(${Math.round(((intDist.strong||0)/intTotal)*100)}%)</small></div>
+              <div>💪 Moderate: <strong>${intDist.moderate || 0}</strong></div>
+              <div>🤏 Mild: <strong>${intDist.mild || 0}</strong></div>
             </div>
           </div>
         </div>
+        
+        <!-- Emotional Tones -->
+        <div style="background: white; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+          <h4 style="margin: 0 0 12px 0; color: #0f172a; font-size: 0.95rem;">🎭 Emotional Tones Detected</h4>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">${emotionHTML}</div>
+        </div>
+        
+        ${highlightsHTML}
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
           <div style="background: white; padding: 16px; border-radius: 8px;">
@@ -439,12 +542,26 @@ class NLPAnalytics {
           ` : ''}
         </div>
         
+        <!-- Aspect-based Sentiment Breakdown -->
+        ${aspectSentHTML ? `
+          <div style="background: white; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+            <h4 style="margin: 0 0 12px 0; color: #0f172a; font-size: 0.95rem;">🔍 Aspect-Based Sentiment (What guests feel about each topic)</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">${aspectSentHTML}</div>
+          </div>
+        ` : ''}
+        
         ${data.top_keywords && data.top_keywords.length > 0 ? `
           <div style="background: white; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-            <h4 style="margin: 0 0 16px 0; color: #0f172a; font-size: 0.95rem;">Top Keywords</h4>
+            <h4 style="margin: 0 0 16px 0; color: #0f172a; font-size: 0.95rem;">🏷️ Top Keywords</h4>
             <div id="nlpKeywordCloud"></div>
           </div>
         ` : ''}
+        
+        <!-- Improvement Suggestions -->
+        <div style="background: white; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+          <h4 style="margin: 0 0 12px 0; color: #0f172a; font-size: 0.95rem;">💡 AI Improvement Suggestions</h4>
+          ${suggestionsHTML}
+        </div>
         
         ${data.detailed_analysis && data.detailed_analysis.length > 0 ? `
           <div style="background: white; padding: 16px; border-radius: 8px;">

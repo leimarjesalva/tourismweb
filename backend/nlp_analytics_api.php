@@ -29,6 +29,10 @@ try {
             extractKeywords();
             break;
         
+        case 'extract_aspect_sentiments':
+            extractAspectSentiments();
+            break;
+        
         case 'get_analytics_summary':
             getAnalyticsSummary($conn);
             break;
@@ -169,6 +173,7 @@ function analyzeAllFeedback($conn) {
  */
 function analyzeSentiment() {
     $text = isset($_POST['text']) ? trim($_POST['text']) : '';
+    $rating = isset($_POST['rating']) ? intval($_POST['rating']) : null;
     
     if (!$text) {
         http_response_code(400);
@@ -176,7 +181,26 @@ function analyzeSentiment() {
         exit;
     }
     
-    $result = callNLPAnalyzer('analyze_sentiment', ['text' => $text]);
+    $data = ['text' => $text];
+    if ($rating !== null) $data['rating'] = $rating;
+    $result = callNLPAnalyzer('analyze_sentiment', $data);
+    http_response_code(200);
+    echo json_encode($result);
+}
+
+/**
+ * Extract aspect-based sentiments from a message
+ */
+function extractAspectSentiments() {
+    $text = isset($_POST['text']) ? trim($_POST['text']) : '';
+    
+    if (!$text) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'text required']);
+        exit;
+    }
+    
+    $result = callNLPAnalyzer('extract_aspect_sentiments', ['text' => $text]);
     http_response_code(200);
     echo json_encode($result);
 }

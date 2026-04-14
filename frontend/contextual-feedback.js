@@ -250,6 +250,25 @@ class ContextualFeedbackSystem {
     `}).join('');
   }
 
+  // ============= REFRESH INFO CARD RATINGS =============
+  refreshInfoCardRatings() {
+    try {
+      if (this.currentContext === 'destination' && this.currentItemName && typeof loadDestinationLiveRating === 'function') {
+        loadDestinationLiveRating(this.currentItemName);
+      } else if (this.currentContext === 'hotel' && this.currentItemName) {
+        const hotel = (window.allDbHotels || []).find(h => h.name === this.currentItemName);
+        if (hotel && typeof loadHotelInfoRating === 'function') loadHotelInfoRating(hotel);
+      } else if (this.currentContext === 'shop' && this.currentItemId) {
+        const shop = (window.allDbShops || []).find(s => s.id == this.currentItemId || s.name === this.currentItemName);
+        if (shop && typeof loadShopInfoRating === 'function') loadShopInfoRating(shop);
+      }
+      // Re-render map markers to update tooltips with fresh rating data
+      if (typeof renderItineraryOverviewMarkers === 'function') {
+        setTimeout(() => renderItineraryOverviewMarkers(), 500);
+      }
+    } catch(e) { console.warn('Could not refresh info card ratings:', e); }
+  }
+
   // ============= SUBMIT FEEDBACK =============
   async submitFeedback(name, email, rating, message, anonymous = false, imageFile = null) {
     if(!this.currentContext || !this.currentItemId) {
@@ -308,8 +327,10 @@ class ContextualFeedbackSystem {
       const result = await response.json();
 
       if(result.success) {
-        // Reload feedback
+        // Reload feedback in the modal
         await this.loadAndDisplayFeedback();
+        // Refresh info card ratings and tooltip data
+        this.refreshInfoCardRatings();
         return true;
       } else {
         alert('Error: ' + (result.error || 'Failed to submit'));

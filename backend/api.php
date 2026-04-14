@@ -237,13 +237,15 @@ function is_in_legazpi($lat, $lng){
 // Get coordinates for a destination name
 function get_destination_coords($destination_name) {
     $db = get_db();
-    // First try to get from destinations table
-    $stmt = $db->prepare("SELECT latitude, longitude FROM destinations WHERE name = ? LIMIT 1");
+    // First try to get from destinations table (renamed from events — uses start_lat/start_lng)
+    $stmt = $db->prepare("SELECT start_lat, start_lng FROM destinations WHERE title = ? LIMIT 1");
     $stmt->bind_param('s', $destination_name);
     $stmt->execute();
     $result = $stmt->get_result();
     if ($result && $row = $result->fetch_assoc()) {
-        return ['lat' => floatval($row['latitude']), 'lon' => floatval($row['longitude'])];
+        if ($row['start_lat'] && $row['start_lng']) {
+            return ['lat' => floatval($row['start_lat']), 'lon' => floatval($row['start_lng'])];
+        }
     }
 
     // Fallback to itinerary_destinations table
@@ -327,6 +329,7 @@ if ($action === 'list_events'){
     $colCheck = function($db, $col){ $res = $db->query("SHOW COLUMNS FROM events LIKE '".$db->real_escape_string($col)."'"); return $res && $res->num_rows>0; };
     $extraCols = '';
     if ($colCheck($db, 'open_days_start')) $extraCols .= ', open_days_start, open_days_end';
+    if ($colCheck($db, 'entrance_fee')) $extraCols .= ', entrance_fee';
     $res = $db->query("SELECT id, title, description, image, datetime, location, capacity, author, anonymous, event_type, start_time, end_time, prediction, start_lat, start_lng, end_lat, end_lng, created_at{$extraCols} FROM events ORDER BY created_at DESC");
     if (!$res) {
         j(['error' => $db->error, 'events' => []]);
@@ -427,6 +430,17 @@ if ($action === 'create_event'){
         // This ensures consistent use of the new event type-based models
         // The frontend will call event_prediction_api.php?action=generate after event creation
         // and save the result via api.php?action=save_event_prediction
+
+        // Save entrance fee if provided
+        if (isset($d['entrance_fee'])) {
+            if (!$colCheck($db, 'entrance_fee')) {
+                $db->query("ALTER TABLE events ADD COLUMN entrance_fee DECIMAL(10,2) DEFAULT NULL");
+            }
+            $fee = $d['entrance_fee'] !== '' && $d['entrance_fee'] !== null ? floatval($d['entrance_fee']) : null;
+            $fst = $db->prepare('UPDATE events SET entrance_fee=? WHERE id=?');
+            $fst->bind_param('di', $fee, $event_id);
+            $fst->execute();
+        }
 
         j(['success'=>true,'id'=>$event_id]);
     }
@@ -810,6 +824,16 @@ if ($action === 'edit_event'){
             $ust = $db->prepare('UPDATE events SET start_lat=?, start_lng=?, end_lat=?, end_lng=? WHERE id=?');
             $ust->bind_param('ddddi', $start_lat, $start_lng, $end_lat, $end_lng, $id);
             $ust->execute();
+        }
+        // Save entrance fee if provided
+        if (isset($d['entrance_fee'])) {
+            if (!$colCheck($db, 'entrance_fee')) {
+                $db->query("ALTER TABLE events ADD COLUMN entrance_fee DECIMAL(10,2) DEFAULT NULL");
+            }
+            $fee = $d['entrance_fee'] !== '' && $d['entrance_fee'] !== null ? floatval($d['entrance_fee']) : null;
+            $fst = $db->prepare('UPDATE events SET entrance_fee=? WHERE id=?');
+            $fst->bind_param('di', $fee, $id);
+            $fst->execute();
         }
         j(['success'=>true]);
     }
@@ -1521,6 +1545,9 @@ if ($action === 'analytics_summary'){
     $res = $db->query("SELECT AVG(rating) AS avg_rating FROM feedback WHERE target_type='product' AND rating > 0");
     $out['avg_product_rating'] = ($res && $r = $res->fetch_assoc()) ? round(floatval($r['avg_rating']), 2) : 0.0;
     
+    $res = $db->query("SELECT AVG(rating) AS avg_rating FROM feedback WHERE target_type='system' AND rating > 0");
+    $out['avg_system_rating'] = ($res && $r = $res->fetch_assoc()) ? round(floatval($r['avg_rating']), 2) : 0.0;
+    
     $res = $db->query("SELECT COUNT(*) AS c FROM feedback WHERE target_type='destination'");
     $out['destination_feedback_count'] = ($res && $r = $res->fetch_assoc()) ? intval($r['c']) : 0;
     $res = $db->query("SELECT COUNT(*) AS c FROM feedback WHERE target_type='hotel'");
@@ -1529,6 +1556,8 @@ if ($action === 'analytics_summary'){
     $out['shop_feedback_count'] = ($res && $r = $res->fetch_assoc()) ? intval($r['c']) : 0;
     $res = $db->query("SELECT COUNT(*) AS c FROM feedback WHERE target_type='product'");
     $out['product_feedback_count'] = ($res && $r = $res->fetch_assoc()) ? intval($r['c']) : 0;
+    $res = $db->query("SELECT COUNT(*) AS c FROM feedback WHERE target_type='system'");
+    $out['system_feedback_count'] = ($res && $r = $res->fetch_assoc()) ? intval($r['c']) : 0;
     // page views last 30 days (from page_views table)
     $res = $db->query("SELECT DATE(ts) AS d, COUNT(*) AS c FROM page_views WHERE ts >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY DATE(ts) ORDER BY DATE(ts)");
     $pv = []; while($r=$res->fetch_assoc()) $pv[]=$r; $out['pv_last_30'] = $pv;
@@ -2330,84 +2359,10 @@ if ($action === 'list_destinations'){
     j(['destinations'=>$rows]);
 }
 
-if ($action === 'list_destination_categories'){
-    $db = get_db();
-    if (!$db) j(['categories'=>[], 'error'=>'Database connection failed']);
-    $res = @$db->query('SELECT * FROM destination_categories ORDER BY name');
-    if (!$res) j(['categories'=>[]]);
-    $rows = [];
-    while($r = $res->fetch_assoc()) $rows[] = $r;
-    j(['categories'=>$rows]);
-}
+// destination_categories table removed — categories are now event_type column in destinations table
 
-if ($action === 'create_destination_category'){
-    require_admin();
-    $d = json_input();
-    $db = get_db();
-    $stmt = $db->prepare('INSERT INTO destination_categories (name, description) VALUES (?, ?)');
-    $stmt->bind_param('ss',$d['name'],$d['description']);
-    if ($stmt->execute()) j(['success'=>true,'id'=>$db->insert_id]);
-    j(['success'=>false,'error'=>$stmt->error]);
-}
-
-if ($action === 'edit_destination_category'){
-    require_admin();
-    $d = json_input();
-    $db = get_db();
-    $stmt = $db->prepare('UPDATE destination_categories SET name=?, description=? WHERE id=?');
-    $stmt->bind_param('ssi',$d['name'],$d['description'],$d['id']);
-    if ($stmt->execute()) j(['success'=>true]);
-    j(['success'=>false,'error'=>$stmt->error]);
-}
-
-if ($action === 'delete_destination_category'){
-    require_admin();
-    $d = json_input();
-    $db = get_db();
-    $stmt = $db->prepare('DELETE FROM destination_categories WHERE id=?');
-    $stmt->bind_param('i',$d['id']);
-    if ($stmt->execute()) j(['success'=>true]);
-    j(['success'=>false,'error'=>$stmt->error]);
-}
-
-if ($action === 'create_destination'){
-    require_admin();
-    $d = json_input();
-    $db = get_db();
-    $image = $d['image'] ?? null;
-    $category_id = !empty($d['category_id']) ? intval($d['category_id']) : null;
-    $stmt = $db->prepare('INSERT INTO destinations (name,description,location,image,category_id) VALUES (?,?,?,?,?)');
-    $stmt->bind_param('ssssi',$d['name'],$d['description'],$d['location'],$image,$category_id);
-    if ($stmt->execute()) j(['success'=>true,'id'=>$db->insert_id]);
-    j(['success'=>false,'error'=>$stmt->error]);
-}
-
-if ($action === 'edit_destination'){
-    require_admin();
-    $d = json_input();
-    $db = get_db();
-    $image = $d['image'] ?? null;
-    $category_id = !empty($d['category_id']) ? intval($d['category_id']) : null;
-    if ($image) {
-        $stmt = $db->prepare('UPDATE destinations SET name=?, description=?, location=?, image=?, category_id=? WHERE id=?');
-        $stmt->bind_param('ssssii',$d['name'],$d['description'],$d['location'],$image,$category_id,$d['id']);
-    } else {
-        $stmt = $db->prepare('UPDATE destinations SET name=?, description=?, location=?, category_id=? WHERE id=?');
-        $stmt->bind_param('sssii',$d['name'],$d['description'],$d['location'],$category_id,$d['id']);
-    }
-    if ($stmt->execute()) j(['success'=>true]);
-    j(['success'=>false,'error'=>$stmt->error]);
-}
-
-if ($action === 'delete_destination'){
-    require_admin();
-    $d = json_input();
-    $db = get_db();
-    $stmt = $db->prepare('DELETE FROM destinations WHERE id=?');
-    $stmt->bind_param('i',$d['id']);
-    if ($stmt->execute()) j(['success'=>true]);
-    j(['success'=>false,'error'=>$stmt->error]);
-}
+// Old destination CRUD removed — destinations now use create_event/edit_event/delete_event actions
+// The destinations table IS the renamed events table
 
 // ===== LOCAL EXPERIENCES =====
 if ($action === 'list_experiences'){
@@ -2951,7 +2906,7 @@ if ($action === 'recommendations') {
                 // Find similar destinations based on user's history
                 if (!empty($user_destinations)) {
                     $dest_list = "'" . implode("','", array_map([$db, 'real_escape_string'], $user_destinations)) . "'";
-                    $res = $db->query("SELECT name, description, image FROM destinations WHERE name NOT IN ($dest_list) ORDER BY RAND() LIMIT 5");
+                    $res = $db->query("SELECT title AS name, description, image FROM destinations WHERE title NOT IN ($dest_list) ORDER BY RAND() LIMIT 5");
                     if ($res) {
                         while ($r = $res->fetch_assoc()) {
                             $personalized[] = array_merge($r, ['reason' => 'Based on your previous trips']);
