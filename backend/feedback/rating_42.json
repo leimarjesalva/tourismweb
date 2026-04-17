@@ -1,0 +1,14 @@
+{
+    "id": 42,
+    "timestamp": "2026-04-14 13:02:32",
+    "user_name": "Jay",
+    "user_email": "mrbeast@gmail.com",
+    "target_type": "shop",
+    "target_id": "4",
+    "target_name": "Angeli's Est 1993",
+    "rating": 2,
+    "message": "Cool Shop!!!",
+    "anonymous": 0,
+    "feedback_type": "review",
+    "metadata": null
+}

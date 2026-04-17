@@ -955,52 +955,6 @@ window.onclick = function(event) {
   if (festivalModal && event.target === festivalModal) closeFestivalModal();
 }
 
-// ===== USER AUTH (Google Sign-In) =====
-let currentUser = null; // {email,name}
-const GOOGLE_CLIENT_ID = '592851137026-ojducpgk2od9rvtob47sn5k5fktqvi6h.apps.googleusercontent.com';
-
-function updateUserUI(){
-  const badge = document.getElementById('userBadge') || document.getElementById('userBadgeSmall');
-  const nameEl = document.getElementById('userName') || document.getElementById('userNameSmall');
-  const gsiBtn = document.getElementById('gsiButton') || document.getElementById('gsiButtonSmall');
-  if (currentUser){
-    if (nameEl) nameEl.textContent = currentUser.name || currentUser.email;
-    if (badge) badge.style.display = 'inline-block';
-    if (gsiBtn) gsiBtn.style.display = 'none';
-  } else {
-    if (badge) badge.style.display = 'none';
-    if (gsiBtn) gsiBtn.style.display = 'block';
-  }
-}
-
-async function handleCredentialResponse(response){
-  try {
-    const id_token = response.credential;
-    const r = await fetch(apiUrl('verify_google.php'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id_token})});
-    const j = await r.json();
-    if (j.success){
-      currentUser = {email: j.email, name: j.name || j.email};
-      updateUserUI();
-    } else {
-      showSnackbar('Google sign-in failed', 'error');
-    }
-  } catch (e){ console.error('Google verify error', e); showSnackbar('Google sign-in failed', 'error'); }
-}
-
-function initGoogleSignIn(){
-  if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) return;
-  google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleCredentialResponse });
-  // render small button for feedback area
-  const smallContainer = document.getElementById('gsiButton');
-  if (smallContainer) google.accounts.id.renderButton(smallContainer, { theme: 'outline', size: 'medium' });
-  const smallContainer2 = document.getElementById('gsiButtonSmall') || document.getElementById('gsiButton');
-  if (smallContainer2 && smallContainer2 !== smallContainer) google.accounts.id.renderButton(smallContainer2, { theme: 'outline', size: 'small' });
-  // optional: prompt one-tap disabled for now
-}
-
-document.getElementById('signOutBtn')?.addEventListener('click', ()=>{ currentUser = null; updateUserUI(); if (google && google.accounts && google.accounts.id) google.accounts.id.disableAutoSelect(); });
-document.getElementById('signOutBtnSmall')?.addEventListener('click', ()=>{ currentUser = null; updateUserUI(); if (google && google.accounts && google.accounts.id) google.accounts.id.disableAutoSelect(); });
-
 // ===== FEEDBACK SUBMISSION =====
 // Email validation function
 function isValidEmail(email) {
