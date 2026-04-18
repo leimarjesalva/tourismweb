@@ -1,0 +1,14 @@
+{
+    "id": 75,
+    "timestamp": "2026-04-18 15:34:01",
+    "user_name": "Annica",
+    "user_email": "hotelreviewer@gmail.com",
+    "target_type": "hotel",
+    "target_id": "NINONG'S HOTEL",
+    "target_name": "NINONG'S HOTEL",
+    "rating": 3,
+    "message": "Comfortable beds and friendly staff.",
+    "anonymous": 0,
+    "feedback_type": "review",
+    "metadata": null
+}

@@ -1,0 +1,14 @@
+{
+    "id": 100,
+    "timestamp": "2026-04-18 16:18:58",
+    "user_name": "Bret",
+    "user_email": "brate@gmamil.com",
+    "target_type": "hotel",
+    "target_id": "THE MARISON HOTEL",
+    "target_name": "THE MARISON HOTEL",
+    "rating": 4,
+    "message": "Superr Rated Quality Service!!!",
+    "anonymous": 0,
+    "feedback_type": "review",
+    "metadata": null
+}

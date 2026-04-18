@@ -1,0 +1,14 @@
+{
+    "id": 82,
+    "timestamp": "2026-04-18 15:44:52",
+    "user_name": "Andrew",
+    "user_email": "andrew@gmail.com",
+    "target_type": "hotel",
+    "target_id": "EMERALD BOUTIQUE HOTEL INC.",
+    "target_name": "EMERALD BOUTIQUE HOTEL INC.",
+    "rating": 3,
+    "message": "Lobby is welcoming and clean.",
+    "anonymous": 0,
+    "feedback_type": "review",
+    "metadata": null
+}

@@ -1,0 +1,14 @@
+{
+    "id": 50,
+    "timestamp": "2026-04-18 13:54:42",
+    "user_name": "David",
+    "user_email": "traveler123@gmail.com",
+    "target_type": "destination",
+    "target_id": "Sawangan",
+    "target_name": "Sawangan",
+    "rating": 4,
+    "message": "Beautiful scenery and lots of activities to enjoy.",
+    "anonymous": 0,
+    "feedback_type": "review",
+    "metadata": null
+}

@@ -1,0 +1,14 @@
+{
+    "id": 45,
+    "timestamp": "2026-04-18 13:48:14",
+    "user_name": "User",
+    "user_email": "systemuser@gmail.com",
+    "target_type": "system",
+    "target_id": "legazpi_explorer",
+    "target_name": "Legazpi Explorer System",
+    "rating": 3,
+    "message": "Fast loading times and no bugs encountered.",
+    "anonymous": 0,
+    "feedback_type": "review",
+    "metadata": null
+}

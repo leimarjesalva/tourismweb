@@ -1,0 +1,14 @@
+{
+    "id": 103,
+    "timestamp": "2026-04-18 16:22:22",
+    "user_name": "Denden",
+    "user_email": "denis@gmail.com",
+    "target_type": "hotel",
+    "target_id": "HOTEL ST. ELLIS",
+    "target_name": "HOTEL ST. ELLIS",
+    "rating": 4,
+    "message": "Hotel is family-friendly.",
+    "anonymous": 0,
+    "feedback_type": "review",
+    "metadata": null
+}

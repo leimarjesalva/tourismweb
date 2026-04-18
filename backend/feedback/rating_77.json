@@ -1,0 +1,14 @@
+{
+    "id": 77,
+    "timestamp": "2026-04-18 15:38:03",
+    "user_name": "Denz",
+    "user_email": "hoteluser@gmail.com",
+    "target_type": "hotel",
+    "target_id": "The Oriental Legazpi",
+    "target_name": "The Oriental Legazpi",
+    "rating": 3,
+    "message": "Breakfast buffet was delicious.",
+    "anonymous": 0,
+    "feedback_type": "review",
+    "metadata": null
+}

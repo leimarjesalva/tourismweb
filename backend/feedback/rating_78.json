@@ -1,0 +1,14 @@
+{
+    "id": 78,
+    "timestamp": "2026-04-18 15:40:09",
+    "user_name": "Jessica",
+    "user_email": "hotelcritic@gmail.com",
+    "target_type": "hotel",
+    "target_id": "The Oriental Legazpi",
+    "target_name": "The Oriental Legazpi",
+    "rating": 5,
+    "message": "Room was spacious and well-maintained.",
+    "anonymous": 0,
+    "feedback_type": "review",
+    "metadata": null
+}
