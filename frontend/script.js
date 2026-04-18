@@ -1039,22 +1039,56 @@ API.editItinerary = async function(data){ const r = await fetch(apiUrl('api.php?
 API.deleteItinerary = async function(id,email=''){ const r = await fetch(apiUrl('api.php?action=delete_itinerary'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,email})}); return r.json(); };
 API.logActivity = async function(data){ const r = await fetch(apiUrl('api.php?action=log_activity'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}); return r.json(); };
 
-// Generate printable PDF for itinerary using html2pdf
-async function generateItineraryPDF(it){
+
+// Generate downloadable HTML file for itinerary
+async function downloadItineraryHTML(it){
   // it: {title, days, destinations, user_name}
-  const container = document.createElement('div');
-  container.style.padding = '18px';
-  container.style.fontFamily = 'Arial, Helvetica, sans-serif';
+  // Show print summary section on main page and trigger print dialog
+  // Always generate a complete HTML file for download with all summary details
   const destList = Array.isArray(it.destinations) ? it.destinations : (typeof it.destinations === 'string' ? (it.destinations.startsWith('[')?JSON.parse(it.destinations):it.destinations.split(',').map(s=>s.trim())) : []);
-  container.innerHTML = `<h1>${escapeHtml(it.title||'Itinerary')}</h1>
-    <p><strong>By:</strong> ${escapeHtml(it.user_name||it.name||'Guest')}</p>
-    <p><strong>Days:</strong> ${escapeHtml(String(it.days||1))}</p>
+  const htmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>${escapeHtml(it.title||'Itinerary')}</title>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; padding: 18px; background: #fff; color: #222; }
+    h1 { color: #2c3e50; margin-bottom: 0; }
+    h3 { margin-top: 2em; }
+    ol { margin-left: 18px; }
+    .print-btn { display: inline-block; margin: 18px 0; padding: 8px 18px; background: #3498db; color: #fff; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer; }
+    .summary-section { margin-bottom: 24px; }
+    .summary-label { font-weight: bold; color: #444; }
+    @media print {
+      .print-btn { display: none !important; }
+      body { background: #fff !important; color: #000 !important; }
+    }
+  </style>
+</head>
+<body>
+  <button class="print-btn" onclick="window.print()">Print Itinerary</button>
+  <div class="summary-section">
+    <h1>${escapeHtml(it.title||'Itinerary')}</h1>
+    <p><span class="summary-label">By:</span> ${escapeHtml(it.user_name||it.name||'Guest')}</p>
+    <p><span class="summary-label">Days:</span> ${escapeHtml(String(it.days||1))}</p>
+  </div>
+  <div class="summary-section">
     <h3>Destinations</h3>
-    <ol>${destList.map(d=>'<li>'+escapeHtml(String(d))+'</li>').join('')}</ol>`;
-  document.body.appendChild(container);
-  const opt = { margin:0.5, filename: (it.title||'itinerary')+'.pdf', html2canvas:{scale:2}, jsPDF:{unit:'in',format:'a4',orientation:'portrait'} };
-  await html2pdf().from(container).set(opt).save();
-  document.body.removeChild(container);
+    <ol>${destList.map(d=>'<li>'+escapeHtml(String(d))+'</li>').join('')}</ol>
+  </div>
+</body>
+</html>`;
+  const blob = new Blob([htmlContent], {type: 'text/html'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (it.title||'itinerary')+'.html';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 100);
 }
 
 function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
@@ -1083,7 +1117,7 @@ async function loadMyItineraries(){
     div.innerHTML = `<strong>${it.title}</strong> <small>(${it.days} days)</small><div style="font-size:0.9rem;color:#555">${dests}</div><div style="margin-top:6px;"><button class="downloadIt" data-id="${it.id}">Download</button> <button class="delIt" data-id="${it.id}">Delete</button></div>`;
     container.appendChild(div);
   });
-  container.querySelectorAll('.downloadIt').forEach(btn=>btn.addEventListener('click', async e=>{ const id=e.target.dataset.id; const r = await API.getItinerary(id); const it = r.itinerary; if (it) await generateItineraryPDF({title:it.title, days:it.days, destinations: it.destinations, user_name: it.user_name || it.user_name}); }));
+  container.querySelectorAll('.downloadIt').forEach(btn=>btn.addEventListener('click', async e=>{ const id=e.target.dataset.id; const r = await API.getItinerary(id); const it = r.itinerary; if (it) await downloadItineraryHTML({title:it.title, days:it.days, destinations: it.destinations, user_name: it.user_name || it.user_name}); }));
   container.querySelectorAll('.delIt').forEach(btn=>btn.addEventListener('click', async e=>{ const id=e.target.dataset.id; if (!await showConfirm('Delete itinerary?')) return; const r = await API.deleteItinerary(id, currentUser?currentUser.email:''); if (r.success) loadMyItineraries(); else showSnackbar('Delete failed','error'); }));
 }
 

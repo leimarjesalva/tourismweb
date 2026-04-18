@@ -746,10 +746,14 @@
       pointer-events: none;
     }
     .carousel-card:hover {
-      transform: translateY(-8px) scale(1.03);
-      box-shadow: 0 20px 50px rgba(0,0,0,0.35), 0 0 30px rgba(255,122,24,0.1);
-      border-color: rgba(255,255,255,0.18);
-      background: linear-gradient(145deg, rgba(255,255,255,0.13), rgba(255,255,255,0.05));
+      /* No scale or translate to avoid overflow */
+      box-shadow: 0 6px 24px rgba(255,122,24,0.13), 0 2px 8px rgba(52,211,153,0.07), 0 2px 8px rgba(0,0,0,0.10);
+      border-color: #ffb366;
+      background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,122,24,0.06) 60%, rgba(52,211,153,0.06));
+      outline: none;
+      z-index: 2;
+      position: relative;
+      transition: box-shadow 0.22s, border-color 0.22s, background 0.22s;
     }
     .carousel-card:hover::before {
       color: rgba(255,122,24,0.3);
@@ -815,18 +819,52 @@
       transition: background 0.4s, box-shadow 0.4s;
     }
     .carousel-empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
       text-align: center;
       padding: 32px 24px;
       color: rgba(255,255,255,0.45);
       font-size: 14px;
       width: 100%;
+      height: 120px;
     }
 
   </style>
 </head>
 <body>
 
-<!-- =================== NAVBAR =================== -->
+<!-- =================== PRINT ITINERARY SUMMARY =================== -->
+<section id="print-itinerary-summary" style="display:none; background:#fff; color:#222; padding:32px 18px; max-width:900px; margin:32px auto 0 auto; border-radius:18px; box-shadow:0 8px 32px rgba(0,0,0,0.08);">
+  <button id="printItineraryBtn" style="display:block; margin-bottom:18px; padding:10px 22px; background:#3498db; color:#fff; border:none; border-radius:6px; font-size:1.1rem; font-weight:700; cursor:pointer;">Print Itinerary Summary</button>
+  <h1 id="printItineraryTitle">Itinerary Summary</h1>
+  <p><strong>By:</strong> <span id="printItineraryUser">Guest</span></p>
+  <p><strong>Days:</strong> <span id="printItineraryDays">1</span></p>
+  <h3>Destinations</h3>
+  <ol id="printItineraryDestinations"></ol>
+</section>
+<script>
+// Show and fill the print summary section with itinerary data
+function showPrintItinerarySummary(itinerary) {
+  document.getElementById('print-itinerary-summary').style.display = 'block';
+  document.getElementById('printItineraryTitle').textContent = itinerary.title || 'Itinerary Summary';
+  document.getElementById('printItineraryUser').textContent = itinerary.user_name || itinerary.name || 'Guest';
+  document.getElementById('printItineraryDays').textContent = itinerary.days || 1;
+  const destList = Array.isArray(itinerary.destinations) ? itinerary.destinations : (typeof itinerary.destinations === 'string' ? (itinerary.destinations.startsWith('[')?JSON.parse(itinerary.destinations):itinerary.destinations.split(',').map(s=>s.trim())) : []);
+  const ol = document.getElementById('printItineraryDestinations');
+  ol.innerHTML = '';
+  destList.forEach(d => {
+    const li = document.createElement('li');
+    li.textContent = d;
+    ol.appendChild(li);
+  });
+}
+// Print button handler
+document.addEventListener('DOMContentLoaded', function() {
+  const btn = document.getElementById('printItineraryBtn');
+  if (btn) btn.onclick = function() { window.print(); };
+});
+</script>
 <div id="navBackdrop" class="nav-backdrop" onclick="closeMobileNav()"></div>
 <nav class="navbar modern">
   <div class="nav-container">
@@ -5152,11 +5190,100 @@ function renderModalPredictionCharts(ev) {
       </div>
 
       <div style="display:flex; flex-wrap:wrap; gap:12px; justify-content:center; width:100%;">
-        <button type="button" onclick="saveSummaryPDF()" style="min-width:220px; padding:16px 22px; border:none; border-radius:18px; background: linear-gradient(135deg, #ff7a18, #ff6a88); color:#fff; font-weight:800; cursor:pointer;">📥 Download File</button>
+        <button type="button" onclick="downloadSummaryHTML()" style="min-width:220px; padding:16px 22px; border:none; border-radius:18px; background: linear-gradient(135deg, #ff7a18, #ff6a88); color:#fff; font-weight:800; cursor:pointer;">📥 Download File (HTML)</button>
         <button type="button" onclick="editDestinations()" style="min-width:220px; padding:16px 22px; border:1px solid rgba(255,255,255,0.16); border-radius:18px; background: rgba(99,102,241,0.12); color:#818cf8; font-weight:700; cursor:pointer;">✏️ Edit Destinations</button>
         <button type="button" onclick="changeRoute()" style="min-width:220px; padding:16px 22px; border:1px solid rgba(255,255,255,0.16); border-radius:18px; background: transparent; color:#fff; font-weight:700; cursor:pointer;">↩ Change Route</button>
+<script>
+// Save itinerary summary as HTML (always works)
+function downloadSummaryHTML() {
+  const tripTitle = document.getElementById('tripTitle').value || 'My Itinerary';
+  const destination = currentDestination || (selectedDestinationNames.length ? selectedDestinationNames.join(', ') : 'Unknown');
+  const days = selectedDays || getSelectedDurationDays() || 1;
+  const dates = formatDateRange(document.getElementById('tripStartDate')?.value, document.getElementById('tripEndDate')?.value);
+  const budget = `₱${tripPreferences.budget.toLocaleString('en-PH')}`;
+  const style = tripPreferences.travelStyles.length === 5
+    ? 'Mixed'
+    : tripPreferences.travelStyles.map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(', ');
+  const accommodation = selectedAccommodation ? `${selectedAccommodation.name} @ ${selectedAccommodation.location}` : 'Not selected';
+  const stops = selectedDestinationNames.length ? selectedDestinationNames.join(', ') : 'None';
+  const estCost = `₱${calculateSelectedCost().toLocaleString('en-PH')}`;
+
+  let summaryContent = `
+      <div style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; line-height:1.6; color:#333; padding:20px; max-width:800px; margin:0 auto; background:white;">
+        <div style="background:linear-gradient(135deg,#ff7a18,#ff6a88); color:white; padding:30px; border-radius:8px; margin-bottom:30px; text-align:center;">
+          <h1 style="margin:0 0 10px 0; font-size:2.2rem;">✈️ ${tripTitle}</h1>
+          <p style="margin:0; font-size:1.1rem; opacity:0.9;">Your Legazpi Adventure Summary</p>
+        </div>
+
+        <h2 style="color:#ff7a18; border-bottom:3px solid #ff7a18; padding-bottom:10px; margin:30px 0 20px 0; font-size:1.5rem;">📋 Trip Details</h2>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin:20px 0;">
+          <div style="background:#f9f9f9; padding:15px; border-left:5px solid #ff7a18; border-radius:5px;">
+            <div style="color:#666; font-size:0.9rem; font-weight:600;">🎯 Destination</div>
+            <div style="color:#ff7a18; font-size:1.1rem; font-weight:700; margin-top:8px;">${destination}</div>
+          </div>
+          <div style="background:#f9f9f9; padding:15px; border-left:5px solid #ff7a18; border-radius:5px;">
+            <div style="color:#666; font-size:0.9rem; font-weight:600;">📅 Dates</div>
+            <div style="color:#ff7a18; font-size:1.1rem; font-weight:700; margin-top:8px;">${dates}</div>
+          </div>
+          <div style="background:#f9f9f9; padding:15px; border-left:5px solid #ff7a18; border-radius:5px;">
+            <div style="color:#666; font-size:0.9rem; font-weight:600;">⏳ Duration</div>
+            <div style="color:#ff7a18; font-size:1.1rem; font-weight:700; margin-top:8px;">${days} Day(s)</div>
+          </div>
+          <div style="background:#f9f9f9; padding:15px; border-left:5px solid #ff7a18; border-radius:5px;">
+            <div style="color:#666; font-size:0.9rem; font-weight:600;">👥 Travelers</div>
+            <div style="color:#ff7a18; font-size:1.1rem; font-weight:700; margin-top:8px;">${tripPreferences.adults + tripPreferences.kids} traveler${tripPreferences.adults + tripPreferences.kids === 1 ? '' : 's'}</div>
+          </div>
+          <div style="background:#f9f9f9; padding:15px; border-left:5px solid #ff7a18; border-radius:5px;">
+            <div style="color:#666; font-size:0.9rem; font-weight:600;">💰 Budget</div>
+            <div style="color:#ff7a18; font-size:1.1rem; font-weight:700; margin-top:8px;">${budget}</div>
+          </div>
+          <div style="background:#f9f9f9; padding:15px; border-left:5px solid #ff7a18; border-radius:5px;">
+            <div style="color:#666; font-size:0.9rem; font-weight:600;">📍 Stops</div>
+            <div style="color:#ff7a18; font-size:1.1rem; font-weight:700; margin-top:8px;">${stops}</div>
+          </div>
+          <div style="background:#f9f9f9; padding:15px; border-left:5px solid #ff7a18; border-radius:5px;">
+            <div style="color:#666; font-size:0.9rem; font-weight:600;">🧾 Est. Total Cost</div>
+            <div style="color:#ff7a18; font-size:1.1rem; font-weight:700; margin-top:8px;">${estCost}</div>
+          </div>
+        </div>
+
+        <h2 style="color:#ff7a18; border-bottom:3px solid #ff7a18; padding-bottom:10px; margin:30px 0 20px 0; font-size:1.5rem;">🏨 Selected Accommodation</h2>
+        <div style="margin-bottom:30px;">
+          <div style="background:#f9f9f9; padding:15px; border-left:5px solid #ff7a18; border-radius:5px;">
+            <div style="color:#666; font-size:0.9rem; font-weight:600;">🛏️ Hotel / Resort</div>
+            <div style="color:#ff7a18; font-size:1.1rem; font-weight:700; margin-top:8px;">${accommodation}</div>
+          </div>
+        </div>
+
+        <h2 style="color:#ff7a18; border-bottom:3px solid #ff7a18; padding-bottom:10px; margin:30px 0 20px 0; font-size:1.5rem;">📆 Document Information</h2>
+        <div style="margin-bottom:30px;">
+          <div style="background:#f9f9f9; padding:15px; border-left:5px solid #ff7a18; border-radius:5px;">
+            <div style="color:#666; font-size:0.9rem; font-weight:600;">Generated on</div>
+            <div style="color:#ff7a18; font-size:1.1rem; font-weight:700; margin-top:8px;">${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} at ${new Date().toLocaleTimeString('en-US')}</div>
+          </div>
+        </div>
+
+        <div style="margin-top:40px; text-align:center; border-top:2px solid #ddd; padding-top:20px; color:#666; font-size:0.9rem;">
+          <p>✨ Legazpi Explorer - Your Ultimate Guide to Albay Adventures</p>
+          <p style="color:#999; margin-top:10px;">Please adjust activities based on weather, local events, and personal preferences.</p>
+        </div>
       </div>
-    </div>
+  `;
+
+  // Download as HTML file
+  const safeName = (tripTitle || 'itinerary').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+  const fileName = `${safeName}_summary_${new Date().toISOString().split('T')[0]}.html`;
+  const blob = new Blob([summaryContent], { type: 'text/html;charset=utf-8' });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', fileName);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  setTimeout(() => { document.body.removeChild(link); window.URL.revokeObjectURL(url); }, 100);
+}
+</script>
   </section>
 
 <!-- =================== SYSTEM FEEDBACK & CAROUSEL =================== -->
@@ -5506,7 +5633,7 @@ async function loadSystemFeedbackCarousel() {
     let feedbacks = (data.reviews || []).filter(f => parseInt(f.rating) > 0);
 
     if (feedbacks.length === 0) {
-      track.innerHTML = '<div class="carousel-empty">😔 No system feedback yet. Be the first to share your experience!</div>';
+      track.innerHTML = '<div class="carousel-empty" style="text-align:center;display:flex;align-items:center;justify-content:center;height:120px;">😔 No system feedback yet. Be the first to share your experience!</div>';
       return;
     }
 
